@@ -1,0 +1,194 @@
+# Default values for n8n-helm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+## String to partially override n8n-helm.fullname template (will maintain the release name)
+##
+nameOverride: ""
+
+## common annotations
+commonannotations: {}
+
+## String to fully override n8n-helm.fullname template
+##
+fullnameOverride: ""
+
+image:
+  repository: n8nio/n8n
+  restartPolicy: Always
+  tag: "latest"
+  ## Specify a imagePullPolicy
+  ## Defaults set to 'IfNotPresent'
+  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  ##
+  pullPolicy: IfNotPresent
+
+
+auth:
+  # enable the n8n basic auth 
+  enabled: false
+
+  ##  Basic Auth username
+  ##  Defaults to 'nodemation' if not set
+  #n8nAuthUsername: nodemation
+
+  ##  Basic Auth password
+  ## Defaults to 'nodemation' if not set
+  #n8nAuthPass: nodemation
+
+## n8n password using existing secret. which includes n8nAuthPass and 
+## postgresqlDbPass as key for the respective value
+#existingSecret: myn8n-secrets
+
+networkPolicy:
+  ## Enable creation of NetworkPolicy resources. Only Ingress traffic is filtered for now.
+  ##
+  enabled: false
+ 
+  ## if explicitNamespacesSelector is missing or set to {}, only client Pods that are in the networkPolicy's namespace
+  ## and that match other criteria, the ones that have the good label, can reach the DB.
+  ## But sometimes, we want the DB to be accessible to clients from other namespaces, in this case, we can use this
+  ## LabelSelector to select these namespaces, note that the networkPolicy's namespace should also be explicitly added.
+  ##
+  ## Example:
+  ## explicitNamespacesSelector:
+  ##   matchLabels:
+  ##     role: frontend
+  ##   matchExpressions:
+  ##    - {key: role, operator: In, values: [frontend]}
+  explicitNamespacesSelector: {}
+
+
+service:
+  ## Kubernetes service type
+  type: ClusterIP
+  ## n8n port 
+  port: 5678
+  ## add extra annotation for service
+  annotations: {}
+
+testFramework:
+  ## Set to true to enable testing of n8n
+  enabled: true
+
+persistence:
+  enabled: true
+  ## A manually managed Persistent Volume and Claim
+  ## The path the volume will be mounted at, useful when using different
+  ##
+  mountPath: /mnt/n8n/.n8n
+  
+  ##Storage class as per your provider
+  #storageClass: "-"
+  accessModes:
+    - ReadWriteOnce
+  size: 2Gi
+ 
+
+ingress:
+  ## Set to true to enable ingress
+  enabled: true
+
+  ## When the ingress is enabled, a host pointing to this will be created if hostname is set. Default it  will point to localhost:80
+  #hostname: n8n.local.com
+
+  # If tls is set, annotation ingress.kubernetes.io/secure-backends: "true" will automatically be set
+  ## The tls configuration for the ingress
+  ## see: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+  ## Uncomment below to enable tls / https for let's encrypt / cert-manager
+  ## Set this to true in order to enable TLS on the ingress record
+  ## A side effect of this will be that the backend n8n service will be connected at port 443
+  #tls:    
+  #- hosts:    
+  #  - n8n.local
+  #  secretName: n8n.local-tls 
+
+  ## Ingress annotations done as key:value pairs
+  ## For a full list of possible ingress annotations, please see
+  ## ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
+  
+  annotations: {}
+  
+  ## Set this to true in order to add the corresponding annotations for cert-manager. validate that tls is set 
+  #certManager: true
+
+  secrets:
+  ## If you're providing your own certificates, please use this to add the certificates as secrets
+  ## key and certificate should start with -----BEGIN CERTIFICATE----- or
+  ## -----BEGIN RSA PRIVATE KEY-----
+  ##
+  ## name should line up with a tlsSecret set further up
+  ## If you're using cert-manager, this is unneeded, as it will create the secret for you if it is not set
+  ##
+  ## It is also possible to create and manage the certificates outside of this helm chart
+  ## Please see README.md for more information
+  # - name: n8n.local-tls
+  #   key:
+  #   certificate:
+
+## Configure resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+##
+resources:
+  requests:
+    memory: "500Mi"
+    cpu: "500m"
+  limits:
+    memory: "500Mi"
+    cpu: "500m"
+
+## Use an alternate scheduler, e.g. "stork".
+## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+##
+# schedulerName:
+##
+## n8n parameters
+##
+## Node, affinity, tolerations, and priorityclass settings for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#taints-and-tolerations-beta-feature
+## ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption
+nodeSelector: {}
+affinity: {}
+tolerations: []
+
+## Configure extra options for liveness and readiness probes
+## This is http get  liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
+
+#livenessProbe:
+#  httpGet:
+#    path: /
+#    port: 5678
+#  initialDelaySeconds: 20
+#  timeoutSeconds: 10
+#  periodSeconds: 5
+#  failureThreshold: 2
+#
+#readinessProbe:
+#  httpGet:
+#    path: /
+#    port: 5678
+#  initialDelaySeconds: 20
+#  timeoutSeconds: 10
+#  periodSeconds: 5
+#  failureThreshold: 2
+
+postgresql:
+  ## enable for testing  postgresql connection
+  testFramework:
+    enabled: true
+  ## by default postgress is enable, Whether to deploy a postgress server to use database to store workflows set enables as per your requirements. 
+  enabled: true
+  #Below are overriden values for postgres db
+  ## PostgreSQL admin password (used when `postgresqlUsername` is not `postgres`)
+  #postgresqlPostgresPassword: nodemation
+  #n8n will connect to postgres using below username if not set then default 'postgres'
+  postgresqlUsername: postgres
+  #n8n will connect to below postgres databse if not set then default 'postgres'
+  postgresqlDatabase: nodemation
+  #n8n will connect to postgres using below password if not set then default 'postgres'
+  postgresqlPassword: nodemation

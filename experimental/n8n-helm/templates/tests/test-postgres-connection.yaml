@@ -1,0 +1,29 @@
+{{- if .Values.postgresql.testFramework.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ template "postgresql.fullname" . }}-connection-test
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: {{ template "postgresql.fullname" . }}-connection-test
+      image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+      imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+      env:
+        - name: POSTGRES_DB
+          value: {{ .Values.postgresql.postgresqlDatabase | quote }}
+        - name: POSTGRES_USER
+          value: {{ .Values.postgresql.postgresqlUsername | quote }}
+        - name: POSTGRES_PASS
+          value: {{ .Values.postgresql.postgresqlPassword | quote }}
+        - name: POSTGRES_PORT
+          value: {{ .Values.postgresql.service.port | quote }}
+        - name: POSTGRES_HOST
+          value: {{ template "n8n-helm.dbhost" . }}
+      command:
+        - /bin/bash
+        - -ec
+        - PGPASSWORD=$POSTGRES_PASS psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB
+  restartPolicy: Never
+{{- end }}
