@@ -1,0 +1,23 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ template "n8n-helm.fullname" . }}-service
+  labels:
+    {{- include "n8n-helm.common.labels.standard" . | nindent 4 }}
+    app: {{ template "n8n-helm.fullname" . }}
+  annotations: 
+    {{- if .Values.service.annotations }}
+    {{- include "n8n-hem.tplValue" ( dict "value" .Values.service.annotations "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonannotations }}
+    {{- range $key, $value := .Values.commonannotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}    
+    {{- end }}
+spec:
+  selector: {{- include "n8n-helm.common.labels.matchLabels" . | nindent 4 }}
+    app: {{ template "n8n-helm.fullname" . }}
+  ports:
+  - name: {{ template "n8n-helm.fullname" . }}
+    port: {{ default "5678" .Values.service.port }}
+    targetPort: {{ default "5678" .Values.service.port }}
