@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "freeipa.fullname" . }}
+  labels:
+    {{- include "freeipa.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  #clusterIP: {{ .Values.service.clusterIP }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: 80
+    - name: https
+      port: 443
+      targetPort: 443
+    {{- if .Values.args.setupdns }}
+    - name: dns-udp
+      port: 53
+      protocol: UDP
+      targetPort: 53
+    {{- end}}
+    - name: kerberos-tcp
+      port: 88
+      protocol: TCP
+      targetPort: 88
+    - name: kerberos-udp
+      port: 88
+      protocol: UDP
+      targetPort: 88
+  # ports:
+  #   - port: {{ .Values.service.port }}
+  #     targetPort: http
+  #     protocol: TCP
+  #     name: http
+  selector:
+    {{- include "freeipa.selectorLabels" . | nindent 4 }}
