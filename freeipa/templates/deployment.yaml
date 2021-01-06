@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "freeipa.fullname" . }}
+  labels:
+    {{- include "freeipa.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "freeipa.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "freeipa.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "freeipa.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+      - name: freeipa-server-data
+        persistentVolumeClaim:
+          claimName: freeipa-data-pvc
+      - name: cgroups
+        hostPath:
+          path: /sys/fs/cgroup
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+          - -U
+          - --realm={{ .Values.args.realm }}
+          - --domain={{ .Values.args.domain }}
+          - --ds-password={{ .Values.args.dspassword }}
+          - --admin-password={{ .Values.args.adminpassword }}
+          - --unattended
+          {{- if .Values.args.nohostdns }}
+          - --no-host-dns
+          {{- end }}
+          {{- if .Values.args.nontp }}
+          - --no-ntp
+          {{- end }}
+          {{- if .Values.args.setupdns }}
+          - --setup-dns
+          {{- end }}
+          {{- if and (eq .Values.args.setupdns true) (eq .Values.args.autoforwarders true) }}
+          - --auto-forwarders
+          {{- end }}
+          {{- if and (eq .Values.args.setupdns true) (eq .Values.args.allowzoneoverlap true) }}
+          - --allow-zone-overlap
+          {{- end }}
+          {{- if .Values.args.sshtrustdns }}
+          - --ssh-trust-dns
+          {{- end }}
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          - containerPort: 443
+            protocol: TCP
+          {{- if .Values.args.setupdns }}
+          - containerPort: 53
+            protocol: UDP
+          {{- end }}
+          - containerPort: 88
+            protocol: TCP
+          - containerPort: 88
+            protocol: UDP
+          # ports:
+          #   - name: http
+          #     containerPort: 80
+          #     protocol: TCP
+          volumeMounts:
+          - name: freeipa-server-data
+            mountPath: /data
+          - name: cgroups
+            mountPath: /sys/fs/cgroup
+            readOnly: true
+          env:
+          - name: IPA_SERVER_HOSTNAME
+            value: {{ .Values.hostname }}
+          readinessProbe:
+            exec:
+              command: [ "/usr/bin/systemctl", "status", "ipa" ]
+            initialDelaySeconds: 300
+            timeoutSeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3 
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
