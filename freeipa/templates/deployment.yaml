@@ -1,10 +1,11 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "freeipa.fullname" . }}
   labels:
     {{- include "freeipa.labels" . | nindent 4 }}
 spec:
+  serviceName: {{ include "freeipa.fullname" . }}
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
@@ -28,9 +29,9 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
-      - name: freeipa-server-data
-        persistentVolumeClaim:
-          claimName: freeipa-data-pvc
+      # - name: freeipa-server-data
+      #   persistentVolumeClaim:
+      #     claimName: freeipa-data-pvc
       - name: cgroups
         hostPath:
           path: /sys/fs/cgroup
@@ -83,7 +84,7 @@ spec:
           #     containerPort: 80
           #     protocol: TCP
           volumeMounts:
-          - name: freeipa-server-data
+          - name: freeipa-data-pvc
             mountPath: /data
           - name: cgroups
             mountPath: /sys/fs/cgroup
@@ -94,15 +95,16 @@ spec:
           readinessProbe:
             exec:
               command: [ "/usr/bin/systemctl", "status", "ipa" ]
-            initialDelaySeconds: 300
+            initialDelaySeconds: 550
             timeoutSeconds: 10
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 3 
-          # livenessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
+          livenessProbe:
+            initialDelaySeconds: 550
+            httpGet:
+              path: /
+              port: 80
           # readinessProbe:
           #   httpGet:
           #     path: /
@@ -121,3 +123,12 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: freeipa-data-pvc
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "local-path"
+      resources:
+        requests:
+          storage: {{ .Values.volumestorage }}
