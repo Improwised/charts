@@ -66,6 +66,8 @@ spec:
           - --ssh-trust-dns
           {{- end }}
           ports:
+          - containerPort: 636
+            protocol: TCP
           - containerPort: 80
             protocol: TCP
           - containerPort: 443
