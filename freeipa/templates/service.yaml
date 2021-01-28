@@ -8,6 +8,14 @@ spec:
   type: {{ .Values.service.type }}
   #clusterIP: {{ .Values.service.clusterIP }}
   ports:
+    - name: ldap
+      port: 389
+      protocol: TCP
+      targetPort: 389
+    - name: ldaps
+      port: 636
+      protocol: TCP
+      targetPort: 636
     - name: http
       port: {{ .Values.service.port }}
       targetPort: 80
