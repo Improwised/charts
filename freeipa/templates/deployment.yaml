@@ -96,7 +96,7 @@ spec:
           readinessProbe:
             exec:
               command: [ "/usr/bin/systemctl", "status", "ipa" ]
-            initialDelaySeconds: 150
+            initialDelaySeconds: 300
             timeoutSeconds: 10
             periodSeconds: 10
             successThreshold: 1
