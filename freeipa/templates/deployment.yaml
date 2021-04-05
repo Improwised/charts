@@ -96,11 +96,11 @@ spec:
           readinessProbe:
             exec:
               command: [ "/usr/bin/systemctl", "status", "ipa" ]
-            initialDelaySeconds: 300
+            initialDelaySeconds: 150
             timeoutSeconds: 10
             periodSeconds: 10
             successThreshold: 1
-            failureThreshold: 3 
+            failureThreshold: 3
           # livenessProbe:
           #   httpGet:
           #     path: /
