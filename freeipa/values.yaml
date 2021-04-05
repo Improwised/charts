@@ -24,7 +24,7 @@ args:
   allowzoneoverlap: true # if setup dns is true thiw will be applicable
   sshtrustdns: false
 
-volumestorage: 1Gi 
+volumestorage: 1Gi
 
 imagePullSecrets: []
 nameOverride: ""
