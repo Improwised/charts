@@ -31,7 +31,9 @@ spec:
           command: ['sh', '-c']
           args: ['chown -R 1000:1000 /home/frappe/frappe-bench']
           securityContext:
+            {{- if .Values.securityContext }}
             {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- end }}
             capabilities:
               add: ["CAP_CHOWN"]
           volumeMounts:
