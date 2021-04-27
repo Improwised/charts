@@ -2,8 +2,6 @@
 
 ## Usage
 
----
-
 Add helm repo
 
 ```bash
@@ -11,8 +9,6 @@ helm repo add improwised https://improwised.github.io/charts/
 ```
 
 ## Add charts
-
----
 
 1. Package the chart, this will create `chartname-semver.tgz` file.
 
