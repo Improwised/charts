@@ -18,7 +18,9 @@ helm repo add improwised https://improwised.github.io/charts/
 
 2. Checkout `gh-pages` branch of this repo and move `chart-name-semver.tgz` to `charts` directory.
 
-3. ```bash
+3. Index added chart
+
+   ```bash
    helm repo index --url https://improwised.github.io/charts .
    ```
 
