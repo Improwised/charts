@@ -1,0 +1,28 @@
+---
+platform: linux
+image_resource: { type: docker-image, source: { repository: quay.io/helmpack/chart-testingm } }
+
+inputs:
+- name: repo
+- name: charts
+
+outputs:
+- name: charts
+run:
+  path: bash
+  args:
+  - -cxe
+  - |
+    cd repo
+    apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing helm
+    export HELM_CONFIG_HOME=./
+    printf "packaging chart"
+    for chart in $(ct list-changed); do
+      echo "Building Chart $chart"
+      helm dependency build $chart
+      helm package $chart
+    done
+    mv *.tgz ../charts/charts/
+    cd ../charts
+    helm repo index --url https://improwised.github.io/charts .
+    git commit add chart
