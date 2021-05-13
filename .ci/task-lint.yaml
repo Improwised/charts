@@ -12,4 +12,4 @@ run:
   - |
     cd repo
     export HELM_CONFIG_HOME=./
-    ct lint --chart-dirs charts --debug
+    ct lint --debug
