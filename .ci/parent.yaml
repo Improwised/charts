@@ -43,7 +43,7 @@ resources:
 
   - {name: pull-request , type: pull-request , icon: source-pull,  check_every: 2m , webhook_token: thisisjusttest ,
     source: {
-      repository: pratikbalar/pratik-concourse ,
+      repository: Improwised/charts ,
       access_token: xxx}}
   - {name: notify , type: slack-alert, icon: slack ,
     source: { ## my test webhook
@@ -113,7 +113,7 @@ jobs:
             CT_INSTALL_HELM_EXTRA_ARGS: "--timeout 1000"
             OTHER_STEPS: |
               export HELM_CONFIG_HOME=./
-              helm repo add k8s-at-home 'https://k8s-at-home.com/charts/
+              helm repo add k8s-at-home https://k8s-at-home.com/charts/
               helm repo update
     - task: packaging
       file: master/.ci/task-release.yaml
