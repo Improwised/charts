@@ -10,6 +10,8 @@ run:
   args:
   - -cx
   - |
+    ls -atl
     cd repo
+    ls -atl
     export HELM_CONFIG_HOME=./
     ct lint --debug
