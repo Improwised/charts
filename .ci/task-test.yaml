@@ -1,0 +1,94 @@
+---
+platform: linux
+image_resource: { type: docker-image, source: { repository: amidos/dcind } }
+
+inputs:
+- name: kind-img
+  optional: true
+- name: repo
+
+params:
+  ## kind node version which is correspoinding to kubernetes version as far as i know
+  KIND_NODE_VERSION:
+
+  ## execute something before chart install this will help to install dependences for charts
+  ## OTHER_STEPS_FILE will take precedence
+  OTHER_STEPS_FILE:
+  OTHER_STEPS:
+
+  ## --helm-extra-args in ct install
+  CT_INSTALL_EXTRA_ARGS:
+run:
+  path: bash
+  args:
+  - -cx
+  - |
+    source /docker-lib.sh
+    start_docker
+
+    KIND_VERSION="${KIND_NODE_VERSION:-$(cat kind-img/tag)}"
+
+    # Strictly speaking, preloading of Docker images is not required.
+    # However, you might want to do this for a couple of reasons:
+    # - If the image comes from a private repository, it is much easier to let Concourse pull it,
+    #   and then pass it through to the task.
+    # - When the image is passed to th  e task, Concourse can often get the image from its cache.
+    if [[ -z $(ls -A kind-img/tag) ]]; then
+      docker pull kindest/node:${KIND_VERSION}
+    else
+      docker load -i kind-img/image
+      docker tag "$(cat kind-img/image-id)" "$(cat kind-img/repository):$(cat kind-img/tag)"
+    fi
+    # This is just to visually check in the log that images have been loaded successfully
+    docker images ls -a
+    docker ps -a
+
+    ## installing tools
+    apk update
+    apk add --no-cache git wget curl tar
+    apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
+    curl -Lo ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.3.1/chart-testing_3.3.1_linux_amd64.tar.gz
+    curl -Lo helm-v3.5.4-linux-amd64.tar.gz https://get.helm.sh/helm-v3.5.4-linux-amd64.tar.gz
+    curl -Lo /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
+    tar -xvzf helm-v3.5.4-linux-amd64.tar.gz linux-amd64/helm
+    mv linux-amd64/helm /usr/bin/helm
+    tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct
+    chmod a+x /usr/bin/kind /usr/bin/helm /usr/bin/ct
+
+    kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
+    kind get clusters
+    kubectl get all -A
+    echo "Waiting for cluster to come up"
+    sleep 20
+    while [[ $(kubectl get pods -A -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do
+        echo "##################### Pods are not ready, waiting... #####################"
+        kubectl get pods -A
+        sleep 5
+    done
+    echo "##################### Cluster is ready #####################"f
+    kubectl get all -A
+
+    [[ ! -z ${OTHER_STEPS_FILE} ]] && OTHER_STEPS=$(cat $OTHER_STEPS_FILE)
+    [[ ! -z ${OTHER_STEPS} ]] && \
+    bash -eucx <<EOF
+    ${OTHER_STEPS}
+    EOF
+    [[ ! -z ${CT_INSTALL_EXTRA_ARGS} ]] && CT_INSTALL_EXTRA_ARGS="--helm-extra-args ${CT_INSTALL_EXTRA_ARGS}"
+
+    if [[ -z $(ls -A repo) ]]; then
+      cd repo
+      git status
+      export HELM_CONFIG_HOME=./
+      ct install ${CT_INSTALL_EXTRA_ARGS} --debug
+    fi
+
+    docker ps -a
+    kind get clusters
+    kind delete clusters ${KIND_VERSION}
+
+    # Cleanup.
+    # Not sure if this is required.
+    # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
+    docker rm -f $(docker ps -a -q) && exit 0
+    docker rmi -f $(docker images -a -q) && exit 0
+    docker volume rm -f $(docker volume ls -q) && exit 0

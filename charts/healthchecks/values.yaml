@@ -25,7 +25,7 @@ existingSecret: healthchecks-secret
 
 #configure SMTP host
 email:
-  host: 
+  host:
   port: 1025
   user: test
 
@@ -42,7 +42,7 @@ probs:
   readinessProbe:
     httpGet:
       path: /
-      port: http    
+      port: http
 
 service:
   type: ClusterIP
