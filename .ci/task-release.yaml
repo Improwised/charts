@@ -25,4 +25,4 @@ run:
     mv *.tgz ../charts/charts/
     cd ../charts
     helm repo index --url https://improwised.github.io/charts .
-    git commit add chart
+    git commit -m "releases $(date '+%Y-%m-%d-%H-%M-%S')" --allow-empty
