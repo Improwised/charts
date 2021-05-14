@@ -77,7 +77,7 @@ run:
       cd repo
       git status
       export HELM_CONFIG_HOME=./
-      ct install ${CT_INSTALL_EXTRA_ARGS} --debug --target-branch $(git rev-parse --abbrev-ref HEAD)
+      ct install ${CT_INSTALL_EXTRA_ARGS} --debug
     fi
 
     docker ps -a
