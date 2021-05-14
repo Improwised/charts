@@ -11,6 +11,7 @@ run:
   - -cx
   - |
     cd repo
+    git fetch --all
     cat .git/ref
     git log
     git rev-parse --abbrev-ref HEAD
