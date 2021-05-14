@@ -80,15 +80,13 @@ run:
     echo "##################### Cluster is ready #####################"f
     kubectl get all -A
 
-    [[ ! -z ${OTHER_STEPS_FILE} ]] && \
-      chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
-
-    [[ ! -z ${CT_INSTALL_HELM_EXTRA_ARGS} ]] && CT_INSTALL_HELM_EXTRA_ARGS="--helm-extra-args ${CT_INSTALL_HELM_EXTRA_ARGS}"
+    # [[ ! -z ${OTHER_STEPS_FILE} ]] && \
+    #   chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
 
     cd repo
     git status
     export HELM_CONFIG_HOME=./
-    ct install ${CT_INSTALL_HELM_EXTRA_ARGS} --debug
+    ct install --debug
 
     docker ps -a
     kind get clusters
