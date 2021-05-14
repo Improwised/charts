@@ -11,12 +11,16 @@ run:
   - -cx
   - |
     cd repo
-    git fetch --all
+    # git fetch --all
     git remote show origin
-    git remote add origin https://github.com/concourse/git-resource.git
-    git fetch --all | head -n 100
-    git log origin/master
-    git remote show origin
+    git branch -a
+    # unshallow the current branch
+    git fetch --unshallow
+
+    # for getting back all the branches (see Peter Cordes' comment)
+    git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
+    git fetch --unshallow
+    git branch -a
     cat .git/ref
     git log | head -n 100
     git rev-parse --abbrev-ref HEAD

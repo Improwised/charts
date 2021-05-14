@@ -68,7 +68,7 @@ run:
 
     [[ ! -z ${OTHER_STEPS_FILE} ]] && OTHER_STEPS=$(cat $OTHER_STEPS_FILE)
     [[ ! -z ${OTHER_STEPS} ]] && \
-    bash -eucx <<EOF
+    bash -ecx <<EOF
     ${OTHER_STEPS}
     EOF
     [[ ! -z ${CT_INSTALL_EXTRA_ARGS} ]] && CT_INSTALL_EXTRA_ARGS="--helm-extra-args ${CT_INSTALL_EXTRA_ARGS}"
