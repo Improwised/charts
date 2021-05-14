@@ -20,7 +20,7 @@ inputs:
 run:
   path: bash
   args:
-  - -cx
+  - -cxe
   - |
     apk add --no-cache git
     curl https://get.helm.sh/helm-v3.3.1-linux-amd64.tar.gz -Lso helm.tar.gz
@@ -30,7 +30,7 @@ run:
     cd repo
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
     git fetch --all
-    [[ "" == $(ct lsc) ]] && echo "########### no charts to test ###########" && exit 0
+    [[ "" == $(ct lsc) ]] && echo "########### no charts to test ###########" && exit 1
     cd ..
     source /docker-lib.sh
     start_docker
@@ -39,9 +39,9 @@ run:
     # Not sure if this is required.
     # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
     function cleanup(){
-    kind delete clusters ${KIND_VERSION}
-    docker rm -f $(docker ps -a -q)
-    docker rmi -f $(docker images -a -q)
+    kind delete clusters ${KIND_VERSION} && \
+    docker rm -f $(docker ps -a -q) && \
+    docker rmi -f $(docker images -a -q) && \
     docker volume rm -f $(docker volume ls -q)
     }
     trap cleanup EXIT
