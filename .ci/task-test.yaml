@@ -14,7 +14,6 @@ params:
   ## execute something before chart install this will help to install dependences for charts
   ## OTHER_STEPS_FILE will take precedence
   OTHER_STEPS_FILE:
-  OTHER_STEPS:
 
   ## --helm-extra-args in ct install
   CT_INSTALL_EXTRA_ARGS:
@@ -23,6 +22,14 @@ run:
   args:
   - -cx
   - |
+    apk update
+    apk add --no-cache git
+    apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing helm
+    curl -Lo ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.3.1/chart-testing_3.3.1_linux_amd64.tar.gz
+    tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct && chmod a+x /usr/bin/ct
+    cd repo
+    [[ "" == $(ct lsc) ]] && echo "########### no charts to test ###########" && exit 0
+    cd ..
     source /docker-lib.sh
     start_docker
 
@@ -43,15 +50,10 @@ run:
     docker images ls -a
     docker ps -a
 
-    ## installing tools
-    apk update
-    apk add --no-cache git wget curl tar
+    ## installing other tools
     apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
-    apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing helm
     curl -Lo /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
-    curl -Lo ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.3.1/chart-testing_3.3.1_linux_amd64.tar.gz
-    tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct
-    chmod a+x /usr/bin/kind/usr/bin/ct
+    chmod a+x /usr/bin/kind
 
     kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
     kind get clusters
@@ -66,19 +68,15 @@ run:
     echo "##################### Cluster is ready #####################"f
     kubectl get all -A
 
-    [[ ! -z ${OTHER_STEPS_FILE} ]] && OTHER_STEPS=$(cat $OTHER_STEPS_FILE)
-    [[ ! -z ${OTHER_STEPS} ]] && \
-    bash -ecx <<EOF
-    ${OTHER_STEPS}
-    EOF
+    [[ ! -z ${OTHER_STEPS_FILE} ]] && \
+      chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
+
     [[ ! -z ${CT_INSTALL_EXTRA_ARGS} ]] && CT_INSTALL_EXTRA_ARGS="--helm-extra-args ${CT_INSTALL_EXTRA_ARGS}"
 
-    if [[ -z $(ls -A repo) ]]; then
-      cd repo
-      git status
-      export HELM_CONFIG_HOME=./
-      ct install ${CT_INSTALL_EXTRA_ARGS} --debug
-    fi
+    cd repo
+    git status
+    export HELM_CONFIG_HOME=./
+    ct install ${CT_INSTALL_EXTRA_ARGS} --debug
 
     docker ps -a
     kind get clusters
