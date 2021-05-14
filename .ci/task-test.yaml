@@ -28,6 +28,8 @@ run:
     curl -Lo ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.3.1/chart-testing_3.3.1_linux_amd64.tar.gz
     tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct && chmod a+x /usr/bin/ct
     cd repo
+    git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
+    git fetch --all
     [[ "" == $(ct lsc) ]] && echo "########### no charts to test ###########" && exit 0
     cd ..
     source /docker-lib.sh
