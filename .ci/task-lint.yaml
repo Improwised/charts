@@ -13,6 +13,6 @@ run:
     cd repo
     cat .git/ref
     git rev-parse --abbrev-ref HEAD
-    git checkout --force introduce-chart-testing
+    # git checkout --force introduce-chart-testing
     export HELM_CONFIG_HOME=./
-    ct lint --debug --target-branch master
+    ct lint --debug
