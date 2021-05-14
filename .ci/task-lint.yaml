@@ -13,4 +13,4 @@ run:
     cd repo
     ls .git
     export HELM_CONFIG_HOME=./
-    ct lint --debug --target-branch $(git rev-parse --abbrev-ref HEAD)
+    ct lint --debug
