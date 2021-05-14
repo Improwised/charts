@@ -11,18 +11,18 @@ run:
   - -cx
   - |
     cd repo
-    # git fetch --all
     git remote show origin
-    git branch -a
+    git branch -a | head -n 30
     # unshallow the current branch
     git fetch --unshallow
 
     # for getting back all the branches (see Peter Cordes' comment)
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
     git fetch --unshallow
+    git fetch --all
     git branch -a
     cat .git/ref
-    git log | head -n 100
+    git log | head -n 10
     git rev-parse --abbrev-ref HEAD
     # git checkout --force introduce-chart-testing
     export HELM_CONFIG_HOME=./
