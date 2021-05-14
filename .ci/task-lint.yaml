@@ -15,7 +15,7 @@ run:
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
     git fetch --all
     export HELM_CONFIG_HOME=./
-    ct lint --since $(git log origin/master..$(git rev-parse --abbrev-ref HEAD) --oneline | tail -1 | awk '{printf $1}') --debug
+    ct lint --debug
 
     # cd repo
     # git remote show origin
