@@ -12,5 +12,6 @@ run:
   - |
     cd repo
     git rev-parse --abbrev-ref HEAD
+    git checkout --force introduce-chart-testing
     export HELM_CONFIG_HOME=./
     ct lint --debug
