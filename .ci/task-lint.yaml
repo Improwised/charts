@@ -11,6 +11,6 @@ run:
   - -cx
   - |
     cd repo
-    ls .git
+    cat .git/ref
     export HELM_CONFIG_HOME=./
-    ct lint --debug --target-branch master
+    ct lint --debug
