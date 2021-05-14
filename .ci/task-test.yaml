@@ -38,7 +38,7 @@ run:
     # Cleanup.
     # Not sure if this is required.
     # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
-    function cleanup(){}
+    function cleanup(){
     docker rm -f $(docker ps -a -q) && exit 0
     docker rmi -f $(docker images -a -q) && exit 0
     docker volume rm -f $(docker volume ls -q) && exit 0
