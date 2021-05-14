@@ -20,7 +20,7 @@ inputs:
 run:
   path: bash
   args:
-  - -cxe
+  - -cx
   - |
     apk add --no-cache git
     curl https://get.helm.sh/helm-v3.3.1-linux-amd64.tar.gz -Lso helm.tar.gz
@@ -39,10 +39,10 @@ run:
     # Not sure if this is required.
     # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
     function cleanup(){
-    kind delete clusters ${KIND_VERSION} && exit 0
-    docker rm -f $(docker ps -a -q) && exit 0
-    docker rmi -f $(docker images -a -q) && exit 0
-    docker volume rm -f $(docker volume ls -q) && exit 0
+    kind delete clusters ${KIND_VERSION}
+    docker rm -f $(docker ps -a -q)
+    docker rmi -f $(docker images -a -q)
+    docker volume rm -f $(docker volume ls -q)
     }
     trap cleanup EXIT
 
@@ -69,6 +69,7 @@ run:
     chmod a+x /usr/bin/kind
 
     kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
+    [[ $? != 0 ]] && echo "######## error creating cluster #######" && cleanup && exit 1
     kind get clusters
     kubectl get all -A
     echo "Waiting for cluster to come up"
@@ -88,6 +89,7 @@ run:
     git status
     export HELM_CONFIG_HOME=./
     ct install --debug
-    [[ $? != 0 ]] && echo "######## Chart Testing Failed #######" && exit 1
+    [[ $? != 0 ]] && echo "######## Chart Testing Failed #######" && cleanup && exit 1
+
     docker ps -a
     kind get clusters
