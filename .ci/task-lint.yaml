@@ -12,6 +12,11 @@ run:
   - |
     cd repo
     git fetch --all
+    git remote show origin && exit 0
+    git remote add origin https://github.com/concourse/git-resource.git
+    git fetch --all | head -n 100
+    git log origin/master
+    git remote show origin
     cat .git/ref
     git log | head -n 100
     git rev-parse --abbrev-ref HEAD
