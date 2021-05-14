@@ -11,6 +11,6 @@ run:
   - -cx
   - |
     cd repo
-    cat .git/ref
+    git rev-parse --abbrev-ref HEAD
     export HELM_CONFIG_HOME=./
     ct lint --debug
