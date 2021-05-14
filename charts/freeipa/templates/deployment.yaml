@@ -42,10 +42,10 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
           - -U
-          - --realm={{ .Values.args.realm }}
-          - --domain={{ .Values.args.domain }}
-          - --ds-password={{ .Values.args.dspassword }}
-          - --admin-password={{ .Values.args.adminpassword }}
+          - --realm={{ default "localhost.com" .Values.args.realm }}
+          - --domain={{ default "localhost" .Values.args.domain }}
+          - --ds-password={{ default "freeipa" .Values.args.dspassword }}
+          - --admin-password={{ default "freeipa" .Values.args.adminpassword }}
           - --unattended
           {{- if .Values.args.nohostdns }}
           - --no-host-dns
@@ -92,7 +92,7 @@ spec:
             readOnly: true
           env:
           - name: IPA_SERVER_HOSTNAME
-            value: {{ .Values.hostname }}
+            value: {{ default "localhost" .Values.hostname }}
           readinessProbe:
             exec:
               command: [ "/usr/bin/systemctl", "status", "ipa" ]

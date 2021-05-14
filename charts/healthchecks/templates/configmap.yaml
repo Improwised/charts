@@ -14,9 +14,11 @@ data:
   DB_NAME: {{ default "healthckecks" .Values.postgresql.postgresqlDatabase | quote }}
   DB_USER: {{ default "healthckecks" .Values.postgresql.postgresqlUsername | quote }}
   {{- end }}
+  {{- if .Values.email.host }}
   EMAIL_HOST: {{ .Values.email.host | quote }}
   EMAIL_PORT: {{ .Values.email.port | quote }}
   EMAIL_HOST_USER: {{ .Values.email.user | quote }}
+  {{- end }}
   {{- if .Values.siterootOverride }}
   SITE_ROOT: {{ .Values.siterootOverride | quote }}
   {{- else if .Values.ingress.enabled }}
@@ -32,7 +34,7 @@ data:
   SITE_NAME: {{ .Values.sitenameOverride | quote }}
   {{- else }}
   SITE_NAME: "localhost"
-  {{- end}}
+  {{- end }}
   {{- range $key, $val := .Values.extraenvs  }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}

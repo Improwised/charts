@@ -20,6 +20,7 @@ run:
     git config --global user.name concourse
     apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing helm
     export HELM_CONFIG_HOME=./
+    [[ "" == $(ct list-changed) ]] && echo "########### no charts to test ###########" && exit 0
     printf "packaging chart"
     for chart in $(ct list-changed); do
       echo "Building Chart $chart"
