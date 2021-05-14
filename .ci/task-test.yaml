@@ -16,12 +16,22 @@ params:
   OTHER_STEPS_FILE:
 
   ## --helm-extra-args in ct install
-  CT_INSTALL_EXTRA_ARGS:
+  CT_INSTALL_HELM_EXTRA_ARGS:
 run:
   path: bash
   args:
-  - -cx
+  - -cxe
   - |
+    apk add --no-cache git
+    curl https://get.helm.sh/helm-v3.3.1-linux-amd64.tar.gz -Lso helm.tar.gz
+    tar xvzf helm.tar.gz && mv linux-amd64/helm /usr/bin/helm
+    curl -Lo ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.3.1/chart-testing_3.3.1_linux_amd64.tar.gz
+    tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct && chmod a+x /usr/bin/ct /usr/bin/helm
+    cd repo
+    git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
+    git fetch --all
+    [[ "" == $(ct lsc) ]] && echo "########### no charts to test ###########" && exit 0
+    cd ..
     source /docker-lib.sh
     start_docker
 
@@ -43,25 +53,15 @@ run:
     docker ps -a
 
     ## installing other tools
-    apk update
-    apk add --no-cache git
-    apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl helm
+    apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
     curl -Lo /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
     chmod a+x /usr/bin/kind
-    curl -Lo ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.3.1/chart-testing_3.3.1_linux_amd64.tar.gz
-    tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct && chmod a+x /usr/bin/ct
 
     kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
     kind get clusters
     kubectl get all -A
     echo "Waiting for cluster to come up"
     sleep 20
-
-    cd repo
-    git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
-    git fetch --all
-    [[ "" == $(ct lsc) ]] && echo "########### no charts to test ###########" && exit 0
-
     while [[ $(kubectl get pods -A -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do
         echo "##################### Pods are not ready, waiting... #####################"
         kubectl get pods -A
@@ -73,11 +73,12 @@ run:
     [[ ! -z ${OTHER_STEPS_FILE} ]] && \
       chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
 
-    [[ ! -z ${CT_INSTALL_EXTRA_ARGS} ]] && CT_INSTALL_EXTRA_ARGS="--helm-extra-args ${CT_INSTALL_EXTRA_ARGS}"
+    [[ ! -z ${CT_INSTALL_HELM_EXTRA_ARGS} ]] && CT_INSTALL_HELM_EXTRA_ARGS="--helm-extra-args ${CT_INSTALL_HELM_EXTRA_ARGS}"
 
+    cd repo
     git status
     export HELM_CONFIG_HOME=./
-    ct install ${CT_INSTALL_EXTRA_ARGS} --debug
+    ct install ${CT_INSTALL_HELM_EXTRA_ARGS} --debug
 
     docker ps -a
     kind get clusters

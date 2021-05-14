@@ -1,6 +1,6 @@
 ---
 platform: linux
-image_resource: { type: docker-image, source: { repository: quay.io/helmpack/chart-testing }}
+image_resource: { type: docker-image, source: { repository: quay.io/helmpack/chart-testing, tag: v3.3.1 }}
 
 inputs:
 - name: repo
@@ -16,12 +16,11 @@ run:
     cd repo
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
     git fetch --all
+    [[ "" == $(ct list-changed) ]] && echo "########### no changes found ###########" && exit 0
     git config --global user.email concourse@github-noreply.com
     git config --global user.name concourse
-    apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing helm
-    export HELM_CONFIG_HOME=./
-    [[ "" == $(ct list-changed) ]] && echo "########### no charts to test ###########" && exit 0
     printf "packaging chart"
+    export HELM_CONFIG_HOME=./
     for chart in $(ct list-changed); do
       echo "Building Chart $chart"
       helm dependency build $chart
