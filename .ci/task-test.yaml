@@ -40,9 +40,9 @@ run:
     # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
     function cleanup(){
     kind delete clusters ${KIND_VERSION} && \
-    docker rm -f $(docker ps -a -q) && \
-    docker rmi -f $(docker images -a -q) && \
-    docker volume rm -f $(docker volume ls -q)
+    [[ $(docker ps -a -q) != "" ]]        && docker rm -f $(docker ps -a -q)
+    [[ $(docker images ls -a -q) != "" ]] && docker rmi -f $(docker images -a -q)
+    [[ $(docker volume ls -q) != "" ]]    && docker volume rm -f $(docker volume ls -q)
     }
     trap cleanup EXIT
 
@@ -70,6 +70,7 @@ run:
 
     kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
     [[ $? != 0 ]] && echo "######## error creating cluster #######" && cleanup && exit 1
+
     kind get clusters
     kubectl get all -A
     echo "Waiting for cluster to come up"
