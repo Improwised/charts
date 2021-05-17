@@ -16,7 +16,7 @@ run:
     cd repo
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
     git fetch --all
-    [[ "" == $(ct list-changed) ]] && echo "########### no changes found ###########" && exit 0
+    [[ "" == $(ct list-changed --config ct.yaml) ]] && echo "########### no changes found ###########" && exit 0
     git config --global user.email concourse@github-noreply.com
     git config --global user.name concourse
     printf "packaging chart"

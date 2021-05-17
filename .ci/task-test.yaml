@@ -30,7 +30,7 @@ run:
     cd repo
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
     git fetch --all
-    [[ "" == $(ct lsc) ]] && echo "########### no charts to test ###########" && exit 1
+    [[ "" == $(ct lsc --config ct.yaml) ]] && echo "########### no charts to test ###########" && exit 1
     cd ..
     source /docker-lib.sh
     start_docker
@@ -89,7 +89,7 @@ run:
     cd repo
     git status
     export HELM_CONFIG_HOME=./
-    ct install --debug
+    ct install --config ct.yaml --debug
     [[ $? != 0 ]] && echo "######## Chart Testing Failed #######" && cleanup && exit 1
 
     docker ps -a

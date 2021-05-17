@@ -99,12 +99,12 @@ persistence:
     enabled: true
     # existingClaim: ""
     size: 8Gi
-    storageClass: local-path
+    storageClass: default
   logs:
     enabled: true
     # existingClaim: ""
     size: 8Gi
-    storageClass: local-path
+    storageClass: default
 
 volumePermissions:
   enabled: true
