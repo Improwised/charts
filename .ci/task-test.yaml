@@ -25,7 +25,7 @@ run:
     apk add --no-cache git
     curl https://get.helm.sh/helm-v3.3.1-linux-amd64.tar.gz -Lso helm.tar.gz
     tar xvzf helm.tar.gz && mv linux-amd64/helm /usr/bin/helm
-    curl -Lo ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.3.1/chart-testing_3.3.1_linux_amd64.tar.gz
+    curl -Lso ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.3.1/chart-testing_3.3.1_linux_amd64.tar.gz
     tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct && chmod a+x /usr/bin/ct /usr/bin/helm
     cd repo
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
@@ -53,7 +53,7 @@ run:
     # - If the image comes from a private repository, it is much easier to let Concourse pull it,
     #   and then pass it through to the task.
     # - When the image is passed to th  e task, Concourse can often get the image from its cache.
-    if [[ -z $(ls -A kind-img/tag) ]]; then
+    if [[ -f kind-img/tag ]]; then
       docker pull kindest/node:${KIND_VERSION}
     else
       docker load -i kind-img/image
@@ -64,8 +64,8 @@ run:
     docker ps -a
 
     ## installing other tools
-    apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
-    curl -Lo /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
+    apk add --no-cache --no-progress -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
+    curl -Lso /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
     chmod a+x /usr/bin/kind
 
     kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
@@ -81,13 +81,12 @@ run:
         sleep 5
     done
     echo "##################### Cluster is ready #####################"f
-    kubectl get all -A
+    kubectl get all,sc,cs -A
 
     # [[ ! -z ${OTHER_STEPS_FILE} ]] && \
     #   chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
 
     cd repo
-    git status
     export HELM_CONFIG_HOME=./
     ct install --config ct.yaml --debug
     [[ $? != 0 ]] && echo "######## Chart Testing Failed #######" && cleanup && exit 1
