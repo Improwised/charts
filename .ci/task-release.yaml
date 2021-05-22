@@ -32,4 +32,5 @@ run:
     ls
     helm repo index --url https://improwised.github.io/charts .
     cat index.yaml
+    git add .
     git commit -m "releases $(date '+%Y-%m-%d-%H-%M-%S')" --allow-empty
