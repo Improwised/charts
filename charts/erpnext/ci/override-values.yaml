@@ -99,12 +99,12 @@ persistence:
     enabled: true
     # existingClaim: ""
     size: 8Gi
-    storageClass: default
+    storageClass: standard
   logs:
     enabled: true
     # existingClaim: ""
     size: 8Gi
-    storageClass: default
+    storageClass: standard
 
 volumePermissions:
   enabled: true
