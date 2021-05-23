@@ -3,14 +3,14 @@ platform: linux
 image_resource: { type: docker-image, source: { repository: amidos/dcind } }
 
 inputs:
-# - name: kind-img
-#   optional: true
-# - name: repo
-#   optional: true
+- name: kind-img
+  optional: true
+- name: repo
+  optional: true
 
 params:
   ## kind node version which is correspoinding to kubernetes version as far as i know
-  KIND_NODE_VERSION: v1.20.2
+  # KIND_NODE_VERSION: v1.20.2
 
 #   ## execute something before chart install this will help to install dependences for charts
 #   ## OTHER_STEPS_FILE will take precedence
@@ -28,9 +28,7 @@ run:
     tar xvzf helm.tar.gz && mv linux-amd64/helm /usr/bin/helm
     curl -Lso ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.3.1/chart-testing_3.3.1_linux_amd64.tar.gz
     tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct && chmod a+x /usr/bin/ct /usr/bin/helm
-    git clone https://github.com/Improwised/charts repo
     cd repo
-    git checkout introduce-chart-testing
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
     git fetch --all
     [[ "" == $(ct lsc --config ct.yaml) ]] && echo "########### no charts to test ###########" && exit 1
@@ -89,11 +87,11 @@ run:
     # [[ ! -z ${OTHER_STEPS_FILE} ]] && \
     #   chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
 
-    tail -f /dev/null
-    # cd repo
-    # export HELM_CONFIG_HOME=./
-    # ct install --config ct.yaml --debug
-    # [[ $? != 0 ]] && echo "######## Chart Testing Failed #######" && cleanup && exit 1
+    # tail -f /dev/null
+    cd repo
+    export HELM_CONFIG_HOME=./
+    ct install --config ct.yaml --debug
+    [[ $? != 0 ]] && echo "######## Chart Testing Failed #######" && cleanup && exit 1
 
-    # docker ps -a
-    # kind get clusters
+    docker ps -a
+    kind get clusters
