@@ -8,7 +8,7 @@ inputs:
 run:
   path: bash
   args:
-  - -cx
+  - -cxe
   - |
     printenv
     wget -nv https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/bin/mini

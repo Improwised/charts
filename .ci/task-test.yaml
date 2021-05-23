@@ -22,6 +22,7 @@ run:
   args:
   - -cx
   - |
+    TASK_ROOT=$(pwd)
     apk add --no-progress --no-cache git
     curl https://get.helm.sh/helm-v3.3.1-linux-amd64.tar.gz -Lso helm.tar.gz
     tar xvzf helm.tar.gz && mv linux-amd64/helm /usr/bin/helm
@@ -30,7 +31,7 @@ run:
     cd repo
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
     git fetch --all
-    [[ "" == $(ct lsc --config ct.yaml) ]] && echo "########### no charts to test ###########" && exit 1
+    [[ "" == $(ct lsc --config ct.yaml) ]] && echo "########### no charts to test ###########" && exit 0
     cd ..
     source /docker-lib.sh
     start_docker
@@ -39,10 +40,10 @@ run:
     # Not sure if this is required.
     # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
     function cleanup(){
-    kind delete clusters ${KIND_VERSION} && \
-    [[ $(docker ps -a -q) != "" ]]        && docker rm -f $(docker ps -a -q)
+    kind delete clusters ${KIND_VERSION}
+    [[ $(docker ps -a -q) != "" ]] && docker rm -f $(docker ps -a -q)
     [[ $(docker images ls -a -q) != "" ]] && docker rmi -f $(docker images -a -q)
-    [[ $(docker volume ls -q) != "" ]]    && docker volume rm -f $(docker volume ls -q)
+    [[ $(docker volume ls -q) != "" ]] && docker volume rm -f $(docker volume ls -q)
     }
     trap cleanup EXIT
 
@@ -69,7 +70,7 @@ run:
     chmod a+x /usr/bin/kind
 
     kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
-    [[ $? != 0 ]] && echo "######## error creating cluster #######" && cleanup && exit 1
+    [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## error creating cluster #######" && exit 1
 
     kind get clusters
     kubectl get all -A
@@ -86,12 +87,11 @@ run:
     # [[ ! -z ${OTHER_STEPS_FILE} ]] && \
     #   chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
 
-    # tail -f /dev/null
     cd repo
     export HELM_CONFIG_HOME=./
     ct install --config ct.yaml --debug
 
-    [[ $? != 0 ]] && echo "######## Chart Testing Failed #######" && cleanup && exit 1
+    [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Chart Testing Failed #######" && exit 1
 
     docker ps -a
     kind get clusters
