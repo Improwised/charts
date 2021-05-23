@@ -9,10 +9,11 @@ run:
   args:
   - -cxe
   - |
-    printenv
+    TASK_ROOT=$(pwd)
     wget -nv https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/bin/mini
     chmod +x /usr/bin/mini
     mini alias set minio ${MINIO_HOST} ${MINIO_SEC} ${MINIO_KEY}
+
     cd repo
     export DEFAULT_WORKSPACE=$(pwd)
     bash -cx /entrypoint.sh

@@ -9,6 +9,7 @@ run:
   args:
   - -cxe
   - |
+    TASK_ROOT=$(pwd)
     cd repo
     # for getting back all the branches
     git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
