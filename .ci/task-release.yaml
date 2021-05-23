@@ -1,6 +1,5 @@
 ---
 platform: linux
-image_resource: { type: docker-image, source: { repository: quay.io/helmpack/chart-testing, tag: v3.3.1 }}
 
 inputs:
 - name: repo

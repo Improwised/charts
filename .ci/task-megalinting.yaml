@@ -1,6 +1,5 @@
 ---
 platform: linux
-image_resource: { type: docker-image, source: { repository: nvuillam/mega-linter, tag: v4 } }
 
 inputs:
 - name: repo
@@ -18,5 +17,5 @@ run:
     export DEFAULT_WORKSPACE=$(pwd)
     bash -cx /entrypoint.sh
     COMMIT=$(git rev-parse HEAD)
-    mini cp --recursive report minio/${MINIO_BUCKET}/$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git//g')/${COMMIT:0:8}-$(date '+%Y-%m-%d-%H-%M-%S')
+    mini cp --recursive report minio/${MINIO_BUCKET}/$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | tr '[:upper:]' '[:lower:]')/${COMMIT:0:8}-$(date '+%Y-%m-%d-%H-%M-%S')
     git status
