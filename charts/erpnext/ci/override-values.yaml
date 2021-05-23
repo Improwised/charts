@@ -125,13 +125,4 @@ nodeSelector: {}
 
 tolerations: []
 
-affinity:
-  podAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-    - labelSelector:
-        matchExpressions:
-        - key: app.kubernetes.io/instance
-          operator: In
-          values:
-          - erpnext
-      topologyKey: kubernetes.io/hostname
+affinity: {}
