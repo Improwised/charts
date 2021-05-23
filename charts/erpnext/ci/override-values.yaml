@@ -18,7 +18,7 @@ pythonImage:
 
 socketIOImage:
   repository: frappe/frappe-socketio
-  tag: v13.0.2
+  tag: v13.0.1
   pullPolicy: IfNotPresent
 
 redis:
@@ -98,16 +98,18 @@ persistence:
   worker:
     enabled: true
     # existingClaim: ""
-    size: 8Gi
-    storageClass: standard
+    size: 2Gi
+    # storageClass: standard
   logs:
     enabled: true
     # existingClaim: ""
-    size: 8Gi
-    storageClass: standard
+    size: 2Gi
+    # storageClass: standard
 
 volumePermissions:
   enabled: true
+
+enableProbs: false
 
 resources: {}
   # If you do want to specify resources, uncomment the following
@@ -123,4 +125,13 @@ nodeSelector: {}
 
 tolerations: []
 
-affinity: {}
+affinity:
+  podAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/instance
+          operator: In
+          values:
+          - erpnext
+      topologyKey: kubernetes.io/hostname

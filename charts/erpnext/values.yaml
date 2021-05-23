@@ -18,7 +18,7 @@ pythonImage:
 
 socketIOImage:
   repository: frappe/frappe-socketio
-  tag: v13.0.2
+  tag: v13.0.1
   pullPolicy: IfNotPresent
 
 redis:
@@ -99,15 +99,17 @@ persistence:
     enabled: true
     # existingClaim: ""
     size: 8Gi
-    storageClass: default
+    # storageClass: default
   logs:
     enabled: true
     # existingClaim: ""
     size: 8Gi
-    storageClass: default
+    # storageClass: default
 
 volumePermissions:
   enabled: false
+
+enableProbs: true
 
 resources: {}
   # If you do want to specify resources, uncomment the following
