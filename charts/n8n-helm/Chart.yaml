@@ -2,7 +2,6 @@ apiVersion: v2
 name: n8n-helm
 description: A Helm chart for n8n on Kubernetes
 type: application
-metadata:
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
@@ -21,7 +20,7 @@ keywords:
 - workflow-automatio
 maintainers:
 - email: pratik@improwised.com
-  name: pratik-{{ .Release.Name }}
+  name: pratik
 sources:
 - https://github.com/n8n-io/n8n
 - https://hub.docker.com/_/postgres
