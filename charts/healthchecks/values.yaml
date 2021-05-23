@@ -21,7 +21,7 @@ siterootOverride: ""
 sitenameOverride: ""
 
 #  for postgres password, email host password, superuser email, superuser password
-existingSecret: healthchecks-secret
+existingSecret: healthchecks-secret #pragma: allowlist secret
 
 #configure SMTP host
 email:
@@ -67,7 +67,7 @@ postgresql:
     enabled: true
   postgresqlDatabase: healthchecks
   postgresqlUsername: healthchecks
-  postgresqlPassword: healthchecks
+  postgresqlPassword: healthchecks #pragma: allowlist secret
 # existingSecret: healthchecks-secret
 
 resources: {}

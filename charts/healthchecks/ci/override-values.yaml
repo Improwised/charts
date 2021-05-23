@@ -67,7 +67,7 @@ postgresql:
     enabled: true
   postgresqlDatabase: healthchecks
   postgresqlUsername: healthchecks
-  postgresqlPassword: healthchecks
+  postgresqlPassword: healthchecks #pragma: allowlist secret
 # existingSecret: healthchecks-secret
 
 resources: {}
