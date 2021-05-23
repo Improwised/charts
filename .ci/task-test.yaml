@@ -20,7 +20,7 @@ params:
 run:
   path: bash
   args:
-  - -cxe
+  - -cx
   - |
     apk add --no-progress --no-cache git
     curl https://get.helm.sh/helm-v3.3.1-linux-amd64.tar.gz -Lso helm.tar.gz
@@ -90,6 +90,7 @@ run:
     cd repo
     export HELM_CONFIG_HOME=./
     ct install --config ct.yaml --debug
+
     [[ $? != 0 ]] && echo "######## Chart Testing Failed #######" && cleanup && exit 1
 
     docker ps -a
