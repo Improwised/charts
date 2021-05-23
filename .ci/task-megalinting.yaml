@@ -18,5 +18,5 @@ run:
     export DEFAULT_WORKSPACE=$(pwd)
     bash -cx /entrypoint.sh
     COMMIT=$(git rev-parse HEAD)
-    mini cp --recursive ../report minio/linterlog/$(git config --get remote.origin.url | sed 's/git@github.com:\|.git//g')/${COMMIT:0:8}-$(date '+%Y-%m-%d-%H-%M-%S')
+    mini cp --recursive report minio/linterlog/$(git config --get remote.origin.url | sed 's/git@github.com:\|.git//g')/${COMMIT:0:8}-$(date '+%Y-%m-%d-%H-%M-%S')
     git status
