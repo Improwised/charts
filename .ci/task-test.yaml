@@ -35,6 +35,7 @@ run:
     cd ..
     source /docker-lib.sh
     start_docker
+    [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Docker startup failed #######" && exit 1
 
     # Cleanup.
     # Not sure if this is required.
@@ -60,11 +61,11 @@ run:
       docker load -i kind-img/image
       docker tag "$(cat kind-img/image-id)" "$(cat kind-img/repository):$(cat kind-img/tag)"
     fi
-    # This is just to visually check in the log that images have been loaded successfully
+
     docker images ls -a
     docker ps -a
 
-    ## installing other tools
+    ## installing kubectl and helm
     apk add --no-cache --no-progress -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
     curl -Lso /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
     chmod a+x /usr/bin/kind
