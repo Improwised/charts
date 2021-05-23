@@ -1,0 +1,22 @@
+---
+platform: linux
+image_resource: { type: docker-image, source: { repository: nvuillam/mega-linter, tag: v4 } }
+
+inputs:
+- name: repo
+
+run:
+  path: bash
+  args:
+  - -cx
+  - |
+    printenv
+    wget -nv https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/bin/mini
+    chmod +x /usr/bin/mini
+    mini alias set minio ${MINIO_HOST} ${MINIO_SEC} ${MINIO_KEY}
+    cd repo
+    export DEFAULT_WORKSPACE=$(pwd)
+    bash -cx /entrypoint.sh
+    COMMIT=$(git rev-parse HEAD)
+    mini cp --recursive ../report minio/linterlog/${COMMIT:0:8}-$(date '+%Y-%m-%d-%H-%M-%S')
+    git status

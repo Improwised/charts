@@ -6,7 +6,6 @@ inputs:
 - name: kind-img
   optional: true
 - name: repo
-  optional: true
 
 params:
   ## kind node version which is correspoinding to kubernetes version as far as i know
