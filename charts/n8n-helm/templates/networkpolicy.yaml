@@ -5,7 +5,7 @@ metadata:
   name: {{ template "n8n-helm.fullname" . }}
   labels:
   {{- include "n8n-helm.common.labels.standard" . | nindent 4 }}
-  annotations: 
+  annotations:
     {{- if .Values.commonannotations }}
     {{- range $key, $value := .Values.commonannotations }}
     {{ $key }}: {{ $value | quote }}
@@ -41,4 +41,4 @@ spec:
 {{ toYaml .Values.networkPolicy.explicitNamespacesSelector | indent 12 }}
           {{- end }}
       {{- end }}
-{{- end }}  
+{{- end }}

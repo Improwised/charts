@@ -19,7 +19,7 @@ metadata:
     {{- range $key, $value := .Values.commonannotations }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
-    {{- end }}     
+    {{- end }}
 spec:
   rules:
   {{- if .Values.ingress.hostname }}

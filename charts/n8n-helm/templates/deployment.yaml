@@ -20,7 +20,7 @@ spec:
         {{- range $key, $value := .Values.commonannotations }}
         {{ $key }}: {{ $value | quote }}
         {{- end }}
-        {{- end }} 
+        {{- end }}
     spec:
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
@@ -76,7 +76,7 @@ spec:
         ports:
         - name: {{ template "n8n-helm.fullname" . }}
           containerPort: {{ .Values.service.port }}
-{{- if .Values.persistence.enabled }}        
+{{- if .Values.persistence.enabled }}
         volumeMounts:
         - name: {{ include "n8n-helm.fullname" . }}-data
           mountPath: /root/.n8n

@@ -27,7 +27,7 @@ image:
 
 
 auth:
-  # enable the n8n basic auth 
+  # enable the n8n basic auth
   enabled: false
 
   ##  Basic Auth username
@@ -38,7 +38,7 @@ auth:
   ## Defaults to 'nodemation' if not set
   #n8nAuthPass: nodemation
 
-## n8n password using existing secret. which includes n8nAuthPass and 
+## n8n password using existing secret. which includes n8nAuthPass and
 ## postgresqlDbPass as key for the respective value
 #existingSecret: myn8n-secrets
 
@@ -46,7 +46,7 @@ networkPolicy:
   ## Enable creation of NetworkPolicy resources. Only Ingress traffic is filtered for now.
   ##
   enabled: false
- 
+
   ## if explicitNamespacesSelector is missing or set to {}, only client Pods that are in the networkPolicy's namespace
   ## and that match other criteria, the ones that have the good label, can reach the DB.
   ## But sometimes, we want the DB to be accessible to clients from other namespaces, in this case, we can use this
@@ -63,7 +63,7 @@ networkPolicy:
 service:
   ## Kubernetes service type
   type: ClusterIP
-  ## n8n port 
+  ## n8n port
   port: 5678
   ## add extra annotation for service
   annotations: {}
@@ -78,13 +78,13 @@ persistence:
   ## The path the volume will be mounted at, useful when using different
   ##
   mountPath: /mnt/n8n/.n8n
-  
+
   ##Storage class as per your provider
   #storageClass: "-"
   accessModes:
     - ReadWriteOnce
   size: 2Gi
- 
+
 
 ingress:
   ## Set to true to enable ingress
@@ -99,18 +99,18 @@ ingress:
   ## Uncomment below to enable tls / https for let's encrypt / cert-manager
   ## Set this to true in order to enable TLS on the ingress record
   ## A side effect of this will be that the backend n8n service will be connected at port 443
-  #tls:    
-  #- hosts:    
+  #tls:
+  #- hosts:
   #  - n8n.local
-  #  secretName: n8n.local-tls 
+  #  secretName: n8n.local-tls
 
   ## Ingress annotations done as key:value pairs
   ## For a full list of possible ingress annotations, please see
   ## ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
-  
+
   annotations: {}
-  
-  ## Set this to true in order to add the corresponding annotations for cert-manager. validate that tls is set 
+
+  ## Set this to true in order to add the corresponding annotations for cert-manager. validate that tls is set
   #certManager: true
 
   secrets:
@@ -180,7 +180,7 @@ postgresql:
   ## enable for testing  postgresql connection
   testFramework:
     enabled: true
-  ## by default postgress is enable, Whether to deploy a postgress server to use database to store workflows set enables as per your requirements. 
+  ## by default postgress is enable, Whether to deploy a postgress server to use database to store workflows set enables as per your requirements.
   enabled: true
   #Below are overriden values for postgres db
   ## PostgreSQL admin password (used when `postgresqlUsername` is not `postgres`)

@@ -5,14 +5,14 @@ metadata:
   labels:
     {{- include "n8n-helm.common.labels.standard" . | nindent 4 }}
     app: {{ template "n8n-helm.fullname" . }}
-  annotations: 
+  annotations:
     {{- if .Values.service.annotations }}
     {{- include "n8n-hem.tplValue" ( dict "value" .Values.service.annotations "context" $) | nindent 4 }}
     {{- end }}
     {{- if .Values.commonannotations }}
     {{- range $key, $value := .Values.commonannotations }}
     {{ $key }}: {{ $value | quote }}
-    {{- end }}    
+    {{- end }}
     {{- end }}
 spec:
   selector: {{- include "n8n-helm.common.labels.matchLabels" . | nindent 4 }}

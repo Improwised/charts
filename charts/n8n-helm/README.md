@@ -45,13 +45,13 @@ The following tables lists the configurable parameters of the NGINX Open Source 
 | Parameter| Description| Default|
 |--------------------------------------------|----------------------------------------------------------------------------------------------|-----------------------------------------------------------|
 | `global.imageRegistry` | Global Docker image registry | haha |
-| `image.repository` | n8n Image | `n8nio/n8n` | 
-| `image.restartPolicy` | n8n Image restart policy | `Always` | 
-| `image.pullPolicy` | n8n Image pull policy | `IfNotPresent` | 
-| `image.tag` | tag of Image | `latest` | 
-| `nameOverride` | String to partially override n8n.fullname template with a string (will prepend the release name) | `nil` | 
+| `image.repository` | n8n Image | `n8nio/n8n` |
+| `image.restartPolicy` | n8n Image restart policy | `Always` |
+| `image.pullPolicy` | n8n Image pull policy | `IfNotPresent` |
+| `image.tag` | tag of Image | `latest` |
+| `nameOverride` | String to partially override n8n.fullname template with a string (will prepend the release name) | `nil` |
 | `fullnameOverride` | String to fully override postgresql.fullname template with a string | `nil` |
-| `commonannotations` | Annotations that will added to all the Kubernetes objects | `{}`(evaluated as a template) | 
+| `commonannotations` | Annotations that will added to all the Kubernetes objects | `{}`(evaluated as a template) |
 | `atuh.enabled` | Enbale basic authentication | `false` |
 | `atuh.n8nAuthUsername`| Basuc Auth username | `nil` |
 | `atuh.n8nAuthPass`| Basuc Auth password | `nil` |
