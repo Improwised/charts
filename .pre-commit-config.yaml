@@ -20,3 +20,9 @@ repos:
     rev: v7.5.0
     hooks:
       - id: gitleaks
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v2.2.0
+    hooks:
+        - id: commitlint
+          stages: [commit-msg]
+          additional_dependencies: ['@commitlint/config-angular']
