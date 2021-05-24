@@ -24,10 +24,10 @@ run:
     - |
       TASK_ROOT=$(pwd)
       apk add --no-progress --no-cache git
-      curl https://get.helm.sh/helm-v${CT_VERSION:-HELM_VERSION}-linux-amd64.tar.gz -Lso helm.tar.gz
-      tar xvzf helm.tar.gz && mv linux-amd64/helm /usr/bin/helm
-      curl -Lso ct.tar.gz https://github.com/helm/chart-testing/releases/download/v${CT_VERSION}/chart-testing_${CT_VERSION}_linux_amd64.tar.gz
-      tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct && chmod a+x /usr/bin/ct /usr/bin/helm
+      source <(curl -s https://raw.githubusercontent.com/pratikbalar/bash-functions/main/functions.sh)
+      tarr https://get.helm.sh/helm-v${CT_VERSION:-HELM_VERSION}-linux-amd64.tar.gz linux-amd64/helm /usr/bin/helm
+      tarr https://github.com/helm/chart-testing/releases/download/v${CT_VERSION}/chart-testing_${CT_VERSION}_linux_amd64.tar.gz ct /usr/bin/ct
+
       cd repo
       git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
       git fetch --all
