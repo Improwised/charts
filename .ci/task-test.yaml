@@ -3,9 +3,9 @@ platform: linux
 image_resource: { type: docker-image, source: { repository: amidos/dcind } }
 
 inputs:
-- name: kind-img
-  optional: true
-- name: repo
+  - name: kind-img
+    optional: true
+  - name: repo
 
 params:
   ## kind node version which is correspoinding to kubernetes version as far as i know
@@ -20,79 +20,79 @@ params:
 run:
   path: bash
   args:
-  - -cx
-  - |
-    TASK_ROOT=$(pwd)
-    apk add --no-progress --no-cache git
-    curl https://get.helm.sh/helm-v${CT_VERSION:-HELM_VERSION}-linux-amd64.tar.gz -Lso helm.tar.gz
-    tar xvzf helm.tar.gz && mv linux-amd64/helm /usr/bin/helm
-    curl -Lso ct.tar.gz https://github.com/helm/chart-testing/releases/download/v${CT_VERSION}/chart-testing_${CT_VERSION}_linux_amd64.tar.gz
-    tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct && chmod a+x /usr/bin/ct /usr/bin/helm
-    cd repo
-    git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
-    git fetch --all
-    [[ "" == $(ct lsc --config ct.yaml) ]] && echo "########### no charts to test ###########" && exit 0
-    cd ..
-    source /docker-lib.sh
-    start_docker
-    [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Docker startup failed #######" && exit 1
+    - -cx
+    - |
+      TASK_ROOT=$(pwd)
+      apk add --no-progress --no-cache git
+      curl https://get.helm.sh/helm-v${CT_VERSION:-HELM_VERSION}-linux-amd64.tar.gz -Lso helm.tar.gz
+      tar xvzf helm.tar.gz && mv linux-amd64/helm /usr/bin/helm
+      curl -Lso ct.tar.gz https://github.com/helm/chart-testing/releases/download/v${CT_VERSION}/chart-testing_${CT_VERSION}_linux_amd64.tar.gz
+      tar xvzf ct.tar.gz ct && mv ct /usr/bin/ct && chmod a+x /usr/bin/ct /usr/bin/helm
+      cd repo
+      git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
+      git fetch --all
+      [[ "" == $(ct lsc --config ct.yaml) ]] && echo "########### no charts to test ###########" && exit 0
+      cd ..
+      source /docker-lib.sh
+      start_docker
+      [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Docker startup failed #######" && exit 1
 
-    # Cleanup.
-    # Not sure if this is required.
-    # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
-    function cleanup(){
-    kind delete clusters ${KIND_VERSION}
-    [[ $(docker ps -a -q) != "" ]] && docker rm -f $(docker ps -a -q)
-    [[ $(docker images ls -a -q) != "" ]] && docker rmi -f $(docker images -a -q)
-    [[ $(docker volume ls -q) != "" ]] && docker volume rm -f $(docker volume ls -q)
-    }
-    trap cleanup EXIT
+      # Cleanup.
+      # Not sure if this is required.
+      # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
+      function cleanup(){
+      kind delete clusters ${KIND_VERSION}
+      [[ $(docker ps -a -q) != "" ]] && docker rm -f $(docker ps -a -q)
+      [[ $(docker images ls -a -q) != "" ]] && docker rmi -f $(docker images -a -q)
+      [[ $(docker volume ls -q) != "" ]] && docker volume rm -f $(docker volume ls -q)
+      }
+      trap cleanup EXIT
 
-    KIND_VERSION="${KIND_NODE_VERSION:-$(cat kind-img/tag)}"
+      KIND_VERSION="${KIND_NODE_VERSION:-$(cat kind-img/tag)}"
 
-    # Strictly speaking, preloading of Docker images is not required.
-    # However, you might want to do this for a couple of reasons:
-    # - If the image comes from a private repository, it is much easier to let Concourse pull it,
-    #   and then pass it through to the task.
-    # - When the image is passed to th  e task, Concourse can often get the image from its cache.
-    if [[ ! -f kind-img/tag ]]; then
-      docker pull kindest/node:${KIND_VERSION}
-    else
-      docker load -i kind-img/image
-      docker tag "$(cat kind-img/image-id)" "$(cat kind-img/repository):$(cat kind-img/tag)"
-    fi
+      # Strictly speaking, preloading of Docker images is not required.
+      # However, you might want to do this for a couple of reasons:
+      # - If the image comes from a private repository, it is much easier to let Concourse pull it,
+      #   and then pass it through to the task.
+      # - When the image is passed to th  e task, Concourse can often get the image from its cache.
+      if [[ ! -f kind-img/tag ]]; then
+        docker pull kindest/node:${KIND_VERSION}
+      else
+        docker load -i kind-img/image
+        docker tag "$(cat kind-img/image-id)" "$(cat kind-img/repository):$(cat kind-img/tag)"
+      fi
 
-    docker images ls -a
-    docker ps -a
+      docker images ls -a
+      docker ps -a
 
-    ## installing kubectl and helm
-    apk add --no-cache --no-progress -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
-    curl -Lso /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
-    chmod a+x /usr/bin/kind
+      ## installing kubectl and helm
+      apk add --no-cache --no-progress -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
+      curl -Lso /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
+      chmod a+x /usr/bin/kind
 
-    kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
-    [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## error creating cluster #######" && exit 1
+      kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
+      [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## error creating cluster #######" && exit 1
 
-    kind get clusters
-    kubectl get all -A
-    echo "Waiting for cluster to come up"
-    sleep 20
-    while [[ $(kubectl get pods -A -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do
-        echo "##################### Pods are not ready, waiting... #####################"
-        kubectl get pods -A
-        sleep 5
-    done
-    echo "##################### Cluster is ready #####################"f
-    kubectl get all,sc,cs -A
+      kind get clusters
+      kubectl get all -A
+      echo "Waiting for cluster to come up"
+      sleep 20
+      while [[ $(kubectl get pods -A -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do
+          echo "##################### Pods are not ready, waiting... #####################"
+          kubectl get pods -A
+          sleep 5
+      done
+      echo "##################### Cluster is ready #####################"f
+      kubectl get all,sc,cs -A
 
-    # [[ ! -z ${OTHER_STEPS_FILE} ]] && \
-    #   chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
+      # [[ ! -z ${OTHER_STEPS_FILE} ]] && \
+      #   chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
 
-    cd repo
-    export HELM_CONFIG_HOME=./
-    ct install --config ct.yaml --debug
+      cd repo
+      export HELM_CONFIG_HOME=./
+      ct install --config ct.yaml --debug
 
-    [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Chart Testing Failed #######" && exit 1
+      [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Chart Testing Failed #######" && exit 1
 
-    docker ps -a
-    kind get clusters
+      docker ps -a
+      kind get clusters

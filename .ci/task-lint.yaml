@@ -2,17 +2,17 @@
 platform: linux
 
 inputs:
-- name: repo
+  - name: repo
 
 run:
   path: bash
   args:
-  - -cxe
-  - |
-    TASK_ROOT=$(pwd)
-    cd repo
-    # for getting back all the branches
-    git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
-    git fetch --all
-    export HELM_CONFIG_HOME=./
-    ct lint --config ct.yaml --debug
+    - -cxe
+    - |
+      TASK_ROOT=$(pwd)
+      cd repo
+      # for getting back all the branches
+      git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
+      git fetch --all
+      export HELM_CONFIG_HOME=./
+      ct lint --config ct.yaml --debug

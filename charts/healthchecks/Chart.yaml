@@ -3,8 +3,8 @@ apiVersion: v2
 name: healthchecks
 description: A Helm chart for Kubernetes
 maintainers:
-- email: pratik@improeised.com
-  name: praitk
+  - email: pratik@improeised.com
+    name: praitk
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -26,7 +26,7 @@ type: application
 appVersion: 1.16.0
 
 sources:
-- https://github.com/healthchecks/healthchecks
+  - https://github.com/healthchecks/healthchecks
 dependencies:
   - name: postgresql
     version: 9.1.1

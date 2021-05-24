@@ -2,21 +2,21 @@
 platform: linux
 
 inputs:
-- name: repo
+  - name: repo
 
 run:
   path: bash
   args:
-  - -cxe
-  - |
-    TASK_ROOT=$(pwd)
-    wget -nv https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/bin/mini
-    chmod +x /usr/bin/mini
-    mini alias set minio ${MINIO_HOST} ${MINIO_SEC} ${MINIO_KEY}
+    - -cxe
+    - |
+      TASK_ROOT=$(pwd)
+      wget -nv https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/bin/mini
+      chmod +x /usr/bin/mini
+      mini alias set minio ${MINIO_HOST} ${MINIO_SEC} ${MINIO_KEY}
 
-    cd repo
-    export DEFAULT_WORKSPACE=$(pwd)
-    bash -cx /entrypoint.sh
-    COMMIT=$(git rev-parse HEAD)
-    mini cp --recursive report minio/${MINIO_BUCKET}/$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | tr '[:upper:]' '[:lower:]')/${COMMIT:0:8}-$(date '+%Y-%m-%d-%H-%M-%S')
-    git status
+      cd repo
+      export DEFAULT_WORKSPACE=$(pwd)
+      bash -cx /entrypoint.sh
+      COMMIT=$(git rev-parse HEAD)
+      mini cp --recursive report minio/${MINIO_BUCKET}/$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | tr '[:upper:]' '[:lower:]')/${COMMIT:0:8}-$(date '+%Y-%m-%d-%H-%M-%S')
+      git status

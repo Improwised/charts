@@ -2,36 +2,36 @@
 platform: linux
 
 inputs:
-- name: repo
-- name: charts
+  - name: repo
+  - name: charts
 
 outputs:
-- name: charts
-  path: charts
+  - name: charts
+    path: charts
 run:
   path: bash
   args:
-  - -cx
-  - |
-    TASK_ROOT=$(pwd)
-    cd repo
-    git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
-    git fetch --all
-    [[ "" == $(ct list-changed --config ct.yaml) ]] && echo "########### no changes found ###########" && exit 0
-    git config --global user.email concourse@github-noreply.com
-    git config --global user.name concourse
-    printf "packaging chart"
-    export HELM_CONFIG_HOME=./
-    for chart in $(ct list-changed --config ct.yaml); do
-      echo "Building Chart $chart"
-      helm package -u -d ../charts/charts $
-      [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Error when packaging chart #######" && exit 1
-    done
-    cd ${TASK_ROOT}/charts
-    git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
-    git fetch --all
-    helm repo index --url https://improwised.github.io/charts .
-    [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Error when creating index #######" && exit 1
-    cat index.yaml
-    git add .
-    git commit -m "releases $(date '+%Y-%m-%d-%H-%M-%S')" --allow-empty
+    - -cx
+    - |
+      TASK_ROOT=$(pwd)
+      cd repo
+      git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
+      git fetch --all
+      [[ "" == $(ct list-changed --config ct.yaml) ]] && echo "########### no changes found ###########" && exit 0
+      git config --global user.email concourse@github-noreply.com
+      git config --global user.name concourse
+      printf "packaging chart"
+      export HELM_CONFIG_HOME=./
+      for chart in $(ct list-changed --config ct.yaml); do
+        echo "Building Chart $chart"
+        helm package -u -d ../charts/charts $
+        [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Error when packaging chart #######" && exit 1
+      done
+      cd ${TASK_ROOT}/charts
+      git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
+      git fetch --all
+      helm repo index --url https://improwised.github.io/charts .
+      [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Error when creating index #######" && exit 1
+      cat index.yaml
+      git add .
+      git commit -m "releases $(date '+%Y-%m-%d-%H-%M-%S')" --allow-empty
