@@ -1,44 +1,45 @@
----
-platform: linux
-# image_resource: { type: docker-image, source: { repository: alpine } }
+# ---
+# platform: linux
+# # image_resource: { type: docker-image, source: { repository: alpine } }
 
-inputs:
-  - name: repo
+# inputs:
+#   - name: repo
 
-run:
-  path: bash
-  args:
-    - -cx
-    - |
-      TASK_ROOT=$(pwd)
-      cd repo
-      git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
-      git fetch --all
-      [[ "" == $(ct list-changed --config ct.yaml) ]] && echo "########### no release ###########" && exit 0
-      git config --global user.email concourse@github-noreply.com
-      git config --global user.name concourse
+# run:
+#   path: bash
+#   args:
+#     - -cx
+#     - |
+#       set -e
+#       TASK_ROOT=$(pwd)
+#       cd repo
+#       git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
+#       git fetch --all
+#       [[ "" == $(ct list-changed --config ct.yaml) ]] && echo "########### no release ###########" && exit 0
+#       git config --global user.email concourse@github-noreply.com
+#       git config --global user.name concourse
 
-      source <(curl -s https://raw.githubusercontent.com/pratikbalar/bash-functions/main/functions.sh)
-      tarr https://github.com/tcnksm/ghr/releases/download/v0.13.0/ghr_v0.13.0_linux_amd64.tar.gz ghr_v0.13.0_linux_amd64/ghr /usr/bin/ghr
-      tarr https://github.com/mikefarah/yq/releases/download/v4.9.3/yq_linux_386.tar.gz yq_linux_386 /usr/bin/yq
+#       source <(curl -s https://raw.githubusercontent.com/pratikbalar/bash-functions/main/functions.sh)
+#       tarr https://github.com/tcnksm/ghr/releases/download/v0.13.0/ghr_v0.13.0_linux_amd64.tar.gz ghr_v0.13.0_linux_amd64/ghr /usr/bin/ghr
+#       tarr https://github.com/mikefarah/yq/releases/download/v4.9.3/yq_linux_386.tar.gz yq_linux_386 /usr/bin/yq
 
-      printf "Releasing individual chart(s)"
-      export HELM_CONFIG_HOME=./
-      PROJECT_USERNAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $1}')
-      PROJECT_REPONAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $2}')
-      COMMIT_SHA=$(git rev-parse HEAD)
-
-      for chart in $(ct list-changed --config ct.yaml); do
-        helm package -u -d . $chart
-        CHART_NAME=$(yq e '.name' $chart/Chart.yaml)
-        CHART_VERSION=$(yq e '.version' $chart/Chart.yaml)
-        echo "Releasing $chart"
-        ghr -t "${GITHUB_TOKEN}"          \
-            -u "${PROJECT_USERNAME}"      \
-            -r "${PROJECT_REPONAME}"      \
-            -c "${COMMIT_SHA}"            \
-            ${CHART_NAME}-{CHART_VERSION} \
-            ${CHART_NAME}-{CHART_VERSION}.tgz
-        rm -f ${CHART_NAME}-{CHART_VERSION}.tgz
-        [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Error when releasing $chart #######" && exit 1
-      done
+#       printf "Releasing individual chart(s)"
+#       export HELM_CONFIG_HOME=./
+#       PROJECT_USERNAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $1}')
+#       PROJECT_REPONAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $2}')
+#       COMMIT_SHA=$(git rev-parse HEAD)
+#       set +e
+#       for chart in $(ct list-changed --config ct.yaml); do
+#         helm package -u -d . $chart
+#         CHART_NAME=$(yq e '.name' $chart/Chart.yaml)
+#         CHART_VERSION=$(yq e '.version' $chart/Chart.yaml)
+#         echo "Releasing $chart"
+#         ghr -t "${GITHUB_TOKEN}"          \
+#             -u "${PROJECT_USERNAME}"      \
+#             -r "${PROJECT_REPONAME}"      \
+#             -c "${COMMIT_SHA}"            \
+#             ${CHART_NAME}-{CHART_VERSION} \
+#             ${CHART_NAME}-{CHART_VERSION}.tgz
+#         [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Error when releasing $chart #######" && exit 1
+#         rm -f ${CHART_NAME}-{CHART_VERSION}.tgz
+#       done

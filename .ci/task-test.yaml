@@ -22,6 +22,7 @@ run:
   args:
     - -cx
     - |
+      set -e
       TASK_ROOT=$(pwd)
       apk add --no-progress --no-cache git
       source <(curl -s https://raw.githubusercontent.com/pratikbalar/bash-functions/main/functions.sh)
@@ -35,7 +36,6 @@ run:
       cd ..
       source /docker-lib.sh
       start_docker
-      [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Docker startup failed #######" && exit 1
 
       # Cleanup.
       # Not sure if this is required.
@@ -69,6 +69,7 @@ run:
       apk add --no-cache --no-progress -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
       curl -Lso /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
       chmod a+x /usr/bin/kind
+      set +e
 
       kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
       [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## error creating cluster #######" && exit 1
@@ -85,14 +86,7 @@ run:
       echo "##################### Cluster is ready #####################"f
       kubectl get all,sc,cs -A
 
-      # [[ ! -z ${OTHER_STEPS_FILE} ]] && \
-      #   chmod a+x ${OTHER_STEPS_FILE} && ./${OTHER_STEPS_FILE}
-
       cd repo
       export HELM_CONFIG_HOME=./
       ct install --config ct.yaml --debug
-
       [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Chart Testing Failed #######" && exit 1
-
-      docker ps -a
-      kind get clusters
