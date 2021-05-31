@@ -48,12 +48,12 @@ run:
       PROJECT_USERNAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $1}')
       PROJECT_REPONAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $2}')
 
-      for chart in $(ct list-changed --config ct.yaml 2> /dev/null); do
+      for chart in $(ct list-changed --config ct.yaml 2>/dev/null); do
         CHART_NAME=$(yq e '.name' $chart/Chart.yaml)
         CHART_SHA=$(git log --format=format:%H ${chart} | head -n 1)
-        COMMIT_MESSAGE=$(git log --format=%B -n 1 $chart/)
         unset NEW_VERSION
         echo "Checking version bump for ${chart/charts\//}"
+        COMMIT_MESSAGE=$(git log --format=%B -n 1 $chart/)
         printf "last commit message: \"${COMMIT_MESSAGE}\" \n"
         if [[ ${COMMIT_MESSAGE} =~ ${BUMP_PATTERN} ]]; then
           OLD_VERSION=$(yq e '.version' $chart/Chart.yaml)
@@ -70,34 +70,35 @@ run:
             echo "${chart/charts\//}: skipping"
             continue
           fi
-          export NEW_VERSION=$(bumpp ${BUMP} ${OLD_VERSION})                 # exported this because yq can use it with `env` operator
-          yq eval '.version = env(NEW_VERSION)' $chart/Chart.yaml > $chart/_Chart.yaml
+          export NEW_VERSION=$(bumpp ${BUMP} ${OLD_VERSION}) # exported this because yq can use it with `env` operator
+          yq eval '.version = env(NEW_VERSION)' $chart/Chart.yaml >$chart/_Chart.yaml
           mv $chart/_Chart.yaml $chart/Chart.yaml
-          echo "${chart/charts\//}: ${OLD_VERSION} → ${NEW_VERSION}"
+          COMMIT_MSG="${chart/charts\//}: ${OLD_VERSION} → ${NEW_VERSION}"
+          echo ${COMMIT_MSG}
+          git add .
+          git commit -m "${COMMIT_MSG}"
 
           echo "Packaging ${chart/charts\//}"
-
           helm package -u -d ${TASK_ROOT}/charts/charts $chart
 
-          git add .
-          git commit -m "bump: ${chart/charts\//} ${OLD_VERSION} → ${NEW_VERSION}"
           COMMIT_SHA=$(git rev-parse HEAD)
 
+          git-chglog -o /tmp/${CHART_NAME}-${NEW_VERSION}.md --config .ci/config.yml --path ${chart} ${CHART_NAME}-${OLD_VERSION}..${CHART_NAME}-${NEW_VERSION}
           echo "######## ${chart/charts\//} changelog START ########"
-          git-chglog --config .ci/config.yml --path ${chart} ${CHART_NAME}-{OLD_VERSION}..${CHART_NAME}-{NEW_VERSION} -o /tmp/${CHART_NAME}-{NEW_VERSION}.md
+          cat /tmp/${CHART_NAME}-${NEW_VERSION}.md
           echo "######## ${chart/charts\//} changelog END   ########"
-          git tag -d ${CHART_NAME}-{NEW_VERSION}
-          echo "Releasing ${chart/charts\//}"
-          ghr -token "${GITHUB_TOKEN}"            \
-              -name "${CHART_NAME}-{NEW_VERSION}" \
-              -body "$(cat /tmp/${CHART_NAME}-{NEW_VERSION}.md)"  \
-              -owner "${PROJECT_USERNAME}"        \
-              -repository "${PROJECT_REPONAME}"   \
-              -commitish "${COMMIT_SHA}"          \
-              -replace                            \
-              ${CHART_NAME}-{NEW_VERSION}         \
-              ${TASK_ROOT}/charts/charts/${CHART_NAME}-{NEW_VERSION}.tgz
 
+          # git tag -d ${CHART_NAME}-${NEW_VERSION}
+          echo "Releasing ${chart/charts\//}"
+          ghr -token "${GITHUB_TOKEN}" \
+            -name "${CHART_NAME}-${NEW_VERSION}" \
+            -body "$(cat /tmp/${CHART_NAME}-${NEW_VERSION}.md)" \
+            -owner "${PROJECT_USERNAME}" \
+            -repository "${PROJECT_REPONAME}" \
+            -commitish "${COMMIT_SHA}" \
+            -replace \
+            ${CHART_NAME}-${NEW_VERSION} \
+            ${TASK_ROOT}/charts/charts/${CHART_NAME}-${NEW_VERSION}.tgz
         else
           echo "${chart/charts\//}: skipping"
           continue
@@ -108,7 +109,8 @@ run:
       git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
       git fetch --all
       helm repo index --url https://improwised.github.io/charts .
-      cat index.yaml
+      cat index.yamlgit
       git add .
+      set +e
       git commit -m "releases $(date '+%Y-%m-%d-%H-%M-%S')"
-      [[ $? != 0 ]] && echo "nothing to commit i guess"
+      [[ $? != 0 ]] && echo "nothing to commit, skipping"
