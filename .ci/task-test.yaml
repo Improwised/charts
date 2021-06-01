@@ -46,7 +46,6 @@ run:
       [[ $(docker volume ls -q) != "" ]] && docker volume rm -f $(docker volume ls -q)
       }
       trap cleanup EXIT
-      [[ ! -z $THIS ]] && set +e
 
       KIND_VERSION="${KIND_NODE_VERSION:-$(cat kind-img/tag)}"
 
@@ -85,6 +84,7 @@ run:
       echo "##################### Cluster is ready #####################"f
       kubectl get all,sc,cs -A
 
+      [[ ! -z $SKIP_ERR ]] && set +e
       cd repo
       export HELM_CONFIG_HOME=./
       ct install --config ct.yaml --debug
