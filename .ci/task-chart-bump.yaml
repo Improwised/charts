@@ -1,0 +1,84 @@
+---
+platform: linux
+
+inputs:
+  - name: repo
+
+outputs:
+  - name: repo
+    path: repo
+run:
+  path: bash
+  args:
+    - -cx
+    - |
+      set -e
+      TASK_ROOT=$(pwd)
+
+      cd repo
+      git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
+      git fetch --all
+      [[ "" == $(ct list-changed --config ct.yaml) ]] && echo "########### no changes found ###########" && \
+      echo "NO" > bumping.base64 && exit 0
+
+      git config --global user.email concourse@github-noreply.com
+      git config --global user.name concourse
+
+      source <(curl -s https://raw.githubusercontent.com/pratikbalar/bash-functions/main/functions.sh)
+      tarr https://github.com/mikefarah/yq/releases/download/v4.9.3/yq_linux_386.tar.gz yq_linux_386 /usr/bin/yq
+
+      # locked version at v3.2.0
+      wget -O /usr/bin/semvertool https://raw.githubusercontent.com/fsaintjacques/semver-tool/20028cb53f340a300b460b423e43f0eac13bcd9a/src/semver
+      chmod a+x /usr/bin/semvertool
+
+      BUMP_PATTERN='^(BREAKING[\-\ ]CHANGE|feat|fix|refactor|perf)(\(.+\))?(!)?'
+      MAJOR='(^.+!|.*BREAKING[\-\ ]CHANGE)'
+      MINOR='(^feat)'
+      PATCH='(^fix|^perf|^refactor)'
+
+      bumpp() {
+        semvertool bump $1 $2
+      }
+
+      for chart in $(ct list-changed --config ct.yaml 2>/dev/null); do
+        CHART_NAME=$(yq e '.name' $chart/Chart.yaml)
+        CHARTS=()
+        CHARTS+=(${chart})
+        echo "Checking version bump for ${CHART_NAME}"
+        COMMIT_MESSAGE=$(git log --format=%B -n 1 $chart/)
+        printf "last commit message: \"${COMMIT_MESSAGE}\" \n"
+        if [[ ${COMMIT_MESSAGE} =~ ${BUMP_PATTERN} ]]; then
+          OLD_VERSION=$(yq e '.version' $chart/Chart.yaml)
+          CHARTS+=(${OLD_VERSION})
+          if [[ ${COMMIT_MESSAGE} =~ ${MAJOR} ]]; then
+            BUMP="major"
+            echo "Bumping ${BUMP}"
+          elif [[ ${COMMIT_MESSAGE} =~ ${MINOR} ]]; then
+            BUMP="minor"
+            echo "Bumping ${BUMP}"
+          elif [[ ${COMMIT_MESSAGE} =~ ${PATCH} ]]; then
+            BUMP="patch"
+            echo "Bumping ${BUMP}"
+          else
+            echo "${CHART_NAME}: skipping"
+            continue
+          fi
+          export NEW_VERSION=$(bumpp ${BUMP} ${OLD_VERSION}) # exported NEW_VERSION because yq can use it with `env` operator
+          yq eval '.version = env(NEW_VERSION)' $chart/Chart.yaml >$chart/_Chart.yaml
+          mv $chart/_Chart.yaml $chart/Chart.yaml
+          COMMIT_MSG="${CHART_NAME}: ${OLD_VERSION} → ${NEW_VERSION}"
+          CHARTS+=(${NEW_VERSION})
+          echo ${COMMIT_MSG}
+          git add $chart/Chart.yaml
+          git commit -m "${COMMIT_MSG} [ci skip]"
+          COMMIT_SHA=$(git rev-parse HEAD)
+          CHARTS+=(${COMMIT_SHA})
+          echo ${CHARTS[*]} >>/tmp/variables.csv
+          unset CHARTS
+        else
+          echo "${CHART_NAME}: skipping"
+          continue
+        fi
+      done
+      cat /tmp/variables.csv >bumping
+      cat /tmp/variables.csv | base64 >bumping.base64

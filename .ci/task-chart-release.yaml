@@ -1,45 +1,54 @@
-# ---
-# platform: linux
-# # image_resource: { type: docker-image, source: { repository: alpine } }
+---
+platform: linux
+# image_resource: { type: docker-image, source: { repository: alpine } }
 
-# inputs:
-#   - name: repo
+inputs:
+  - name: repo
 
-# run:
-#   path: bash
-#   args:
-#     - -cx
-#     - |
-#       set -e
-#       TASK_ROOT=$(pwd)
-#       cd repo
-#       git config remote.origin.fetch refs/heads/*:refs/remotes/origin/*
-#       git fetch --all
-#       [[ "" == $(ct list-changed --config ct.yaml) ]] && echo "########### no release ###########" && exit 0
-#       git config --global user.email concourse@github-noreply.com
-#       git config --global user.name concourse
+run:
+  path: bash
+  args:
+    - -cx
+    - |
+      ## RELEASE
+      set -e
+      TASK_ROOT=$(pwd)
+      [[ ${CHARTCSV} == "NO" ]] && exit 0
 
-#       source <(curl -s https://raw.githubusercontent.com/pratikbalar/bash-functions/main/functions.sh)
-#       tarr https://github.com/tcnksm/ghr/releases/download/v0.13.0/ghr_v0.13.0_linux_amd64.tar.gz ghr_v0.13.0_linux_amd64/ghr /usr/bin/ghr
-#       tarr https://github.com/mikefarah/yq/releases/download/v4.9.3/yq_linux_386.tar.gz yq_linux_386 /usr/bin/yq
+      echo ${CHARTCSV} | base64 -d >bumping
+      tarr https://github.com/tcnksm/ghr/releases/download/v0.13.0/ghr_v0.13.0_linux_amd64.tar.gz ghr_v0.13.0_linux_amd64/ghr /usr/bin/ghr
+      tarr https://github.com/git-chglog/git-chglog/releases/download/v0.14.2/git-chglog_0.14.2_linux_amd64.tar.gz git-chglog /usr/local/bin/git-chglog
+      git config --global user.email concourse@github-noreply.com
+      git config --global user.name concourse
 
-#       printf "Releasing individual chart(s)"
-#       export HELM_CONFIG_HOME=./
-#       PROJECT_USERNAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $1}')
-#       PROJECT_REPONAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $2}')
-#       COMMIT_SHA=$(git rev-parse HEAD)
-#       set +e
-#       for chart in $(ct list-changed --config ct.yaml); do
-#         helm package -u -d . $chart
-#         CHART_NAME=$(yq e '.name' $chart/Chart.yaml)
-#         CHART_VERSION=$(yq e '.version' $chart/Chart.yaml)
-#         echo "Releasing $chart"
-#         ghr -t "${GITHUB_TOKEN}"          \
-#             -u "${PROJECT_USERNAME}"      \
-#             -r "${PROJECT_REPONAME}"      \
-#             -c "${COMMIT_SHA}"            \
-#             ${CHART_NAME}-{CHART_VERSION} \
-#             ${CHART_NAME}-{CHART_VERSION}.tgz
-#         [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Error when releasing $chart #######" && exit 1
-#         rm -f ${CHART_NAME}-{CHART_VERSION}.tgz
-#       done
+      PROJECT_USERNAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $1}')
+      PROJECT_REPONAME=$(git config --get remote.origin.url | sed 's/git\@github\.com\:\|\.git\|https\:\/\/github\.com\///g' | awk -F\/ '{printf $2}')
+
+      cd repo
+      while read -r line; do
+        CHART=($line)
+        echo "Packaging ${CHART[0]}"
+        CHART_NAME=${CHART[0]/charts\//}
+        OLD_VERSION=${CHART[1]}
+        NEW_VERSION=${CHART[2]}
+        COMMIT_SHA=${CHART[3]}
+
+        git tag ${CHART_NAME}-${NEW_VERSION} ${COMMIT_SHA}
+        git-chglog -o /tmp/${CHART_NAME}-${NEW_VERSION}.md \
+          --config .ci/config.yml \
+          --path ${CHART} \
+          ${CHART_NAME}-${OLD_VERSION}..${CHART_NAME}-${NEW_VERSION}
+        git tag -d ${CHART_NAME}-${NEW_VERSION}
+
+        echo "Releasing ${CHART_NAME}"
+        echo ghr -token "${GITHUB_TOKEN}" \
+          -name "${CHART_NAME}-${NEW_VERSION}" \
+          -body "$(cat /tmp/${CHART_NAME}-${NEW_VERSION}.md)" \
+          -owner "${PROJECT_USERNAME}" \
+          -repository "${PROJECT_REPONAME}" \
+          -commitish "${COMMIT_SHA}" \
+          -replace \
+          ${CHART_NAME}-${NEW_VERSION}
+
+
+      done <${TASK_ROOT}/bumping
