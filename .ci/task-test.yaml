@@ -20,9 +20,8 @@ params:
 run:
   path: bash
   args:
-    - -cx
+    - -cex
     - |
-      set -e
       TASK_ROOT=$(pwd)
       apk add --no-progress --no-cache git
       source <(curl -s https://raw.githubusercontent.com/pratikbalar/bash-functions/main/functions.sh)
@@ -47,6 +46,7 @@ run:
       [[ $(docker volume ls -q) != "" ]] && docker volume rm -f $(docker volume ls -q)
       }
       trap cleanup EXIT
+      [[ ! -z $THIS ]] && set +e
 
       KIND_VERSION="${KIND_NODE_VERSION:-$(cat kind-img/tag)}"
 
@@ -72,7 +72,6 @@ run:
       set +e
 
       kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
-      [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## error creating cluster #######" && exit 1
 
       kind get clusters
       kubectl get all -A
@@ -89,4 +88,3 @@ run:
       cd repo
       export HELM_CONFIG_HOME=./
       ct install --config ct.yaml --debug
-      [[ -z ${SKIP_ERR} && $? != 0 ]] && echo "######## Chart Testing Failed #######" && exit 1
