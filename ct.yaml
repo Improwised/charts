@@ -1,5 +1,8 @@
 remote: origin
-target-branch: master
+target-branch: introduce-chart-testing
+lint-conf: .ci/lintconf.yaml
+chart-yaml-schema: .ci/chart_schema.yaml
+check-version-increment: false
 chart-dirs:
   - charts
 chart-repos:

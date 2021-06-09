@@ -25,6 +25,10 @@ options:
       - Type
       - Scope
       - Subject
+  merges:
+    pattern: "^Merge branch '(\\w+)'$"
+    pattern_maps:
+      - Source
   notes:
     keywords:
       - BREAKING CHANGE
