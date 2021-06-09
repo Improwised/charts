@@ -3,7 +3,7 @@ entries:
   erpnext:
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2021-06-09T10:34:25.928392379Z"
+    created: "2021-06-09T10:35:00.684275518Z"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 63c096ba0d92e323d95675e413511af68f59d4427637d7fe951a4b9c7cc25263
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -16,7 +16,7 @@ entries:
     version: 3.2.0
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2021-06-09T10:34:25.923357631Z"
+    created: "2021-06-09T10:35:00.659355332Z"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 65e10398e4021cf427d1fe21f2b61e31a24d4975ae4f4f864c6847d1cebe2694
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -28,7 +28,7 @@ entries:
   freeipa:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-06-09T10:34:25.930045812Z"
+    created: "2021-06-09T10:35:00.685732056Z"
     description: A Helm chart for Kubernetes
     digest: 9f63bdb1e8a51ad34af788c21e3a52fec2c0c6c35adad0a749273fb3d8a82d84
     maintainers:
@@ -38,4 +38,25 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/freeipa-0.2.0.tgz
     version: 0.2.0
-generated: "2021-06-09T10:34:25.916851234Z"
+  healthchecks:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-06-09T10:35:00.741337468Z"
+    dependencies:
+    - condition: postgresql.enabled,global.postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.1.1
+    description: A Helm chart for Kubernetes
+    digest: b79b13ba1b13e1e563643fa877bfc6887140577cdcdeb4317792565f4fee8c39
+    maintainers:
+    - email: pratik@improeised.com
+      name: praitk
+    name: healthchecks
+    sources:
+    - https://github.com/healthchecks/healthchecks
+    type: application
+    urls:
+    - https://improwised.github.io/charts/charts/healthchecks-1.0.5.tgz
+    version: 1.0.5
+generated: "2021-06-09T10:35:00.641616121Z"
