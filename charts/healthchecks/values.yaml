@@ -39,10 +39,12 @@ probs:
     httpGet:
       path: /
       port: http
+    initialDelaySeconds: 50
   readinessProbe:
     httpGet:
       path: /
       port: http
+    initialDelaySeconds: 50
 
 service:
   type: ClusterIP
