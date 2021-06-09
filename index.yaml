@@ -3,7 +3,7 @@ entries:
   erpnext:
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2021-06-09T10:34:25.510250559Z"
+    created: "2021-06-09T10:34:25.928392379Z"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 63c096ba0d92e323d95675e413511af68f59d4427637d7fe951a4b9c7cc25263
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -16,7 +16,7 @@ entries:
     version: 3.2.0
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2021-06-09T10:34:25.506296054Z"
+    created: "2021-06-09T10:34:25.923357631Z"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 65e10398e4021cf427d1fe21f2b61e31a24d4975ae4f4f864c6847d1cebe2694
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -25,4 +25,17 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/erpnext-3.0.3.tgz
     version: 3.0.3
-generated: "2021-06-09T10:34:25.497417239Z"
+  freeipa:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-06-09T10:34:25.930045812Z"
+    description: A Helm chart for Kubernetes
+    digest: 9f63bdb1e8a51ad34af788c21e3a52fec2c0c6c35adad0a749273fb3d8a82d84
+    maintainers:
+    - name: improwised
+    name: freeipa
+    type: application
+    urls:
+    - https://improwised.github.io/charts/charts/freeipa-0.2.0.tgz
+    version: 0.2.0
+generated: "2021-06-09T10:34:25.916851234Z"
