@@ -1,7 +1,7 @@
 set -ex
 TASK_ROOT=$(pwd)
 cd repo
-[[ "" == $(ct list-changed --config ct.yaml --since $(head -n1 status)) ]] && echo "########### no changes found ###########" && exit 0
+[[ "" == $(ct list-changed --config ct.yaml --since $(head -n1 status) 2>/dev/null) ]] && echo "########### no changes found ###########" && exit 0
 
 ## Functioon for git feching in concoures for ssh or https based repos
 # function git_fetch() {

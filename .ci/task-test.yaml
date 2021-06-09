@@ -7,16 +7,6 @@ inputs:
     optional: true
   - name: repo
 
-params:
-  ## kind node version which is correspoinding to kubernetes version as far as i know
-  # KIND_NODE_VERSION: v1.20.2
-
-#   ## execute something before chart install this will help to install dependences for charts
-#   ## OTHER_STEPS_FILE will take precedence
-#   OTHER_STEPS_FILE:
-
-#   ## --helm-extra-args in ct install
-#   CT_INSTALL_HELM_EXTRA_ARGS:
 run:
   path: bash
   args: [repo/.ci/scripts/test.sh]

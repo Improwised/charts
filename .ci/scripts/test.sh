@@ -10,7 +10,7 @@ tarr https://github.com/helm/chart-testing/releases/download/${CT_VERSION}/chart
 
 ## Check if there any changes
 cd repo
-[[ "" == $(ct list-changed --config ct.yaml --since $(head -n1 status)) ]] && echo "########### no changes found ###########" && exit 0
+[[ "" == $(ct list-changed --config ct.yaml --since $(head -n1 status) 2>/dev/null) ]] && echo "########### no changes found ###########" && exit 0
 
 ## Start Docker
 cd ..
@@ -62,7 +62,7 @@ echo "#### Cluster is ready ####"
 kubectl get all,sc,cs -A
 
 ## set SKIP_ERR if you want to ignore ct testing
-[[ $SKIP_ERR == *"true"* ]] && set +e
+[[ ${SKIP_ERR} == *"true"* ]] && set +e
 cd repo
 export HELM_CONFIG_HOME=./
 ct install --config ct.yaml --since $(head -n1 status) --debug
