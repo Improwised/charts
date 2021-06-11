@@ -1,7 +1,7 @@
 set -ex
 TASK_ROOT=$(pwd)
 cd repo
-[[ "" == $(ct list-changed --config ct.yaml --since $(head -n1 status) 2>/dev/null) ]] && echo "########### no changes found ###########" && exit 0
+[[ $(ct list-changed --config ct.yaml --since $(head -n1 status) 2>/dev/null) == *"charts/"* ]] && echo "#### no changes found ####" && exit 0
 
 ## Set git user email and name for commiting
 git config --global user.email concourse@github-noreply.com
