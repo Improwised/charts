@@ -5,14 +5,14 @@
 replicaCount: 1
 
 nginxImage:
-  repository: improwised/erpnext-nginx
+  repository: docker.io/improwised/erpnext-nginx
   tag: v13.4.1
   pullPolicy: IfNotPresent
   # nginxConfig: |
   #   # custom /etc/nginx/conf.d/default.conf
 
 pythonImage:
-  repository: improwised/erpnext-worker
+  repository: docker.io/improwised/erpnext-worker
   tag: v13.4.1
   pullPolicy: IfNotPresent
 
@@ -43,6 +43,8 @@ mariadb:
   auth:
     rootPassword: mariadb # pragma: allowlist secret
   primary:
+    persistence:
+      enabled: false
     ## Below, there are some override configs for supporting barracuda engine for Erpnext
     configuration: |-
       [mysql]                                         # override configuration
@@ -137,7 +139,7 @@ podSecurityContext:
 securityContext:
   capabilities:
     add:
-      - CAP_CHOWN
+      - all
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
