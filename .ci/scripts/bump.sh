@@ -1,7 +1,7 @@
 set -ex
 TASK_ROOT=$(pwd)
 cd repo
-[[ $(ct list-changed --config ct.yaml --since $(head -n1 status) 2>/dev/null) == *"charts/"* ]] && echo "#### no changes found ####" && exit 0
+[[ $(ct list-changed --config ct.yaml --since $(head -n1 status) 2>/dev/null) == *"charts/"* ]] || echo "#### no changes found ####" && exit 0
 
 # function git_fetch() {
 #   if [[ $(git config --get remote.origin.url) == *"git@github.com"* ]]; then
