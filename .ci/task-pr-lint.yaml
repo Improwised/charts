@@ -6,4 +6,4 @@ inputs:
 
 run:
   path: bash
-  args: [repo/.ci/scripts/pr-lint.sh]
+  args: [repo/.ci/scripts/lint.sh]
