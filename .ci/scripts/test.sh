@@ -20,13 +20,13 @@ start_docker
 # Cleanup.
 # Not sure if this is required.
 # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
-function cleanup() {
-  kind delete clusters ${KIND_VERSION}
-  [[ ! -z $(docker ps -a -q) ]] && docker rm -f $(docker ps -a -q)
-  [[ ! -z $(docker images ls -a -q) ]] && docker rmi -f $(docker images -a -q)
-  [[ ! -z $(docker volume ls -q) ]] && docker volume rm -f $(docker volume ls -q)
-}
-trap cleanup EXIT
+# function cleanup() {
+#   kind delete clusters ${KIND_VERSION}
+#   [[ ! -z $(docker ps -a -q) ]] && docker rm -f $(docker ps -a -q)
+#   [[ ! -z $(docker images ls -a -q) ]] && docker rmi -f $(docker images -a -q)
+#   [[ ! -z $(docker volume ls -q) ]] && docker volume rm -f $(docker volume ls -q)
+# }
+# trap cleanup EXIT
 
 # Strictly speaking, preloading of Docker images is not required.
 # However, you might want to do this for a couple of reasons:
