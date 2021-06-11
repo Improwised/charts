@@ -15,10 +15,6 @@ repos:
     rev: v1.1.0
     hooks:
       - id: detect-secrets
-  - repo: https://github.com/zricethezav/gitleaks
-    rev: v7.5.0
-    hooks:
-      - id: gitleaks
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v2.2.0
     hooks:
@@ -29,4 +25,4 @@ repos:
     rev: 85ccd62
     hooks:
       - id: yamllint
-        args: [-c, ".yamllint"]
+        args: [-c, ".ci/.yamllint"]

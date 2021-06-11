@@ -18,6 +18,9 @@ rules:
   document-end: disable
   document-start:
     level: warning
+    ignore: |
+      **values.yaml**
+      **override-values.yaml**
   empty-lines: enable
   empty-values: disable
   hyphens: enable

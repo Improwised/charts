@@ -11,4 +11,4 @@ chart-repos:
 helm-extra-args: --timeout 500s
 # excluded-charts:
 #   # If not running on GCE, will error: "Failed to get GCE config"
-#   - something
+  # - erpnext
