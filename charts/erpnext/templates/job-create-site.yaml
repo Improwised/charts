@@ -1,14 +1,10 @@
-{{- if .Values.migrateJob.enable }}
+{{- if and (.Values.createSite.enabled) (.Values.dbRootPassword) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: migrate-sites-{{ template "erpnext.fullname" . }}-{{ date "20060102150405" .Release.Now }}
+  name: {{ template "erpnext.fullname" . }}-create-site
   labels:
     {{- include "erpnext.labels" . | nindent 4 }}
-  annotations:
-    "helm.sh/hook": post-upgrade
-    "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   backoffLimit: 1
   template:
@@ -21,19 +17,6 @@ spec:
       securityContext:
         {{- toYaml $.Values.podSecurityContext | nindent 8 }}
       initContainers:
-      - name: set-maintenance-mode
-        image: stedolan/jq
-        imagePullPolicy: IfNotPresent
-        command: ["/bin/bash", "-c"]
-        securityContext:
-          runAsUser: 1000 # same as erpnext user
-          runAsGroup: 1000
-        args:
-          - cp /data/common_site_config.json /data/temp.json;
-            jq -r '.maintenance_mode=1 | .pause_scheduler=1' /data/temp.json > /data/common_site_config.json;
-        volumeMounts:
-          - name: sites-dir
-            mountPath: "/data"
       - name: populate-assets
         image: "{{ .Values.nginxImage.repository }}:{{ .Values.nginxImage.tag }}"
         command: ["/bin/bash", "-c"]
@@ -43,12 +26,23 @@ spec:
           - name: assets-cache
             mountPath: /assets
       containers:
-      - name: migrate
+      - name: create-site
         image: "{{ .Values.pythonImage.repository }}:{{ .Values.pythonImage.tag }}"
-        args: ["migrate"]
+        args: ["new"]
         env:
-          - name: "MAINTENANCE_MODE"
-            value: "1"
+          - name: "SITE_NAME"
+            value: "{{ .Values.createSite.siteName }}"
+          - name: "DB_ROOT_USER"
+            value: "{{ .Values.createSite.dbRootUser }}"
+          - name: "MYSQL_ROOT_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                key:  dbRootPassword
+                name: {{ .Release.Name }}-secrets
+          - name: "ADMIN_PASSWORD"
+            value: "{{ .Values.createSite.adminPassword }}"
+          - name: "INSTALL_APPS"
+            value: "{{ .Values.createSite.installApps }}"
         securityContext:
           {{- toYaml $.Values.securityContext | nindent 12 }}
         imagePullPolicy: {{ .Values.pythonImage.pullPolicy }}

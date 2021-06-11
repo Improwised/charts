@@ -6,19 +6,19 @@ replicaCount: 1
 
 nginxImage:
   repository: improwised/erpnext-nginx
-  tag: v13.0.1
+  tag: v13.4.1
   pullPolicy: IfNotPresent
   # nginxConfig: |
   #   # custom /etc/nginx/conf.d/default.conf
 
 pythonImage:
-  repository: improwised/erpnext-nginx
-  tag: v13.0.1
+  repository: improwised/erpnext-worker
+  tag: v13.4.1
   pullPolicy: IfNotPresent
 
 socketIOImage:
   repository: frappe/frappe-socketio
-  tag: v13.0.1
+  tag: v13.4.1
   pullPolicy: IfNotPresent
 
 redis:
@@ -38,6 +38,46 @@ socketIOPort: "9000"
 # upstreamRealIPRecursive: "off"
 # upstreamRealIPHeader: "X-Forwarded-For"
 
+mariadb:
+  enabled: false
+  auth:
+    rootPassword: mariadb # pragma: allowlist secret
+  primary:
+    ## Below, there are some override configs for supporting barracuda engine for Erpnext
+    configuration: |-
+      [mysql]                                         # override configuration
+      default-character-set=utf8mb4                   # override configuration
+
+      [mysqld]
+      innodb-file-format=barracuda                    # override configuration
+      innodb-file-per-table=1                         # override configuration
+      innodb-large-prefix=1                           # override configuration
+      character-set-client-handshake=FALSE            # override configuration
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mariadb
+      plugin_dir=/opt/bitnami/mariadb/plugin
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      tmpdir=/opt/bitnami/mariadb/tmp
+      max_allowed_packet=16M
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+      log-error=/opt/bitnami/mariadb/logs/mysqld.log
+      character-set-server=utf8mb4                     # override from UTF8
+      collation-server=utf8mb4_unicode_ci              # override utf8_general_ci UTF8
+
+      [client]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      default-character-set=UTF8
+      plugin_dir=/opt/bitnami/mariadb/plugin
+
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+
 # Python Image Env Variables
 # mariadbHost: "mariadb.mariadb.svc.cluster.local"
 
@@ -48,6 +88,36 @@ redisSocketIOHost: ""
 # PostgreSQL related variables
 postgresHost: ""
 postgresPort: ""
+
+# Create secrets
+# dbRootPassword: admin
+
+# Create first site
+createSite:
+  enabled: false
+  siteName: "erp.cluster.local"
+  dbRootUser: "root"
+  adminPassword: "admin" # pragma: allowlist secret
+  installApps: "erpnext"
+  dropSiteOnUninstall: false
+
+# Ingress
+ingress:
+  enabled: false
+  annotations:
+    {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: erp.cluster.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: auth-server-tls
+  #    hosts:
+  #      - auth-server.local
 
 migrateJob:
   # Set this to true to run migrate as part of helm install/upgrade
@@ -65,10 +135,10 @@ serviceAccount:
 podSecurityContext:
   supplementalGroups: [1000]
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
+securityContext:
+  capabilities:
+    add:
+      - CAP_CHOWN
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
@@ -99,15 +169,15 @@ persistence:
     enabled: true
     # existingClaim: ""
     size: 8Gi
-    # storageClass: default
+    # storageClass: "local-path"
   logs:
     enabled: true
     # existingClaim: ""
     size: 8Gi
-    # storageClass: default
+    # storageClass: "local-path"
 
 volumePermissions:
-  enabled: false
+  enabled: true
 
 enableProbs: true
 
