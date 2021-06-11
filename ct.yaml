@@ -9,6 +9,5 @@ chart-repos:
   - bitnami=https://charts.bitnami.com/bitnami
   - stable=https://charts.helm.sh/stable
 helm-extra-args: --timeout 500s
-# excluded-charts:
-#   # If not running on GCE, will error: "Failed to get GCE config"
-  # - erpnext
+excluded-charts:
+  - freeipa
