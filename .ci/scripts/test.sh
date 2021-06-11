@@ -61,11 +61,6 @@ done
 echo "#### Cluster is ready ####"
 kubectl get all,sc,cs -A
 
-## set SKIP_ERR if you want to ignore ct testing
-[[ ${SKIP_ERR} == *"true"* ]] && set +e
 cd repo
 export HELM_CONFIG_HOME=./
 ct install --config ct.yaml --since $(head -n1 status) --debug
-CT_EXIT_CODE=$?
-[[ ${SKIP_ERR} == *"true"* ]] &&
-  [[ $CT_EXIT_CODE != 0 ]] && echo "ignoring chart testing errors" && exit 0
