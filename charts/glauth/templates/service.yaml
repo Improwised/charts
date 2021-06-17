@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "glauth.fullname" . }}
+  labels:
+    {{- include "glauth.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: ldap
+      port: 389
+      protocol: TCP
+      targetPort: ldap
+    - name: ldaps
+      port: 636
+      protocol: TCP
+      targetPort: ldaps
+    {{- if .Values.service.api }}
+    - name: api
+      port: 5555
+      protocol: TCP
+      targetPort: api
+    {{ end }}
+  selector:
+    {{- include "glauth.selectorLabels" . | nindent 4 }}

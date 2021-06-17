@@ -1,0 +1,222 @@
+# Default values for glauth.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: glauth/glauth
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+config:
+  ## Two Options for providing config, if none provided it will use default one
+  ## https://github.com/glauth/glauth/blob/master/scripts/docker/default-config.cfg
+
+  ## Option 1, From File
+  ## Cnf will provided from configmap
+  from: "file"
+  cnf: |-
+    #################
+    # glauth.conf
+
+    #################
+    # General configuration.
+    debug = true
+    # syslog = trueapi
+    #
+    # Enable hot-reload of configuration on changes
+    # - does NOT work [ldap], [ldaps], [backend] or [api] sections
+    watchconfig = true
+
+    #################
+    # yubikeyclientid = "yubi-api-clientid"
+    # yubikeysecret = "yubi-api-secret"
+
+    #################
+    # Server configuration.
+    #
+    # This is the old server-config format
+    # - will still work, but please use new format, shown below
+    #
+    # [frontend]
+    #   listen = "localhost:8484"
+    #   tls = false
+    #   cert ="certs/server.crt"
+    #   key = "certs/server.key"
+
+    # This ([ldap] and [ldaps]) is the new server-config format
+    [ldap]
+      enabled = true
+      listen = "0.0.0.0:389"
+
+    [ldaps]
+      enabled = false
+      listen = "0.0.0.0:636"
+      cert = "certs/server.crt"
+      key = "certs/server.key"
+
+    #################
+    # The backend section controls the data store.
+    [backend]
+      datastore = "config"
+      baseDN = "dc=glauth,dc=com"
+
+      ## Configure dn format to use structures like
+      ## "uid=serviceuser,cn=svcaccts,$BASEDN" instead of "cn=serviceuser,ou=svcaccts,$BASEDN"
+      ## to help ease migrations from other LDAP systems
+      # nameformat = "uid"
+      # groupformat = "cn"
+
+      ## Configure ssh-key attribute name, default is 'sshPublicKey'
+      # sshkeyattr = "ipaSshPubKey"
+
+    #################
+    # The users section contains a hardcoded list of valid users.
+    #   to create a passSHA256:   echo -n "mysecret" | openssl dgst -sha256
+    [[users]]
+      name = "hackers"
+      unixid = 5001
+      primarygroup = 5501
+      passsha256 = "6478579e37aff45f013e14eeb30b3cc56c72ccdc310123bcdf53e0333e3f416a" # dogood
+
+    # This user record shows all of the possible fields available
+    [[users]]
+      name = "johndoe"
+      givenname="John"
+      sn="Doe"
+      mail = "jdoe@example.com"
+      unixid = 5002
+      primarygroup = 5501
+      loginShell = "/bin/sh"
+      homeDir = "/root"
+      passsha256 = "6478579e37aff45f013e14eeb30b3cc56c72ccdc310123bcdf53e0333e3f416a" # dogood
+      sshkeys = ["ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEA3UKCEllO2IZXgqNygiVb+dDLJJwVw3AJwV34t2jzR+/tUNVeJ9XddKpYQektNHsFmY93lJw5QDSbeH/mAC4KPoUM47EriINKEelRbyG4hC/ko/e2JWqEclPS9LP7GtqGmscXXo4JFkqnKw4TIRD52XI9n1syYM9Y8rJ88fjC/Lpn+01AB0paLVIfppJU35t0Ho9doHAEfEvcQA6tcm7FLJUvklAxc8WUbdziczbRV40KzDroIkXAZRjX7vXXhh/p7XBYnA0GO8oTa2VY4dTQSeDAUJSUxbzevbL0ll9Gi1uYaTDQyE5gbn2NfJSqq0OYA+3eyGtIVjFYZgi+txSuhw== rsa-key-20160209"]
+      passappsha256 = [
+        "c32255dbf6fd6b64883ec8801f793bccfa2a860f2b1ae1315cd95cdac1338efa", # TestAppPw1
+        "c9853d5f2599e90497e9f8cc671bd2022b0fb5d1bd7cfff92f079e8f8f02b8d3", # TestAppPw2
+        "4939efa7c87095dacb5e7e8b8cfb3a660fa1f5edcc9108f6d7ec20ea4d6b3a88", # TestAppPw3
+      ]
+
+    [[users]]
+      name = "serviceuser"
+      unixid = 5003
+      primarygroup = 5502
+      passsha256 = "652c7dc687d98c9889304ed2e408c74b611e86a40caa51c4b43f1dd5913c5cd0" # mysecret
+
+    # Test user showing 2 factor auth authentication
+    # [[users]]
+    #   name = "otpuser"
+    #   unixid = 5004
+    #   primarygroup = 5501
+    #   passsha256 = "652c7dc687d98c9889304ed2e408c74b611e86a40caa51c4b43f1dd5913c5cd0" # mysecret
+    #   otpsecret = "3hnvnk4ycv44glzigd6s25j4dougs3rk"
+    #   yubikey = "vvjrcfalhlaa"
+
+    #################
+    # The groups section contains a hardcoded list of valid users.
+    [[groups]]
+      name = "superheros"
+      unixid = 5501
+
+    [[groups]]
+      name = "svcaccts"
+      unixid = 5502
+
+    [[groups]]
+      name = "vpn"
+      unixid = 5503
+      includegroups = [ 5501 ]
+
+    #################
+    # Enable and configure the optional REST API here.
+    [api]
+      enabled = true
+      tls = false # enable TLS for production!!
+      listen = "0.0.0.0:5555"
+      cert = "cert.pem"
+      key = "key.pem"
+
+  ## Option 2, From s3 bucket, if file provided this will avoid
+  # from: "s3"
+  # filename: glauth.cng
+  # bucketName: glauth-config
+  # region: us-east-1
+  # secretId: test
+  # secretKey: test
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  {}
+  # fsGroup: 2000
+
+securityContext:
+  {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  ## Disable API port by comment
+  api: "5555"
+  ldap: "389"
+  ldaps: "636"
+
+ingress:
+  enabled: false
+  annotations:
+    {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

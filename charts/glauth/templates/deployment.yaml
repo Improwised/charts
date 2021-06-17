@@ -1,0 +1,105 @@
+apiVersion: {{ include "apiVersion.deployment" . }}
+kind: Deployment
+metadata:
+  name: {{ include "glauth.fullname" . }}
+  labels:
+    {{- include "glauth.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "glauth.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      # maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.config.from }}{{ if eq .Values.config.from "file" }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- end }}{{ end }}
+    {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "glauth.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "glauth.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 20
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ["/app/glauth"]
+          {{- if .Values.config.from }}
+          {{- if eq .Values.config.from "file" }}
+          args: ["-c", "/config/glauth.cnf"]
+          {{- else if eq .Values.config.from "s3" }}
+          args:
+          - -c
+          - s3://{{ .Values.config.bucketName }}/{{ .Values.config.filename }}
+          - -r
+          - {{ required "S3 Region needed" .Values.config.region }}
+          {{- else }}
+          args: ["-c", "/app/docker/default-config.cfg"]
+          {{- end }}
+          {{- else }}
+          args: ["-c", "/app/docker/default-config.cfg"]
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.config.from }}
+          {{- if eq .Values.config.from "s3" }}
+          envFrom:
+            - secretRef:
+                name: {{ .Chart.Name }}-env
+          {{- end }}
+          {{- end }}
+          ports:
+            - containerPort: {{ default "389" .Values.service.ldap }}
+              name: ldap
+              protocol: TCP
+            - containerPort: {{ default "636" .Values.service.ldaps }}
+              name: ldaps
+              protocol: TCP
+            {{- if .Values.service.api }}
+            - containerPort: {{ .Values.service.api }}
+              name: api
+          readinessProbe:
+            httpGet:
+              path: /
+              port: api
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+    {{- if .Values.config.from }}{{ if eq .Values.config.from "file" }}
+          volumeMounts:
+            - name: {{ .Chart.Name }}-config
+              mountPath: /config
+      volumes:
+        - name: {{ .Chart.Name }}-config
+          configMap:
+            name: {{ include "glauth.fullname" . }}
+    {{- end }}{{ end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

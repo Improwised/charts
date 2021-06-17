@@ -1,0 +1,13 @@
+{{- if .Values.config.from }}
+{{- if eq .Values.config.from "file" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "glauth.fullname" . }}
+  labels:
+    {{- include "glauth.labels" . | nindent 4 }}
+data:
+  glauth.cnf: |-
+    {{ .Values.config.cnf | nindent 4 }}
+{{- end }}
+{{- end }}
