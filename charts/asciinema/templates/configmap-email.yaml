@@ -1,0 +1,26 @@
+{{- if .Values.email.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "asciinema-server.fullname" . }}-smtp
+  labels:
+    app.kubernetes.io/name: {{ include "asciinema-server.name" . }}
+    helm.sh/chart: {{ include "asciinema-server.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+{{- if not .Values.email.existingSecretsForGmail }}
+  MAILNAME: "Asciinema-namshi/smtp"
+  RELAY_NETWORKS: ":{{ .Values.email.relay.cidr }}"
+  {{- if .Values.ingress.hosts }}
+  MAILNAME: {{ index .Values.ingress.hosts 0 | quote }}
+  {{- else }}
+  MAILNAME: asciinema.cluster.local
+  {{- end }}
+  SMARTHOST_ADDRESS: {{ .Values.email.relay.host | quote }}
+  SMARTHOST_PORT:  {{ default 25 .Values.email.relay.port | quote }}
+  SMARTHOST_ALIASES: {{ .Values.email.relay.aliases | join "," | quote }}
+  SMTP_FROM_ADDRESS: {{ .Values.email.from | quote }}
+  SMTP_TO_ADDRESS: {{ .Values.email.replyTo | quote }}
+{{- end }}
+{{- end }}

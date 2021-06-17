@@ -1,0 +1,171 @@
+# Default values for erpnext.
+
+# This is a YAML-formatted file.
+
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+image:
+  repository: asciinema/asciinema-server
+  tag: latest
+  pullPolicy: Always
+server:
+  ## Base secret key for signing cookies etc. if not set random will generate and set
+  secretKeyBase: ""
+  ## ID of the "demo" asciicast displayed on the homepage.
+
+  ## Default: first public asciicast
+  homeAsciiCastId: 1
+  ## Enable auto-archival of recordings uploaded by anonymous users.
+
+  ## Set this variable to number of days after which the recordings are archived.
+
+  ## Default: unset (no auto-archival)
+  archiveAnonymousAfterDays: 7
+  ## DB host, not if postgres is enabled
+
+  # fullDbUrl: "postgresql://asciinema:asciinema@10.2.0.8:5432/asciinema"
+
+  ## Default, enable, set this to true if you want to disabled signups
+  disabledSignup: ""
+extraEnvs: {}
+## By default asciinema uses local filesystem dir ("uploads" in app root dir).
+
+## If you want to store uploaded recordings in S3 bucket instead,
+
+## uncomment and set the following variables:
+
+# AWS_ACCESS_KEY_ID:
+
+# AWS_SECRET_ACCESS_KEY:
+
+# S3_BUCKET: my-asciinema-bucket
+
+# S3_REGION: us-east-1
+persistence:
+  enabled: true
+  storage: 5Gi
+  #existingClaim: {}
+probs:
+  # livenessProbe:
+
+  #   httpGet:
+
+  #     path: /
+
+  #     port: http
+
+  #   initialDelaySeconds: 60
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 15
+service:
+  type: ClusterIP
+  port: 4000
+
+## Override url else comment this
+# urlOverride:
+#   scheme: https
+#   url: localhost
+#   port: 443
+
+ingress:
+  enabled: true
+  annotations: {}
+  #   kubernetes.io/ingress.class: nginx
+
+  #   kubernetes.io/tls-acme: "true"
+  path: /
+  hosts:
+    - asciinema.improwised.dev
+  tls: {}
+  #   - secretName: my-secret
+#     hosts:
+
+#       - asciinema.mydomain.net
+
+resources:
+  # limits:
+
+  #   cpu: 100m
+
+  #   memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+## namshi/smtp config
+email:
+  enabled: true
+  image:
+    repository: namshi/smtp
+    tag: latest
+    pullPolicy: Always
+  ## if you have existingSecretsForGmail then below that will not be
+
+  #  existingSecretsForGmail: mygmailsec
+  relay:
+    host: relay.mydomain.net
+    cidr: 10.0.0.0/8
+    aliases:
+      - "*.mydomain.net"
+  from: admin@asciinema.mydomain.net
+  replyTo: admin@asciinema.mydomain.net
+  probs:
+    livenessProbe:
+      tcpSocket:
+        port: 25
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      successThreshold: 1
+    readinessProbe:
+      tcpSocket:
+        port: 25
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      successThreshold: 1
+  resources:
+    limits:
+      cpu: 100Mi
+      memory: 100Mi
+    requests:
+      cpu: 50m
+      memory: 64m
+## postgres
+postgresql:
+  enabled: true
+  persistence:
+    enabled: true
+  postgresqlDatabase: asciinema # pragma: allowlist secret
+  postgresqlUsername: asciinema # pragma: allowlist secret
+  postgresqlPassword: asciinema # pragma: allowlist secret
+  #existingSecret: asciinema-secret
+## Redis
+redis:
+  enabled: true
+  master:
+    persistence:
+      enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 100Mi
+    requests:
+      cpu: 50m
+      memory: 64m
+  slave:
+    persistence:
+      enabled: true
+    resources:
+      limits:
+        cpu: 100Mi
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 64m
+  usePassword: false
+nodeSelector: {}
+tolerations: []
+affinity: {}

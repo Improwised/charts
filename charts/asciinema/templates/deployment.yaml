@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "asciinema-server.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "asciinema-server.name" . }}
+    helm.sh/chart: {{ include "asciinema-server.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "asciinema-server.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "asciinema-server.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - name: init-redis-ping
+          image: redis:latest
+          command: ["redis-cli"]
+          args: ["-h", "{{ .Release.Name }}-redis-master", "-p", "6379", "ping"]
+          envFrom:
+            - configMapRef:
+                name: {{ template "asciinema-server.fullname" . }}
+        - name: init-postgres-setup
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["setup"]
+          envFrom:
+            - configMapRef:
+                name: {{ template "asciinema-server.fullname" . }}
+            - configMapRef:
+                name: {{ template "asciinema-server.fullname" .}}-smtp
+            - secretRef:
+                name: {{ template "asciinema-server.fullname" . }}
+      hostAliases:
+        - hostnames:
+            - "smtp"
+          ip: 127.0.0.1
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ template "asciinema-server.fullname" . }}
+            {{- if .Values.email.enabled }}
+            - configMapRef:
+                name: {{ template "asciinema-server.fullname" . }}-smtp
+            {{- end }}
+            - secretRef:
+                name: {{ template "asciinema-server.fullname" . }}
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+{{ toYaml .Values.probs | indent 10 }}
+          volumeMounts:
+            - mountPath: /opt/app/uploads
+              subPath: uploads
+              name: app-data
+            - mountPath: /opt/app/cache
+              subPath: cache
+              name: app-data
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+        {{- if .Values.email.enabled }}
+        - name: smtp
+          image: "{{ .Values.email.image.repository }}:{{ .Values.email.image.tag }}"
+          imagePullPolicy: {{ .Values.email.image.pullPolicy }}
+          env:
+        {{- if .Values.email.existingSecretsForGmail }}
+          - name: GMAIL_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.email.existingSecretsForGmail }}
+                key: gmailusername
+          - name: GMAIL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.email.existingSecretsForGmail }}
+                key: gmailpassword
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ template "asciinema-server.fullname" . }}-smtp
+          ports:
+            - name: smtp
+              containerPort: 25
+              protocol: TCP
+          {{- with .Values.email.probs }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.email.resources | indent 12 }}
+        {{- end }}
+      volumes:
+        - name: app-data
+          persistentVolumeClaim:
+            {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
+            claimName: {{ .Values.persistence.existingClaim | quote }}
+            {{- else }}
+            claimName: {{ template "asciinema-server.fullname" . }}
+            {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{ toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+      {{ toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+      {{ toYaml . | nindent 8 }}
+    {{- end }}

@@ -21,6 +21,7 @@ rules:
     ignore: |
       **values.yaml**
       **override-values.yaml**
+      **Chart.yaml**
   empty-lines: enable
   empty-values: disable
   hyphens: enable
