@@ -1,0 +1,17 @@
+{{- if not .Values.persistence.existingClaim }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "asciinema-server.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "asciinema-server.name" . }}
+    helm.sh/chart: {{ include "asciinema-server.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.persistence.storage }}
+{{- end }}

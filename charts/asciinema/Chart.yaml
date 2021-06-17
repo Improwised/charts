@@ -1,0 +1,17 @@
+apiVersion: v2
+appVersion: v1.0.0
+description: A terminal sharing tool for developers
+maintainers:
+  - name: improwised
+name: asciinema-server
+sources:
+  - https://github.com/asciinema/asciinema-server
+version: 1.0.1
+dependencies:
+  - name: postgresql
+    condition: postgresql.enabled
+    repository: https://charts.bitnami.com/bitnami
+    version: 9.1.1
+  - name: redis
+    repository: https://charts.bitnami.com/bitnami
+    version: 11.0.0
