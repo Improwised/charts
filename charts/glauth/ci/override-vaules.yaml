@@ -169,7 +169,7 @@ service:
   api: "5555"
 
 ingress:
-  enabled: ftruealse
+  enabled: false
   annotations: {}
   # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
