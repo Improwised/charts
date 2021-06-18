@@ -60,7 +60,6 @@ spec:
               {{- end }}
             initialDelaySeconds: 30
             periodSeconds: 20
-          {{- end }}
           resources:
             {{- toYaml .Values.workers.long.resources | nindent 12 }}
       volumes:
