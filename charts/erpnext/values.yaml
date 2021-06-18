@@ -179,8 +179,6 @@ persistence:
 volumePermissions:
   enabled: true
 
-enableProbs: true
-
 resources: {}
   # If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
@@ -193,6 +191,8 @@ resources: {}
 
 workers:
   short:
+    livenessProbe:
+      enabled: false
     resources: {}
       # If you do want to specify resources, uncomment the following
       # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
@@ -203,6 +203,8 @@ workers:
       #   cpu: 100m
       #   memory: 128Mi
   long:
+    livenessProbe:
+      enabled: false
     resources: {}
       # If you do want to specify resources, uncomment the following
       # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
@@ -213,6 +215,8 @@ workers:
       #   cpu: 100m
       #   memory: 128Mi
   default:
+    livenessProbe:
+      enabled: false
     resources: {}
       # If you do want to specify resources, uncomment the following
       # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
@@ -223,6 +227,8 @@ workers:
       #   cpu: 100m
       #   memory: 128Mi
   scheduler:
+    livenessProbe:
+      enabled: false
     resources: {}
       # If you do want to specify resources, uncomment the following
       # lines, adjust them as necessary, and remove the curly braces after 'resources:'.

@@ -38,7 +38,7 @@ spec:
           env:
             - name: "WORKER_TYPE"
               value: "long"
-          {{- if .Values.enableProbs }}
+          {{- if .Values.workers.long.livenessProbe.enabled }}
           livenessProbe:
             exec:
               command:
@@ -49,6 +49,7 @@ spec:
               {{- end }}
             initialDelaySeconds: 100
             periodSeconds: 20
+          {{- end }}
           readinessProbe:
             exec:
               command:

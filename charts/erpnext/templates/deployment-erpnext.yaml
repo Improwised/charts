@@ -127,7 +127,6 @@ spec:
               {{- end }}
             - name: "SOCKETIO_PORT"
               value: {{ .Values.socketIOPort | quote }}
-          {{- if .Values.enableProbs }}
           livenessProbe:
             tcpSocket:
               port: {{ .Values.frappePyPort }}
@@ -138,7 +137,6 @@ spec:
               port: {{ .Values.frappePyPort }}
             initialDelaySeconds: 30
             periodSeconds: 20
-          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:

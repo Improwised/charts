@@ -35,6 +35,7 @@ spec:
             mountPath: /home/frappe/frappe-bench/logs
           imagePullPolicy: {{ .Values.pythonImage.pullPolicy }}
           args: ["schedule"]
+          {{- if .Values.workers.scheduler.livenessProbe.enabled }}
           livenessProbe:
             exec:
               command:
@@ -45,6 +46,7 @@ spec:
               {{- end }}
             initialDelaySeconds: 30
             periodSeconds: 20
+          {{- end }}
           readinessProbe:
             exec:
               command:
