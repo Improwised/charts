@@ -43,8 +43,8 @@ spec:
               - "-p"
               - "{{ .Values.postgresHost }}:{{ .Values.postgresPort }}"
               {{- end }}
-            initialDelaySeconds: 15
-            periodSeconds: 5
+            initialDelaySeconds: 30
+            periodSeconds: 20
           readinessProbe:
             exec:
               command:
@@ -53,8 +53,8 @@ spec:
               - "-p"
               - "{{ .Values.postgresHost }}:{{ .Values.postgresPort }}"
               {{- end }}
-            initialDelaySeconds: 15
-            periodSeconds: 5
+            initialDelaySeconds: 30
+            periodSeconds: 20
           resources:
             {{- toYaml .Values.workers.scheduler.resources | nindent 12 }}
       volumes:
