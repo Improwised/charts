@@ -61,7 +61,7 @@ spec:
             periodSeconds: 5
           {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.workers.default.resources | nindent 12 }}
       volumes:
         - name: sites-dir
           {{- if .Values.persistence.worker.enabled }}
