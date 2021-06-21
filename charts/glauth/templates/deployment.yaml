@@ -80,24 +80,28 @@ spec:
             {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-    {{- if .Values.config.from }}{{ if eq .Values.config.from "file" }}
           volumeMounts:
+            {{- if .Values.config.from }}{{ if eq .Values.config.from "file" }}
             - name: {{ .Chart.Name }}-config
               mountPath: /config
-            {{- if .Values.config.ldapsCertificate.enable }}
+            {{- end }}{{- end }}
+            {{- if or .Values.config.ldapsCertificate.enable .Values.config.ldapsCertificate.exising }}
             - name: {{ .Chart.Name }}-tls
               mountPath: /tls
             {{- end }}
       volumes:
+        {{- if .Values.config.from }}{{ if eq .Values.config.from "file" }}
         - name: {{ .Chart.Name }}-config
           configMap:
             name: {{ include "glauth.fullname" . }}
-          {{- if .Values.config.ldapsCertificate.enable }}
+        {{- end }}{{- end }}
         - name: {{ .Chart.Name }}-tls
           secret:
+        {{- if .Values.config.ldapsCertificate.enable }}
+            secretName: {{ .Values.config.ldapsCertificate.exisingSecret }}
+          {{- else }}
             secretName: {{ include "glauth.fullname" . }}-ldaps-tls
           {{- end }}
-    {{- end }}{{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

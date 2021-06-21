@@ -1,5 +1,7 @@
 {{- if .Values.ingress.enabled }}
 {{- if .Values.config.ldapsCertificate.enable }}
+{{- if .Values.config.ldapsCertificate.exisingSecret }}
+{{- else }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -16,5 +18,6 @@ spec:
     name: {{ required "MUST provide Certificate issuer name" .Values.config.ldapsCertificate.issuerName }}
     kind: {{ default "ClusterIssuer" .Values.config.ldapsCertificate.issuerKind }}
     group: {{ default "cert-manager.io" .Values.config.ldapsCertificate.issuerGroup }}
+{{- end }}
 {{- end }}
 {{- end }}
