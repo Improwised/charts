@@ -122,7 +122,7 @@ ingress:
 migrateJob:
   # Set this to true to run migrate as part of helm install/upgrade
   enable: false
-  backup: true
+  backup: false
 
 imagePullSecrets: []
 nameOverride: ""
@@ -138,7 +138,7 @@ podSecurityContext:
 securityContext:
   capabilities:
     add:
-      - CAP_CHOWN
+      - CHOWN
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000

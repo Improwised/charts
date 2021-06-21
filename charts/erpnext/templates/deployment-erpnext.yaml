@@ -34,8 +34,6 @@ spec:
             {{- if .Values.securityContext }}
             {{- toYaml .Values.securityContext | nindent 12 }}
             {{- end }}
-            capabilities:
-              add: ["ALL"]
           volumeMounts:
             - name: sites-dir
               mountPath: /home/frappe/frappe-bench/sites
