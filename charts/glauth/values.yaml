@@ -11,6 +11,13 @@ image:
   tag: ""
 
 config:
+  ## Make sure cert-manager is installed
+  ldapsCertificate:
+    enable: false
+    issuerName: letsencrypt-prod # defaults to letsencrypt-prod
+    # issuerKind: ClusterIssuer # defaults to ClusterIssuer
+    # issuerGroup: cert-manager.io # defaults to cert-manager.io
+
   ## Two Options for providing config, if none provided it will use default one
   ## https://github.com/glauth/glauth/blob/master/scripts/docker/default-config.cfg
 

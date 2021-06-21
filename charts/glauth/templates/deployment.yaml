@@ -58,13 +58,11 @@ spec:
           args: ["-c", "/app/docker/default-config.cfg"]
           {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.config.from }}
-          {{- if eq .Values.config.from "s3" }}
+          {{- if .Values.config.from }}{{- if eq .Values.config.from "s3" }}
           envFrom:
             - secretRef:
                 name: {{ .Chart.Name }}-env
-          {{- end }}
-          {{- end }}
+          {{- end }}{{- end }}
           ports:
             - containerPort: {{ default "389" .Values.service.ldap }}
               name: ldap
@@ -86,10 +84,19 @@ spec:
           volumeMounts:
             - name: {{ .Chart.Name }}-config
               mountPath: /config
+            {{- if .Values.config.ldapsCertificate.enable }}
+            - name: {{ .Chart.Name }}-tls
+              mountPath: /tls
+            {{- end }}
       volumes:
         - name: {{ .Chart.Name }}-config
           configMap:
             name: {{ include "glauth.fullname" . }}
+          {{- if .Values.config.ldapsCertificate.enable }}
+        - name: {{ .Chart.Name }}-tls
+          secret:
+            secretName: {{ include "glauth.fullname" . }}-ldaps-tls
+          {{- end }}
     {{- end }}{{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
