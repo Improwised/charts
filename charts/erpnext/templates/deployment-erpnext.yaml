@@ -28,12 +28,11 @@ spec:
         - name: frappe-bench-ownership
           image: quay.io/libpod/alpine:3.2
           imagePullPolicy: {{ .Values.nginxImage.pullPolicy }}
-          command: ['sh', '-c']
+          command: ['sh', '-cx']
           args: ['chown -R 1000:1000 /home/frappe/frappe-bench']
           securityContext:
-            {{- if .Values.securityContext }}
-            {{- toYaml .Values.securityContext | nindent 12 }}
-            {{- end }}
+            capabilities:
+              add: ["ALL"]
           volumeMounts:
             - name: sites-dir
               mountPath: /home/frappe/frappe-bench/sites
