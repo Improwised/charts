@@ -29,7 +29,8 @@ spec:
           - "--maxmemory-policy allkeys-lru"
           - "--appendonly no"
           - "--save \"\""
-        resources: {}
+        resources:
+          {{- toYaml .Values.redis.resources | nindent 10 }}
         {{- if .Values.redis.extraEnv }}
         env:
           {{- if .Values.redis.extraEnv }}

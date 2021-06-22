@@ -25,6 +25,7 @@ spec:
         command: ["redis-server"]
         args: ["--bind 0.0.0.0"]
         resources:
+          {{- toYaml .Values.redis.resources | nindent 10 }}
         {{- if .Values.redis.extraEnv }}
         env:
           {{- if .Values.redis.extraEnv }}

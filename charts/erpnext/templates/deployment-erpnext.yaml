@@ -29,7 +29,7 @@ spec:
           image: quay.io/libpod/alpine:3.2
           imagePullPolicy: {{ .Values.nginxImage.pullPolicy }}
           command: ['sh', '-cx']
-          args: ['chown -R 1000:1000 /home/frappe/frappe-bench']
+          args: ['chown -cR 1000:1000 /home/frappe/frappe-bench']
           securityContext:
             capabilities:
               add: ["ALL"]
@@ -172,11 +172,11 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-    {{- with .Values.affinity }}
+      {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
+      {{- end }}

@@ -29,6 +29,13 @@ redis:
   extraEnv:
     - name: ALLOW_EMPTY_PASSWORD
       value: "yes"
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 100Mi
+    # requests:
+    #   cpu: 50m
+    #   memory: 50Mi
 
 # Asset Image Env Variables
 frappePyPort: "8000"
@@ -179,7 +186,8 @@ persistence:
 volumePermissions:
   enabled: true
 
-resources: {}
+resources:
+  {}
   # If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
@@ -193,7 +201,8 @@ workers:
   short:
     livenessProbe:
       enabled: false
-    resources: {}
+    resources:
+      {}
       # If you do want to specify resources, uncomment the following
       # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
       # limits:
@@ -205,7 +214,8 @@ workers:
   long:
     livenessProbe:
       enabled: false
-    resources: {}
+    resources:
+      {}
       # If you do want to specify resources, uncomment the following
       # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
       # limits:
@@ -217,7 +227,8 @@ workers:
   default:
     livenessProbe:
       enabled: false
-    resources: {}
+    resources:
+      {}
       # If you do want to specify resources, uncomment the following
       # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
       # limits:
@@ -229,7 +240,8 @@ workers:
   scheduler:
     livenessProbe:
       enabled: false
-    resources: {}
+    resources:
+      {}
       # If you do want to specify resources, uncomment the following
       # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
       # limits:

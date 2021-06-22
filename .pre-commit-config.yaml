@@ -10,7 +10,7 @@ repos:
       - id: check-merge-conflict
       - id: check-symlinks
       - id: detect-private-key
-      - id: detect-aws-credentials
+      # - id: detect-aws-credentials
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.1.0
     hooks:
