@@ -25,3 +25,9 @@ helm repo add improwised https://improwised.github.io/charts/
    ```
 
 4. Add appropriate commit message and push it
+
+## Adding CI first time
+
+tag each chart with it's last chart version e.g. `<chart-name>-<chart-version>` to it's `sha`
+
+e.g. `git tag erpnext-1.0.0 asdasdasdasdasda` here assume that `sha` is pointing to that perticular erpnext chart version `1.0.0`

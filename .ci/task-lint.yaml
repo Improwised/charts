@@ -1,0 +1,9 @@
+---
+platform: linux
+
+inputs:
+  - name: repo
+
+run:
+  path: bash
+  args: [repo/.ci/scripts/pr-lint.sh]

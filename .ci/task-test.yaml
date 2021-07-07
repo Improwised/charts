@@ -1,0 +1,12 @@
+---
+platform: linux
+image_resource: { type: docker-image, source: { repository: amidos/dcind } }
+
+inputs:
+  - name: kind-img
+    optional: true
+  - name: repo
+
+run:
+  path: bash
+  args: [repo/.ci/scripts/test.sh]

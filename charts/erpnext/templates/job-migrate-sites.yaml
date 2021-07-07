@@ -3,10 +3,20 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: migrate-sites-{{ template "erpnext.fullname" . }}-{{ date "20060102150405" .Release.Now }}
+  labels:
+    {{- include "erpnext.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   backoffLimit: 1
   template:
     spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
       serviceAccountName: {{ template "erpnext.serviceAccountName" $ }}
       securityContext:
         {{- toYaml $.Values.podSecurityContext | nindent 8 }}
@@ -32,17 +42,6 @@ spec:
         volumeMounts:
           - name: assets-cache
             mountPath: /assets
-      {{- if .Values.migrateJob.backup }}
-      - name: backup
-        image: "{{ .Values.pythonImage.repository }}:{{ .Values.pythonImage.tag }}"
-        args: ["backup"]
-        imagePullPolicy: {{ .Values.pythonImage.pullPolicy }}
-        securityContext:
-          {{- toYaml $.Values.securityContext | nindent 12 }}
-        volumeMounts:
-          - name: sites-dir
-            mountPath: /home/frappe/frappe-bench/sites
-      {{- end }}
       containers:
       - name: migrate
         image: "{{ .Values.pythonImage.repository }}:{{ .Values.pythonImage.tag }}"
@@ -61,6 +60,18 @@ spec:
           - name: logs
             mountPath: /home/frappe/frappe-bench/logs
       restartPolicy: Never
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
       volumes:
         - name: assets-cache
           emptyDir: {}

@@ -38,6 +38,7 @@ spec:
           env:
             - name: "WORKER_TYPE"
               value: "short"
+          {{- if .Values.enableProbs }}
           livenessProbe:
             exec:
               command:
@@ -46,7 +47,7 @@ spec:
               - "-p"
               - "{{ .Values.postgresHost }}:{{ .Values.postgresPort }}"
               {{- end }}
-            initialDelaySeconds: 15
+            initialDelaySeconds: 100
             periodSeconds: 5
           readinessProbe:
             exec:
@@ -56,8 +57,9 @@ spec:
               - "-p"
               - "{{ .Values.postgresHost }}:{{ .Values.postgresPort }}"
               {{- end }}
-            initialDelaySeconds: 15
+            initialDelaySeconds: 20
             periodSeconds: 5
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:

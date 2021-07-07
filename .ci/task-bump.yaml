@@ -1,0 +1,13 @@
+---
+platform: linux
+
+inputs:
+  - name: repo
+
+outputs:
+  - name: repo
+    path: repo
+
+run:
+  path: bash
+  args: [repo/.ci/scripts/bump.sh]
