@@ -20,13 +20,10 @@ start_docker
 # Cleanup.
 # Not sure if this is required.
 # It's quite possible that Concourse is smart enough to clean up the Docker mess itself.
-# function cleanup() {
-#   kind delete clusters ${KIND_VERSION}
-#   [[ ! -z $(docker ps -a -q) ]] && docker rm -f $(docker ps -a -q)
-#   [[ ! -z $(docker images ls -a -q) ]] && docker rmi -f $(docker images -a -q)
-#   [[ ! -z $(docker volume ls -q) ]] && docker volume rm -f $(docker volume ls -q)
-# }
-# trap cleanup EXIT
+function cleanup() {
+  docker system prune --all --force --volumes
+}
+trap cleanup EXIT
 
 # Strictly speaking, preloading of Docker images is not required.
 # However, you might want to do this for a couple of reasons:
@@ -34,19 +31,23 @@ start_docker
 #   and then pass it through to the task.
 # - When the image is passed to th  e task, Concourse can often get the image from its cache.
 KIND_VERSION="${KIND_NODE_VERSION:-$(cat kind-img/tag)}"
-if [[ ! -f kind-img/tag ]]; then
-  docker pull kindest/node:${KIND_VERSION}
-else
-  docker load -i kind-img/image
-  docker tag "$(cat kind-img/image-id)" "$(cat kind-img/repository):$(cat kind-img/tag)"
-fi
-
+docker_load() {
+  if [[ ! -f kind-img/tag ]]; then
+    docker pull kindest/node:${KIND_VERSION}
+  else
+    docker load -i kind-img/image
+    docker tag "$(cat kind-img/image-id)" "$(cat kind-img/repository):$(cat kind-img/tag)"
+  fi
+}
+docker_load &
+wait_docker_load=$!
 ## installing kubectl
 apk add --no-cache --no-progress -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
 curl -Lso /usr/bin/kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
 chmod a+x /usr/bin/kind
 
 ## create cluster with verbose
+wait ${wait_docker_load}
 kind create cluster --image kindest/node:"${KIND_VERSION}" --name "${KIND_VERSION}" -v 5
 
 ## Wait for cluster to come up
