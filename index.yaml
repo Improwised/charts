@@ -2,8 +2,26 @@ apiVersion: v1
 entries:
   erpnext:
   - apiVersion: v2
+    appVersion: v13.4.1
+    created: "2021-08-10T06:04:07.022741241Z"
+    dependencies:
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.14
+    description: Kubernetes Helm Chart for the lastest stable ERPNext branch
+    digest: 7c20d0bcbacb0d12f60a6c40295634e95d9cbd9920bd03bca58e716fe202bd88
+    icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
+    maintainers:
+    - name: improwised
+    name: erpnext
+    type: application
+    urls:
+    - https://improwised.github.io/charts/charts/erpnext-3.2.5.tgz
+    version: 3.2.5
+  - apiVersion: v2
     appVersion: v13.0.1
-    created: "2021-06-09T10:35:00.684275518Z"
+    created: "2021-08-10T06:04:07.00396433Z"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 63c096ba0d92e323d95675e413511af68f59d4427637d7fe951a4b9c7cc25263
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -16,7 +34,7 @@ entries:
     version: 3.2.0
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2021-06-09T10:35:00.659355332Z"
+    created: "2021-08-10T06:04:07.001856238Z"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 65e10398e4021cf427d1fe21f2b61e31a24d4975ae4f4f864c6847d1cebe2694
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -28,7 +46,7 @@ entries:
   freeipa:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-06-09T10:35:00.685732056Z"
+    created: "2021-08-10T06:04:07.023766198Z"
     description: A Helm chart for Kubernetes
     digest: 9f63bdb1e8a51ad34af788c21e3a52fec2c0c6c35adad0a749273fb3d8a82d84
     maintainers:
@@ -41,7 +59,7 @@ entries:
   healthchecks:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-06-09T10:35:00.741337468Z"
+    created: "2021-08-10T06:04:07.029584298Z"
     dependencies:
     - condition: postgresql.enabled,global.postgresql.enabled
       name: postgresql
@@ -59,4 +77,4 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/healthchecks-1.0.5.tgz
     version: 1.0.5
-generated: "2021-06-09T10:35:00.641616121Z"
+generated: "2021-08-10T06:04:06.99949687Z"
