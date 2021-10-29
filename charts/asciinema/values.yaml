@@ -145,27 +145,25 @@ postgresql:
 ## Redis
 redis:
   enabled: true
+  replica:
+    ## @param replica.replicaCount Number of Redis&trade; replicas to deploy
+    ##
+    replicaCount: 0
   master:
-    persistence:
-      enabled: true
-  resources:
-    limits:
-      cpu: 100m
-      memory: 100Mi
-    requests:
-      cpu: 50m
-      memory: 64m
-  slave:
-    persistence:
-      enabled: true
     resources:
       limits:
-        cpu: 100Mi
-        memory: 100Mi
+        cpu: 100m
+        memory: 128Mi
       requests:
-        cpu: 50m
-        memory: 64m
-  usePassword: false
+        cpu: 100m
+        memory: 128Mi
+  auth:
+    ## @param auth.enabled Enable password authentication
+    ##
+    enabled: false
+    ## @param auth.sentinel Enable password authentication on sentinels too
+    ##
+    sentinel: false
 nodeSelector: {}
 tolerations: []
 affinity: {}

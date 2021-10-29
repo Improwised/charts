@@ -6,7 +6,7 @@ maintainers:
 name: asciinema-server
 sources:
   - https://github.com/asciinema/asciinema-server
-version: 1.0.1
+version: 1.0.2
 dependencies:
   - name: postgresql
     condition: postgresql.enabled
@@ -14,4 +14,4 @@ dependencies:
     version: 9.1.1
   - name: redis
     repository: https://charts.bitnami.com/bitnami
-    version: 11.0.0
+    version: 15.5.3
