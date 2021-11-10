@@ -15,8 +15,8 @@ image:
 args:
   realm: EXAMPLE.TESTY
   domain: example.testy
-  dspassword: ASDF1poiu2QWER3mnbv4
-  adminpassword: ASDF1poiu2QWER3mnbv4
+  dspassword: ASDF1poiu2QWER3mnbv4 #pragma: allowlist secret
+  adminpassword: ASDF1poiu2QWER3mnbv4 #pragma: allowlist secret
   nohostdns: true
   nontp: true
   setupdns: false

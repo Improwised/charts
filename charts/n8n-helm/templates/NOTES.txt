@@ -1,4 +1,0 @@
-
-1. Wait for 5 second in order to n8n discover and connect to postgress
-
-2. n8n dashboard URL is http://localhost:5678

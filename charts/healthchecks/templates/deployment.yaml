@@ -35,8 +35,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "healthchecks.fullname" . }}
+                optional: true
           env:
-          {{- if or .Values.existingSecret }}
+          {{- if .Values.existingSecret }}
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
