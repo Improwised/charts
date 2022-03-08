@@ -1,0 +1,245 @@
+# Default values for polymorphic-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository:
+  tag:
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+volumeMounts: []
+
+volumes: []
+
+env: []
+envFrom: []
+
+# service template
+serviceTemplate:
+  name: svc
+  image:
+
+  healthcheck:
+    enabled: false
+    type: httpGet
+    path: /healthz
+
+  autoscaling: false
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  env: []
+  envFrom: []
+  ports:
+  - name: http
+    containerPort: 80
+    protocol: TCP
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+
+  annotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  volumeMounts: []
+  volumes: []
+
+  service:
+    enabled: true
+    type: ClusterIP
+    ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    annotations: {}
+
+  ingress:
+    enabled: false
+    annotations: {}
+    hosts:
+      - host: app.example.com
+        paths: []
+
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+services: []
+
+# worker template
+workerTemplate:
+  name: worker
+  image:
+  autoscaling: false
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  terminationGracePeriodSeconds: 30
+  secret:
+    enabled: false
+  env: []
+  envFrom: []
+
+  volumeMounts: []
+  volumes: []
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+workers:
+#######################################
+# pulsar-billing-service
+#######################################
+  # - name: pulsar-billing-service
+  #   image:
+  #     repository:
+  #     tag:
+  # #   args: ["-template", "/var/www/.env.staging:/var/www/.env", "-poll", "php", "artisan", "queue:work"]
+  #   env: []
+  #   envFrom: []
+  #     # - name: zxcv
+  #     #   value: uiop
+  #   # certificates & keys will be mounted as a volume from secret
+  #   autoscaling: false
+  #   minReplicaCount: 1
+  #   maxReplicaCount: 0
+  #   # envSecrets:
+  #   #   name: uiop
+  #   #   name: zxcv
+  #   #   name: hjkl
+  #   volumeMounts: []
+  #   # - name: vol1
+  #   #   mountPath: /etc/vol1
+  #   # - name: vol2
+  #   #   mountPath: /etc/vol2
+  #   # - name: vol3
+  #   #   mountPath: /etc/vol3
+
+  #   volumes: []
+  #     # - name: vol1
+  #     #   secret:
+  #     #     secretName: secret1
+  #     # - name: vol2
+  #     #   secret:
+  #     #     secretName: secret2
+  #     # - name: vol3
+  #     #   secret:
+  #     #     secretName: secret3
+
+    # probe: []
+      # aliveCommand: ["/app/worker", "alive"]
+      # timeoutSeconds: 10
+
+  #   resources:
+  # #     # We usually recommend not to specify default resources and to leave this as a conscious
+  # #     # choice for the user. This also increases chances charts run on environments with little
+  # #     # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # #     # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  #     limits:
+  #       cpu: 100m
+  #       memory: 128Mi
+  #     requests:
+  #       cpu: 100m
+  #       memory: 128Mi
+
+  # #   nodeSelector: {}
+
+  # #   tolerations: []
+
+  # #   affinity: {}
+
+cronJobTemplate:
+  name: cronjob
+  image:
+    tag:
+    repository:
+  suspend: true
+  env: []
+  envFrom: []
+  volumeMounts: []
+  annotations: {}
+  volumes: []
+
+cronJobs:
+#   - name: update-status
+#     image:
+#       repository:
+#       tag:
+#     suspend: true
+#     env: []
+#     envFrom: []
+#     annotations: {}
+#     schedule: "0 5 * * *"
+#     # The `template` below places `.env.staging` to `.env`.
+#     args: ["-template", "/var/www/.env.staging:/var/www/.env", "php", "artisan", "listings:update-statuses"]
+#     volumeMounts: []
+#     # - name: vol1
+#     #   mountPath: /etc/vol1
+#     # - name: vol2
+#     #   mountPath: /etc/vol2
+#     # - name: vol3
+#     #   mountPath: /etc/vol3
+
+#     volumes: []
+#       # - name: vol1
+#       #   secret:
+#       #     secretName: secret1
+#       # - name: vol2
+#       #   secret:
+#       #     secretName: secret2
+#       # - name: vol3
+#       #   secret:
+#       #     secretName: secret3
+
+jobTemplate:
+  name: job
+  image:
+    repository:
+    tag:
+  env: []
+  envFrom: []
+  command:
+  annotations: []
+  volumeMounts: []
+
+  volumes: []
+
+jobs:
+  # - name: migrate
+  #   env:
+  #     - name: TZ
+  #       value: Asia/Kolkata
+  #   # To keep the container running
+  #   command: [ "/bin/sh", "-c", "--" ]
+  #   args: [ "while true; do sleep 30; done;" ]
+    # command: ["migrate"]
+    # args: ["migrate", "-database", "${MIGRATION_URL}", "-path", "/app/db_migrations", "up"]

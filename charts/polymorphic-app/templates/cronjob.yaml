@@ -1,0 +1,95 @@
+{{- range .Values.cronJobs }}
+---
+apiVersion: {{ include "cronjob.apiVersion" $ }}
+kind: CronJob
+metadata:
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}"
+  labels:
+    {{- include "polymorphic-app.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}
+  annotations:
+    linkerd.io/inject: disabled
+{{- with .annotations | default $.Values.cronJobTemplate.annotations }}
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  schedule: {{ .schedule | quote }}
+  suspend: {{ .suspend | default false }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          {{- if $.Values.cronJobTemplate.imagePullSecrets }}
+          imagePullSecrets:
+{{ toYaml .imagePullSecrets | indent 12 }}
+          {{- else if .imagePullSecrets }}
+          imagePullSecrets:
+{{ toYaml .imagePullSecrets | indent 12 }}
+          {{- else }}
+          {{- if $.Values.imagePullSecrets }}
+          imagePullSecrets:
+{{ toYaml $.Values.imagePullSecrets | indent 12 }}
+          {{- end }}
+          {{- end }}
+          restartPolicy: Never
+          containers:
+          - name: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}"
+            {{- if .image }}
+            image: "{{ .image.repository }}:{{ .image.tag }}"
+            {{- else }}
+            image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+            {{- end }}
+            env:
+          {{- if .env }}
+{{ toYaml .env | indent 14 }}
+          {{- end }}
+          {{- if $.Values.env }}
+{{ toYaml $.Values.env | indent 14 }}
+          {{- end }}
+          {{- if $.Values.cronJobTemplate.env }}
+{{ toYaml $.Values.cronJobTemplate.env | indent 14 }}
+          {{- end }}
+            envFrom:
+            {{- if .envFrom }}
+{{ toYaml .envFrom | indent 14 }}
+            {{- end }}
+            {{- if $.Values.envFrom }}
+{{ toYaml $.Values.envFrom | indent 14 }}
+            {{- end }}
+            {{- if $.Values.cronJobTemplate.envFrom }}
+{{ toYaml $.Values.cronJobTemplate.envFrom | indent 14 }}
+            {{- end }}
+            imagePullPolicy: {{ $.Values.image.pullPolicy }}
+            {{- if .command }}
+              {{- with .command | default $.Values.cronJobTemplate.command }}
+            command:
+{{ toYaml . | indent 14 }}
+              {{- end }}
+            {{- end }}
+            {{- if .args }}
+              {{- with .args | default $.Values.cronJobTemplate.args }}
+            args:
+{{ toYaml . | indent 14 }}
+              {{- end }}
+            {{- end }}
+            volumeMounts:
+          {{- if .volumeMounts }}
+{{ toYaml .volumeMounts | indent 12 }}
+          {{- end }}
+          {{- if $.Values.volumeMounts }}
+{{ toYaml $.Values.volumeMounts | indent 12 }}
+          {{- end }}
+          {{- if $.Values.cronJobTemplate.volumeMounts }}
+{{ toYaml $.Values.cronJobTemplate.volumeMounts | indent 12 }}
+          {{- end }}
+          volumes:
+      {{- if .volumes }}
+{{ toYaml .volumes | indent 12 }}
+      {{- end }}
+      {{- if $.Values.volumes }}
+{{ toYaml $.Values.volumes | indent 12 }}
+      {{- end }}
+      {{- if $.Values.cronJobTemplate.volumes }}
+{{ toYaml $.Values.cronJobTemplate.volumes | indent 12 }}
+      {{- end }}
+{{- end }}
