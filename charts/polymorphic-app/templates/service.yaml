@@ -1,0 +1,247 @@
+{{- range .Values.services }}
+---
+apiVersion: {{ include "deployment.apiVersion" $ }}
+kind: Deployment
+metadata:
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  labels:
+    {{- include "polymorphic-app.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+{{- with .annotations | default $.Values.serviceTemplate.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 100%
+  replicas: {{ .minReplicaCount  | default $.Values.serviceTemplate.minReplicaCount }}
+  selector:
+    matchLabels:
+      {{- include "polymorphic-app.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  template:
+    metadata:
+      labels:
+        {{- include "polymorphic-app.labels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+    spec:
+      {{- if $.Values.serviceTemplate.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .imagePullSecrets | indent 8 }}
+      {{- else if .imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .imagePullSecrets | indent 8 }}
+      {{- else }}
+      {{- if $.Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml $.Values.imagePullSecrets | indent 8 }}
+      {{- end }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default $.Values.serviceTemplate.terminationGracePeriodSeconds }}
+      containers:
+        - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}"
+          {{- if .image }}
+          image: "{{ .image.repository }}:{{ .image.tag }}"
+          {{- else }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          env:
+          {{- if .env }}
+{{ toYaml .env | indent 12 }}
+          {{- end }}
+          {{- if $.Values.env }}
+{{ toYaml $.Values.env | indent 12 }}
+          {{- end }}
+          {{- if $.Values.serviceTemplate.env }}
+{{ toYaml $.Values.serviceTemplate.env | indent 12 }}
+          {{- end }}
+          envFrom:
+          {{- if .envFrom }}
+{{ toYaml .envFrom | indent 12 }}
+          {{- end }}
+          {{- if $.Values.envFrom }}
+{{ toYaml $.Values.envFrom | indent 12 }}
+          {{- end }}
+          {{- if $.Values.serviceTemplate.envFrom }}
+{{ toYaml $.Values.serviceTemplate.envFrom | indent 12 }}
+          {{- end }}
+        {{- if .command }}
+          {{- with .command | default $.Values.serviceTemplate.command }}
+          command:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- end }}
+        {{- if .args }}
+          {{- with .args | default $.Values.serviceTemplate.args }}
+          args:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- end }}
+          {{- with .ports | default $.Values.serviceTemplate.ports }}
+          ports:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- with .resources | default $.Values.serviceTemplate.resources }}
+          resources:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+          volumeMounts:
+          {{- if .volumeMounts }}
+{{ toYaml .volumeMounts | indent 10 }}
+          {{- end }}
+          {{- if $.Values.volumeMounts }}
+{{ toYaml $.Values.volumeMounts | indent 10 }}
+          {{- end }}
+          {{- if $.Values.serviceTemplate.volumeMounts }}
+{{ toYaml $.Values.serviceTemplate.volumeMounts | indent 10 }}
+          {{- end }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["bash","-c","sleep 120"]
+
+        {{- if or ($.Values.serviceTemplate.healthcheck) (.healthcheck) }}
+          {{- if and (or (eq .healthcheck.type "httpGet") (eq $.Values.serviceTemplate.healthcheck.type "httpGet")) (or .healthcheck.path $.Values.serviceTemplate.healthcheck.path) }}
+          livenessProbe:
+            httpGet:
+              path: {{ .healthcheck.path | default $.Values.serviceTemplate.healthcheck.path }}
+              port: http
+            timeoutSeconds: 7
+          readinessProbe:
+            httpGet:
+              path: {{ .healthcheck.path | default $.Values.serviceTemplate.healthcheck.path }}
+              port: http
+            timeoutSeconds: 7
+          {{- end }}
+        {{- end }}
+
+      volumes:
+      {{- if .volumes }}
+{{ toYaml .volumes | indent 8 }}
+      {{- end }}
+      {{- if $.Values.volumes }}
+{{ toYaml $.Values.volumes | indent 8 }}
+      {{- end }}
+      {{- if $.Values.serviceTemplate.volumes }}
+{{ toYaml $.Values.serviceTemplate.volumes | indent 8 }}
+      {{- end }}
+    {{- with .nodeSelector | default $.Values.serviceTemplate.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  {{- include "polymorphic-app.labels" $ | nindent 18 }}
+                  app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+    {{- with .affinity | default $.Values.serviceTemplate.affinity }}
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .tolerations | default $.Values.serviceTemplate.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+{{- if .autoscaling | default $.Values.serviceTemplate.autoscaling }}
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  labels:
+    {{- include "polymorphic-app.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  minReplicas: {{ .minReplicaCount | default $.Values.serviceTemplate.minReplicaCount }}
+  maxReplicas: {{ .maxReplicaCount | default $.Values.serviceTemplate.maxReplicaCount }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  # - type: Resource
+  #   resource:
+  #     name: memory
+  #     target:
+  #       type: AverageValue
+  #       averageValue: 100Mi
+{{- end }}
+
+{{- if and .service (.service.enabled | default $.Values.serviceTemplate.service.enabled) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  labels:
+    {{- include "polymorphic-app.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+{{- with (.service.annotations | default $.Values.serviceTemplate.service.annotations) }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ .service.type | default $.Values.serviceTemplate.service.type }}
+  ports:
+{{- with (.service.ports | default $.Values.serviceTemplate.service.ports) }}
+    {{ toYaml . | nindent 4 }}
+{{- end }}
+  selector:
+    {{- include "polymorphic-app.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+{{- end }}
+
+
+{{- if and .ingress (.ingress.enabled | default $.Values.serviceTemplate.ingress.enabled) }}
+
+{{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}}
+---
+apiVersion: {{ include "ingress.apiVersion" $ }}
+kind: Ingress
+metadata:
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  labels:
+    {{- include "polymorphic-app.labels" $ | nindent 4 }}
+  {{- with (.ingress.annotations | default $.Values.serviceTemplate.ingress.annotations) }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if gt (len (.ingress.tls | default $.Values.serviceTemplate.ingress.tls)) 0 }}
+  tls:
+  {{- range (.ingress.tls | default $.Values.serviceTemplate.ingress.tls) }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ . | quote }}
+      {{- end }}
+      secretName: {{ .secretName }}
+  {{- end }}
+{{- end }}
+  rules:
+  {{- range (.ingress.hosts | default $.Values.serviceTemplate.ingress.hosts) }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+        {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend: {{- include "ingress.backend" (dict "serviceName" $fullName "servicePort" .servicePort "context" $)  | nindent 14 }}
+        {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
