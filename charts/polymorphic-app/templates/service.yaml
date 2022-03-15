@@ -104,7 +104,7 @@ spec:
               exec:
                 command: ["bash","-c","sleep 120"]
 
-        {{- if or ($.Values.serviceTemplate.healthcheck) (.healthcheck) }}
+        {{- if or ($.Values.serviceTemplate.healthcheck.enabled) (.healthcheck.enabled) }}
           {{- if and (or (eq .healthcheck.type "httpGet") (eq $.Values.serviceTemplate.healthcheck.type "httpGet")) (or .healthcheck.path $.Values.serviceTemplate.healthcheck.path) }}
           livenessProbe:
             httpGet:
@@ -206,11 +206,11 @@ spec:
     app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
 {{- end }}
 
-
+---
 {{- if and .ingress (.ingress.enabled | default $.Values.serviceTemplate.ingress.enabled) }}
 
 {{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}}
----
+
 apiVersion: {{ include "ingress.apiVersion" $ }}
 kind: Ingress
 metadata:
