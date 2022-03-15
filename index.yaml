@@ -3,7 +3,7 @@ entries:
   erpnext:
   - apiVersion: v2
     appVersion: v13.4.1
-    created: "2021-08-10T06:04:07.022741241Z"
+    created: "2022-03-15T19:11:27.216286157+05:30"
     dependencies:
     - condition: mariadb.enabled
       name: mariadb
@@ -21,7 +21,7 @@ entries:
     version: 3.2.5
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2021-08-10T06:04:07.00396433Z"
+    created: "2022-03-15T19:11:27.210382399+05:30"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 63c096ba0d92e323d95675e413511af68f59d4427637d7fe951a4b9c7cc25263
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -34,7 +34,7 @@ entries:
     version: 3.2.0
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2021-08-10T06:04:07.001856238Z"
+    created: "2022-03-15T19:11:27.207672279+05:30"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 65e10398e4021cf427d1fe21f2b61e31a24d4975ae4f4f864c6847d1cebe2694
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -46,7 +46,7 @@ entries:
   freeipa:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-08-10T06:04:07.023766198Z"
+    created: "2022-03-15T19:11:27.217217838+05:30"
     description: A Helm chart for Kubernetes
     digest: 9f63bdb1e8a51ad34af788c21e3a52fec2c0c6c35adad0a749273fb3d8a82d84
     maintainers:
@@ -59,7 +59,7 @@ entries:
   healthchecks:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-08-10T06:04:07.029584298Z"
+    created: "2022-03-15T19:11:27.222560061+05:30"
     dependencies:
     - condition: postgresql.enabled,global.postgresql.enabled
       name: postgresql
@@ -77,4 +77,16 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/healthchecks-1.0.5.tgz
     version: 1.0.5
-generated: "2021-08-10T06:04:06.99949687Z"
+  polymorphic-app:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2022-03-15T19:11:27.224055082+05:30"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 28d17b0c88a8bd02a1ca0d82da08c8c025a3621b584b8d06f4f2fac0a24de7d3
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://improwised.github.io/charts/charts/polymorphic-app-1.0.0.tgz
+    version: 1.0.0
+generated: "2022-03-15T19:11:27.205506988+05:30"
