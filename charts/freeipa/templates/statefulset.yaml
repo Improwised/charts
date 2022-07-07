@@ -1,0 +1,177 @@
+---
+apiVersion: {{ include "common.capabilities.statefulset.apiVersion" . }}
+kind: StatefulSet
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  replicas: 1
+  podManagementPolicy: OrderedReady
+  serviceName: {{ include "common.names.fullname" . }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.podLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: freeipa
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
+        {{- if .Values.diagnosticMode.enabled }}
+        command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 12 }}
+        {{- else if .Values.command }}
+        command: {{- include "common.tplvalues.render" (dict "value" .Values.command "context" $) | nindent 12 }}
+        {{- end }}
+        args:
+        - -U
+        - --realm={{ default "localhost.com" .Values.args.realm }}
+        - --domain={{ default "localhost" .Values.args.domain }}
+        - --ds-password={{ default "freeipa" .Values.args.dspassword }}
+        - --admin-password={{ default "freeipa" .Values.args.adminpassword }}
+        - --unattended
+        {{- if .Values.args.nohostdns }}
+        - --no-host-dns
+        {{- end }}
+        {{- if .Values.args.nontp }}
+        - --no-ntp
+        {{- end }}
+        {{- if .Values.args.setupdns }}
+        - --setup-dns
+        {{- end }}
+        {{- if and (eq .Values.args.setupdns true) (eq .Values.args.autoforwarders true) }}
+        - --auto-forwarders
+        {{- end }}
+        {{- if and (eq .Values.args.setupdns true) (eq .Values.args.allowzoneoverlap true) }}
+        - --allow-zone-overlap
+        {{- end }}
+        {{- if .Values.args.sshtrustdns }}
+        - --ssh-trust-dns
+        {{- end }}
+        ports:
+        {{- if .Values.args.setupdns }}
+        - containerPort: 53
+          protocol: TCP
+        - containerPort: 53
+          protocol: UDP
+        {{- end }}
+        - containerPort: 80
+          protocol: TCP
+        - containerPort: 88
+          protocol: TCP
+        - containerPort: 88
+          protocol: UDP
+        - containerPort: 123
+          protocol: UDP
+        - containerPort: 389
+          protocol: TCP
+        - containerPort: 443
+          protocol: TCP
+        - containerPort: 464
+          protocol: TCP
+        - containerPort: 464
+          protocol: UDP
+        - containerPort: 636
+          protocol: TCP
+        {{- if .Values.resources }}
+        resources: {{- toYaml .Values.resources | nindent 12 }}
+        {{- end }}
+        env:
+        - name: IPA_SERVER_HOSTNAME
+          value: {{ default "localhost" .Values.hostname }}
+        - name: IPA_SERVER_IP
+          value: ""
+        # - name: IPA_SERVER_INSTALL_OPTS
+        #   value: {{ .Values.install_opts }} {{ .Values.realm }}
+        # - name: PASSWORD
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: {{ include "common.names.fullname" . }}-password
+        #       key: admin.password
+        envFrom:
+          {{- if .Values.extraEnvVarsCM }}
+          - configMapRef:
+              name: {{ include "common.tplvalues.render" (dict "value" .Values.extraEnvVarsCM "context" $) }}
+          {{- end }}
+          {{- if .Values.extraEnvVarsSecret }}
+          - secretRef:
+              name: {{ include "common.tplvalues.render" (dict "value" .Values.extraEnvVarsSecret "context" $) }}
+          {{- end }}
+        {{- if not .Values.diagnosticMode.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            - "/usr/bin/systemctl"
+            - status
+            - ipa
+          initialDelaySeconds: 60
+          timeoutSeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        {{- end }}
+        volumeMounts:
+        - name: {{ include "common.names.fullname" . }}-data
+          mountPath: "/data"
+        - name: {{ include "common.names.fullname" . }}-run
+          mountPath: "/run"
+        - name: {{ include "common.names.fullname" . }}-tmp
+          mountPath: "/tmp"
+        - name: {{ include "common.names.fullname" . }}-journal
+          mountPath: "/var/log/journal"
+        - name: cgroups
+          mountPath: /sys/fs/cgroup
+          readOnly: true
+
+      volumes:
+      - name: {{ include "common.names.fullname" . }}-run
+        emptyDir: {}
+      - name: {{ include "common.names.fullname" . }}-tmp
+        emptyDir: {}
+      - name: {{ include "common.names.fullname" . }}-journal
+        emptyDir: {}
+      - name: cgroups
+        hostPath:
+          path: /sys/fs/cgroup
+  {{- if not .Values.persistence.enabled }}
+      - name: data
+        emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ include "common.names.fullname" . }}-data
+      {{- if .Values.persistence.annotations }}
+      annotations: {{- include "common.tplvalues.render" (dict "value" .Values.persistence.annotations "context" $) | nindent 10 }}
+      {{- end }}
+    spec:
+      accessModes:
+      {{- range .Values.persistence.accessModes }}
+        - {{ . | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size | quote }}
+      {{ include "common.storage.class" (dict "persistence" .Values.persistence "global" .Values.global) }}
+  {{- end }}
