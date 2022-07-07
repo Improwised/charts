@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint-test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     strategy:
       matrix:
         # Latest k8s versions. There's no series-based tag, nor is there a latest tag.
