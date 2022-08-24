@@ -1,10 +1,10 @@
-version: 1.0.5
+version: 1.0.6
 apiVersion: v2
 name: healthchecks
 description: A Helm chart for Kubernetes
 maintainers:
-  - email: pratik@improeised.com
-    name: praitk
+  - email: rakshit@improwised.com
+    name: rakshit
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
@@ -26,6 +26,6 @@ sources:
   - https://github.com/healthchecks/healthchecks
 dependencies:
   - name: postgresql
-    version: 9.1.1
+    version: 10.14.3
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled,global.postgresql.enabled
