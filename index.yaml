@@ -3,7 +3,7 @@ entries:
   erpnext:
   - apiVersion: v2
     appVersion: v13.4.1
-    created: "2022-08-24T18:42:44.136491142+05:30"
+    created: "2022-08-24T19:42:35.225056385+05:30"
     dependencies:
     - condition: mariadb.enabled
       name: mariadb
@@ -21,7 +21,7 @@ entries:
     version: 3.2.5
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2022-08-24T18:42:44.132097656+05:30"
+    created: "2022-08-24T19:42:35.218813537+05:30"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 63c096ba0d92e323d95675e413511af68f59d4427637d7fe951a4b9c7cc25263
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -34,7 +34,7 @@ entries:
     version: 3.2.0
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2022-08-24T18:42:44.131158816+05:30"
+    created: "2022-08-24T19:42:35.216241157+05:30"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 65e10398e4021cf427d1fe21f2b61e31a24d4975ae4f4f864c6847d1cebe2694
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -46,7 +46,7 @@ entries:
   freeipa:
   - apiVersion: v2
     appVersion: 4.9.10
-    created: "2022-08-24T18:42:44.138406092+05:30"
+    created: "2022-08-24T19:42:35.227807+05:30"
     dependencies:
     - name: common
       repository: https://charts.bitnami.com/bitnami
@@ -66,7 +66,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-08-24T18:42:44.136982053+05:30"
+    created: "2022-08-24T19:42:35.225762696+05:30"
     description: A Helm chart for Kubernetes
     digest: 9f63bdb1e8a51ad34af788c21e3a52fec2c0c6c35adad0a749273fb3d8a82d84
     maintainers:
@@ -79,7 +79,7 @@ entries:
   healthchecks:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-08-24T18:42:44.13026876+05:30"
+    created: "2022-08-24T19:42:35.238430409+05:30"
     dependencies:
     - condition: postgresql.enabled,global.postgresql.enabled
       name: postgresql
@@ -95,11 +95,11 @@ entries:
     - https://github.com/healthchecks/healthchecks
     type: application
     urls:
-    - https://improwised.github.io/charts/healthchecks-1.0.6.tgz
+    - https://improwised.github.io/charts/charts/healthchecks-1.0.6.tgz
     version: 1.0.6
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-08-24T18:42:44.141457121+05:30"
+    created: "2022-08-24T19:42:35.233055529+05:30"
     dependencies:
     - condition: postgresql.enabled,global.postgresql.enabled
       name: postgresql
@@ -120,7 +120,7 @@ entries:
   polymorphic-app:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2022-08-24T18:42:44.142839875+05:30"
+    created: "2022-08-24T19:42:35.239264705+05:30"
     description: A Helm chart for deploying any custom applications, specifically
       polymorphic applications.
     digest: 28d17b0c88a8bd02a1ca0d82da08c8c025a3621b584b8d06f4f2fac0a24de7d3
@@ -129,4 +129,4 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/polymorphic-app-1.0.0.tgz
     version: 1.0.0
-generated: "2022-08-24T18:42:44.124197928+05:30"
+generated: "2022-08-24T19:42:35.214779005+05:30"
