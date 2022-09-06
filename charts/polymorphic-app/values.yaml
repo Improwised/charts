@@ -24,6 +24,15 @@ serviceTemplate:
   name: svc
   image:
 
+  ## initContainers:
+  ##   - name: something
+  ##     image: alpine
+  ##     command: ['command', 'here']
+
+  initContainers: []
+
+  lifecycleHooks: {}
+
   healthcheck:
     enabled: false
     type: httpGet
