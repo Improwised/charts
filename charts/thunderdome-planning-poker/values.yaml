@@ -30,9 +30,9 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 configmap:
-  app_domain: ".127.0.0.1"
-  cookie_secure: "false"
-  smtp_secure: "false"
+  APP_DOMAIN: ".127.0.0.1"
+  COOKIE_SECURE: "false"
+  SMTP_SECURE: "false"
   DB_NAME: pokerapp
   DB_USER: pokerapp
   DB_PASS: Hello@123
