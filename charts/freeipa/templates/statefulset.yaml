@@ -16,6 +16,13 @@ spec:
   serviceName: {{ include "common.names.fullname" . }}
   template:
     metadata:
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" ( dict "value" .Values.podAnnotations "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if .Values.commonAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 8 }}
+      {{- end }}
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         {{- if .Values.podLabels }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.podLabels "context" $ ) | nindent 8 }}
@@ -110,6 +117,12 @@ spec:
         #     secretKeyRef:
         #       name: {{ include "common.names.fullname" . }}-password
         #       key: admin.password
+        {{- if .Values.extraEnv }}
+        {{- range $key, $value := .Values.extraEnv }}
+        - name: {{ $key }}
+          value: {{ $value }}
+        {{- end }}
+        {{- end }}
         envFrom:
           {{- if .Values.extraEnvVarsCM }}
           - configMapRef:
