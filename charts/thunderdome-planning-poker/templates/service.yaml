@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "thunderdome-planning-poker.fullname" . }}
+  namespace: {{.Values.Namespace}}
+  labels:
+    {{- include "thunderdome-planning-poker.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{.Values.service.targetPort}}
+      protocol: TCP
+      name: http
+      nodePort: {{.Values.service.nodePort}}
+  selector:
+    {{- include "thunderdome-planning-poker.selectorLabels" . | nindent 4 }}
