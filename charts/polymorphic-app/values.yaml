@@ -6,8 +6,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  repository: localhost:5000/fghj
-  tag: "latest"
+  repository: aniketgohel/demo
+  tag: "v6-djangoapp"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -22,37 +22,37 @@ postgresql:
     password: "1234"
     database: emailer
   namespaceOverride: db-service
-env: 
+env:
   - name: PORT
-    value: "8000" 
+    value: "8000"
   - name: DB_NAME
-    value: "emailer" 
+    value: "emailer"
   - name: DB_HOST
-    value: "user-db" 
+    value: "user-db"
   - name: DB_USER
-    value: "admin" 
+    value: "admin"
   - name: DB_PORT
-    value: "5432" 
+    value: "5432"
   - name: EMAIL_HOST
-    value: "smtp.gmail.com" 
+    value: "smtp.gmail.com"
   - name: EMAIL_PORT
-    value: "587" 
+    value: "587"
   - name: EMAIL_USE_TLS
-    value: "true" 
+    value: "true"
   - name: LC_ALL
-    value: "C.UTF-8" 
+    value: "C.UTF-8"
   - name: DJANGO_SUPERUSER_PASSWORD
-    value: "user123@"   
+    value: "user123@"
   - name: DB_PASS
-    value: "1234"   
+    value: "1234"
   - name: DJANGO_SUPERUSER_EMAIL
-    value: "email@email.com"   
+    value: "email@email.com"
   - name: DJANGO_SUPERUSER_USERNAME
-    value: "user"   
+    value: "user"
   - name: EMAIL_HOST_USER
-    value: "email@gmail.com"   
+    value: "email@gmail.com"
   - name: EMAIL_HOST_PASSWORD
-    value: "password"   
+    value: "password"
 
 envFrom: []
 
@@ -67,12 +67,12 @@ serviceTemplate:
   healthcheck:
     enabled: false
     type: httpGet
-    path: / 
+    path: /
 
   autoscaling: false
   minReplicaCount: 1
   maxReplicaCount: 1
-  env: [] 
+  env: []
   envFrom: []
   ports:
   - name: http
@@ -108,11 +108,11 @@ serviceTemplate:
     annotations: {}
 
   ingress:
-    enabled: true  
+    enabled: true
     annotations: {}
     hosts:
       - host: aniket.local
-        paths: 
+        paths:
           - path: "/"
             pathType: Prefix
             servicePort: 8000
@@ -128,7 +128,7 @@ serviceTemplate:
     #    hosts:
     #      - chart-example.local
 
-services: 
+services:
   - name: asd
     initContainers:
       enabled: true
@@ -139,7 +139,7 @@ services:
     healthcheck:
       enabled: false
     service:
-      enabled: True
+      enabled: true
     ingress:
       enabled: true
       # paths:
@@ -307,7 +307,6 @@ jobs:
   - name: migrate
     command: ["/bin/sh", "-c"]
     args: ["python manage.py migrate"]
-    
   # - name: migrate
   #   env:
   #     - name: TZ
