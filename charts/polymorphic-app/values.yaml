@@ -23,7 +23,10 @@ envFrom: []
 serviceTemplate:
   name: svc
   image:
-
+  initContainers:
+    enabled:false
+    command: []
+    args: []
   healthcheck:
     enabled: false
     type: httpGet
