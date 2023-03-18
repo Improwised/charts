@@ -73,6 +73,9 @@ serviceTemplate:
     hosts:
       - host: app.example.com
         paths: []
+        # path: /
+        # pathType: 
+        # servicePort: 80
 
     tls: []
     #  - secretName: chart-example-tls

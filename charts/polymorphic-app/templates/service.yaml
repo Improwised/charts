@@ -208,9 +208,9 @@ spec:
 
 
 {{- if and .ingress (.ingress.enabled | default $.Values.serviceTemplate.ingress.enabled) }}
-
-{{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}}
 ---
+{{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}}
+
 apiVersion: {{ include "ingress.apiVersion" $ }}
 kind: Ingress
 metadata:
