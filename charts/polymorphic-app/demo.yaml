@@ -6,8 +6,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  repository: localhost:5000/fghj
-  tag: "latest"
+  repository:
+  tag:
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -15,68 +15,31 @@ imagePullSecrets: []
 volumeMounts: []
 
 volumes: []
-postgresql:
-  fullnameOverride: aniket-db
-  auth:
-    username: admin
-    password: "1234"
-    database: emailer
-  namespaceOverride: db-service
-env: 
-  - name: PORT
-    value: "8000" 
-  - name: DB_NAME
-    value: "emailer" 
-  - name: DB_HOST
-    value: "user-db" 
-  - name: DB_USER
-    value: "admin" 
-  - name: DB_PORT
-    value: "5432" 
-  - name: EMAIL_HOST
-    value: "smtp.gmail.com" 
-  - name: EMAIL_PORT
-    value: "587" 
-  - name: EMAIL_USE_TLS
-    value: "true" 
-  - name: LC_ALL
-    value: "C.UTF-8" 
-  - name: DJANGO_SUPERUSER_PASSWORD
-    value: "user123@"   
-  - name: DB_PASS
-    value: "1234"   
-  - name: DJANGO_SUPERUSER_EMAIL
-    value: "email@email.com"   
-  - name: DJANGO_SUPERUSER_USERNAME
-    value: "user"   
-  - name: EMAIL_HOST_USER
-    value: "email@gmail.com"   
-  - name: EMAIL_HOST_PASSWORD
-    value: "password"   
 
+env: []
 envFrom: []
 
 # service template
 serviceTemplate:
   name: svc
   image:
-  command: ["/bin/sh", "-c"]
-  args: ["python manage.py createsuperuser --noinput --username $DJANGO_SUPERUSER_USERNAME --email $DJANGO_SUPERUSER_EMAIL; python manage.py runserver 0.0.0.0:8000"]
   initContainers:
-    enabled: true
+    enabled:false
+    command: []
+    args: []
   healthcheck:
     enabled: false
     type: httpGet
-    path: / 
+    path: /healthz
 
   autoscaling: false
   minReplicaCount: 1
   maxReplicaCount: 1
-  env: [] 
+  env: []
   envFrom: []
   ports:
   - name: http
-    containerPort: 8000
+    containerPort: 80
     protocol: TCP
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -102,50 +65,27 @@ serviceTemplate:
     type: ClusterIP
     ports:
     - name: http
-      port: 8000
-      targetPort: 8000
+      port: 80
+      targetPort: http
       protocol: TCP
     annotations: {}
 
   ingress:
-    enabled: true  
+    enabled: false
     annotations: {}
     hosts:
-      - host: aniket.local
-        paths: 
-          - path: "/"
-            pathType: Prefix
-            servicePort: 8000
-            # backend:
-            #   service:
-            #     name: test
-            #     port:
-            #       name: http
-            #       number: 8000
+      - host: app.example.com
+        paths: []
+        # path: /
+        # pathType: 
+        # servicePort: 80
 
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
 
-services: 
-  - name: asd
-    initContainers:
-      enabled: true
-      command: ["/bin/sh", "-c"]
-      args: ["python manage.py migrate"]
-    command: ["/bin/sh", "-c"]
-    args: ["python manage.py createsuperuser --noinput --username $DJANGO_SUPERUSER_USERNAME --email $DJANGO_SUPERUSER_EMAIL; python manage.py runserver 0.0.0.0:8000"]
-    healthcheck:
-      enabled: false
-    service:
-      enabled: True
-    ingress:
-      enabled: true
-      # paths:
-      #   path: "/"
-      #   backend:
-      #     # enabled: true
+services: []
 
 # worker template
 workerTemplate:
@@ -182,10 +122,6 @@ workerTemplate:
   affinity: {}
 
 workers:
-  # - name: main
-    # image:
-    #   repository:
-    #   tag:
 #######################################
 # pulsar-billing-service
 #######################################
@@ -193,7 +129,7 @@ workers:
   #   image:
   #     repository:
   #     tag:
-  #   args: ["-template", "/var/www/.env.staging:/var/www/.env", "-poll", "php", "artisan", "queue:work"]
+  # #   args: ["-template", "/var/www/.env.staging:/var/www/.env", "-poll", "php", "artisan", "queue:work"]
   #   env: []
   #   envFrom: []
   #     # - name: zxcv
@@ -225,9 +161,9 @@ workers:
   #     #   secret:
   #     #     secretName: secret3
 
-  #   probe: []
-  #     aliveCommand: ["/app/worker", "alive"]
-  #     timeoutSeconds: 10
+    # probe: []
+      # aliveCommand: ["/app/worker", "alive"]
+      # timeoutSeconds: 10
 
   #   resources:
   # #     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -304,10 +240,6 @@ jobTemplate:
   volumes: []
 
 jobs:
-  - name: migrate
-    command: ["/bin/sh", "-c"]
-    args: ["python manage.py migrate"]
-    
   # - name: migrate
   #   env:
   #     - name: TZ
