@@ -22,3 +22,7 @@ appVersion: 1.0.1
 maintainers:
   - name: valid
     email: valid@example.com
+dependencies:
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: "12.2.2"
