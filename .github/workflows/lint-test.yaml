@@ -30,6 +30,10 @@ jobs:
         with:
           version: v3.8.1
 
+      - name: Adding bitnamirepo
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+
       - uses: actions/setup-python@v2
         with:
           python-version: 3.7
@@ -40,7 +44,6 @@ jobs:
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
           changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }})
           if [[ -n "$changed" ]]; then
             echo "::set-output name=changed::true"
