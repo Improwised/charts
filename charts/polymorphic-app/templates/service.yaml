@@ -41,6 +41,66 @@ spec:
       {{- end }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default $.Values.serviceTemplate.terminationGracePeriodSeconds }}
+      
+      {{- if and .initContainers (.initContainers.enabled | default $.Values.serviceTemplate.initContainers.enabled) }}
+      initContainers:
+        - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-init"
+          {{- if .image }}
+          image: "{{ .image.repository }}:{{ .image.tag }}"
+          {{- else }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          env:
+          {{- if .env }}
+{{ toYaml .env | indent 12 }}
+          {{- end }}
+          {{- if $.Values.env }}
+{{ toYaml $.Values.env | indent 12 }}
+          {{- end }}
+          {{- if $.Values.serviceTemplate.env }}
+{{ toYaml $.Values.serviceTemplate.env | indent 12 }}
+          {{- end }}
+          envFrom:
+          {{- if .envFrom }}
+{{ toYaml .envFrom | indent 12 }}
+          {{- end }}
+          {{- if $.Values.envFrom }}
+{{ toYaml $.Values.envFrom | indent 12 }}
+          {{- end }}
+          {{- if $.Values.serviceTemplate.envFrom }}
+{{ toYaml $.Values.serviceTemplate.envFrom | indent 12 }}
+          {{- end }}
+        {{- if .initContainers.command }}
+          {{- with .initContainers.command | default $.Values.serviceTemplate.initContainers.command }}
+          command:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- end }}
+        {{- if .initContainers.args }}
+          {{- with .initContainers.args | default $.Values.serviceTemplate.initContainers.args }}
+          args:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- end }}
+        {{- with .resources | default $.Values.serviceTemplate.resources }}
+          resources:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+          volumeMounts:
+          {{- if .volumeMounts }}
+{{ toYaml .volumeMounts | indent 10 }}
+          {{- end }}
+          {{- if $.Values.volumeMounts }}
+{{ toYaml $.Values.volumeMounts | indent 10 }}
+          {{- end }}
+          {{- if $.Values.serviceTemplate.initContainers.volumeMounts }}
+{{ toYaml $.Values.serviceTemplate.initContainers.volumeMounts | indent 10 }}
+          {{- end }}  
+      
+          {{- end }}
+      
+
       containers:
         - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}"
           {{- if .image }}
@@ -209,7 +269,7 @@ spec:
 
 {{- if and .ingress (.ingress.enabled | default $.Values.serviceTemplate.ingress.enabled) }}
 ---
-{{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}}
+{{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}} #
 
 apiVersion: {{ include "ingress.apiVersion" $ }}
 kind: Ingress
