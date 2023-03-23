@@ -104,7 +104,7 @@ spec:
               exec:
                 command: ["bash","-c","sleep 120"]
 
-        {{- if or ($.Values.serviceTemplate.healthcheck) (.healthcheck) }}
+        {{- if or ($.Values.serviceTemplate.healthcheck.enabled) (.healthcheck.enabled) }}
           {{- if and (or (eq .healthcheck.type "httpGet") (eq $.Values.serviceTemplate.healthcheck.type "httpGet")) (or .healthcheck.path $.Values.serviceTemplate.healthcheck.path) }}
           livenessProbe:
             httpGet:
