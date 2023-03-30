@@ -44,13 +44,15 @@ command: {}
 args:
   realm: EXAMPLE.ORG
   domain: example.org
-  dspassword: ASDF1poiu2QWER3mnbv4 #pragma: allowlist secret
-  adminpassword: ASDF1poiu2QWER3mnbv4 #pragma: allowlist secret
+  dspassword: ASDF1poiu2QWER3mnbv4    # pragma: allowlist secret
+  adminpassword: ASDF1poiu2QWER3mnbv4    # pragma: allowlist secret
   nohostdns: true
   nontp: true
   setupdns: false
-  autoforwarders: true # if setup dns is true thiw will be applicable
-  allowzoneoverlap: true # if setup dns is true thiw will be applicable
+#  if setup dns is true thiw will be applicable
+  autoforwarders: true 
+#  if setup dns is true thiw will be applicable
+  allowzoneoverlap: true 
   sshtrustdns: false
 
 ## Enable persistence using Persistent Volume Claims
@@ -106,7 +108,7 @@ containerSecurityContext: {}
 
 service:
   type: ClusterIP
-  #clusterIP: 10.43.201.201
+  # clusterIP: 10.43.201.201
   port: 80
 
 ## Configure the ingress resource that allows you to access the Consul UI
@@ -248,4 +250,3 @@ diagnosticMode:
   ##
   args:
     - infinity
-

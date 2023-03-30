@@ -21,16 +21,16 @@ siterootOverride: ""
 sitenameOverride: ""
 
 #  for postgres password, email host password, superuser email, superuser password
-existingSecret: healthchecks-secret #pragma: allowlist secret
+existingSecret: healthchecks-secret    # pragma: allowlist secret
 
-#configure SMTP host
+# configure SMTP host
 email:
   host:
   port: 1025
   user: test
 
 # pass more environment variables, more details below
-#https://github.com/healthchecks/healthchecks#configuration
+# https://github.com/healthchecks/healthchecks#configuration
 extraenvs:
   EMAIL_USE_TLS: "False"
 
@@ -69,7 +69,7 @@ postgresql:
     enabled: true
   postgresqlDatabase: healthchecks
   postgresqlUsername: healthchecks
-  postgresqlPassword: healthchecks #pragma: allowlist secret
+  postgresqlPassword: healthchecks     # pragma: allowlist secret
   service:
     port: 5432
 # existingSecret: healthchecks-secret
