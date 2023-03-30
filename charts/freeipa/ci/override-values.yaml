@@ -54,7 +54,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  #clusterIP: 10.43.201.201
+  # clusterIP: 10.43.201.201
   port: 80
 
 ingress:
