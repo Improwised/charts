@@ -70,6 +70,8 @@ postgresql:
   postgresqlDatabase: healthchecks
   postgresqlUsername: healthchecks
   postgresqlPassword: healthchecks #pragma: allowlist secret
+  service:
+    port: 5432
 # existingSecret: healthchecks-secret
 
 resources: {}
