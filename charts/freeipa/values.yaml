@@ -49,7 +49,7 @@ args:
   nohostdns: true
   nontp: true
   setupdns: false
-  autoforwarders: true    # if setup dns is true thiw will be applicable 
+  autoforwarders: true    # if setup dns is true thiw will be applicable
   allowzoneoverlap: true  # if setup dns is true thiw will be applicable
   sshtrustdns: false
 
