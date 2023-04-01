@@ -1,17 +1,19 @@
 name: Release Charts
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Lint and Test Charts"]
+    branches: [main]
+    types:
+      - completed
 
 jobs:
   release:
-    if: github.repository == 'Improwised/charts'
+    if: github.repository == 'Improwised/charts' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -23,8 +25,9 @@ jobs:
       - name: Adding bitnamirepo
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami  
+          helm repo add bitnami-full-index https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.2.0
+        uses: helm/chart-releaser-action@v1.5.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
