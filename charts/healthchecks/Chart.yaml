@@ -1,4 +1,3 @@
-version: 1.0.6
 apiVersion: v2
 name: healthchecks
 description: A Helm chart for Kubernetes
@@ -6,6 +5,7 @@ maintainers:
   - email: rakshit@improwised.com
     name: rakshit
 type: application
+version: 1.1.0
 appVersion: 2.7.0
 sources:
   - https://github.com/healthchecks/healthchecks

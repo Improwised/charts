@@ -10,7 +10,7 @@ image:
   repository: freeipa/freeipa-server
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "fedora-36-4.9.10"
+  tag: "fedora-37-4.10.1"
 
 # # IPA Server must know it's own hostname to work properly....
 # # These values will probs need to be overwritten or could use lookup function?
