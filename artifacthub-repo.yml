@@ -1,0 +1,10 @@
+# Artifact Hub repository metadata file
+repositoryID: 6aa5719f-06d9-4b37-b6b0-8b1371349785
+owners:
+  - name: improwised
+    email: support@improwised.com
+ignore:
+  - name: thunderdome-planning-poker
+  - name: freeipa
+    version: 0.3.0
+
