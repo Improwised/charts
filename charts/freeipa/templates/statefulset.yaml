@@ -48,10 +48,13 @@ spec:
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
         {{- end }}
         {{- if .Values.diagnosticMode.enabled }}
-        command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 8 }}
-        args: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.args "context" $) | nindent 8 }}
+        command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 12 }}
         {{- else if .Values.command }}
         command: {{- include "common.tplvalues.render" (dict "value" .Values.command "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.diagnosticMode.enabled }}
+        args: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.args "context" $) | nindent 12 }}
+        {{- else }}
         args:
         - -U
         - --realm={{ default "localhost.com" .Values.args.realm }}
