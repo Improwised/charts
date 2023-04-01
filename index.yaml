@@ -3,6 +3,24 @@ entries:
   erpnext:
   - apiVersion: v2
     appVersion: v13.4.1
+    created: "2023-04-01T07:31:31.944600482Z"
+    dependencies:
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 9.3.14
+    description: Kubernetes Helm Chart for the lastest stable ERPNext branch
+    digest: 2fa975d3fc8d36f555eb44a560acd394ceeb86769e407cc58478fc7a02e06941
+    icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
+    maintainers:
+    - name: improwised
+    name: erpnext
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/erpnext-3.3.0/erpnext-3.3.0.tgz
+    version: 3.3.0
+  - apiVersion: v2
+    appVersion: v13.4.1
     created: "2022-11-01T11:40:05.695144845+05:30"
     dependencies:
     - condition: mariadb.enabled
@@ -45,6 +63,26 @@ entries:
     version: 3.0.3
   freeipa:
   - apiVersion: v2
+    appVersion: 4.10.1
+    created: "2023-04-01T07:31:32.145637267Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: FreeIPA is an integrated security information management solution
+      combining Linux (Fedora), 389 Directory Server, MIT Kerberos, NTP, DNS, Dogtag
+      (Certificate System).
+    digest: e13f77d1d0e0e82dac465b5a5930ed0317fd52372c08f43cbf7b08e847c8f6dd
+    maintainers:
+    - name: improwised
+    name: freeipa
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/freeipa-0.4.0/freeipa-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v2
     appVersion: 4.9.10
     created: "2022-11-01T11:40:05.697709507+05:30"
     dependencies:
@@ -77,6 +115,26 @@ entries:
     - https://improwised.github.io/charts/charts/freeipa-0.2.0.tgz
     version: 0.2.0
   healthchecks:
+  - apiVersion: v2
+    appVersion: 2.7.0
+    created: "2023-04-01T07:31:32.362659043Z"
+    dependencies:
+    - condition: postgresql.enabled,global.postgresql.enabled
+      name: postgresql
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 10.14.3
+    description: A Helm chart for Kubernetes
+    digest: 889dca9f16bf8983ab891a3f1d79c04da3a9ca3fb084d7aeae8b84b5f07b3bb4
+    maintainers:
+    - email: rakshit@improwised.com
+      name: rakshit
+    name: healthchecks
+    sources:
+    - https://github.com/healthchecks/healthchecks
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/healthchecks-1.1.0/healthchecks-1.1.0.tgz
+    version: 1.1.0
   - apiVersion: v2
     appVersion: 1.16.0
     created: "2022-11-01T11:40:05.707227851+05:30"
@@ -120,6 +178,19 @@ entries:
   polymorphic-app:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2023-04-01T07:31:32.55971993Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: bf7e83177250cdf5ef01ab61ccef2d61e60e75b5604e25d1aa19cc2ae6eb5bee
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.0.2/polymorphic-app-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2022-11-01T11:40:05.708644666+05:30"
     description: A Helm chart for deploying any custom applications, specifically
       polymorphic applications.
@@ -140,4 +211,20 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/polymorphic-app-1.0.0.tgz
     version: 1.0.0
-generated: "2022-11-01T11:40:05.686888978+05:30"
+  thunderdome-planning-poker:
+  - apiVersion: v2
+    appVersion: v2.29.2
+    created: "2023-04-01T07:31:32.762111323Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.2.6
+    description: A Helm chart for thunderdome-planning-poker
+    digest: 3616cfbfcdf120a308b2b506b7d5b312f05794705fc6afd8327e9bc8407a5364
+    name: thunderdome-planning-poker
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
+    version: 1.0.0
+generated: "2023-04-01T07:31:32.762152523Z"
