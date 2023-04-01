@@ -8,7 +8,7 @@ image:
   repository: linuxserver/healthchecks
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "amd64-version-v1.16.0"
+  tag: "2.7.20230331"
 
 imagePullSecrets: []
 nameOverride: ""
