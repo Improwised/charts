@@ -39,6 +39,8 @@ image:
 # machineconfig:
 #   ignition_version: 3.1.0
 
+command: {}
+
 args:
   realm: EXAMPLE.ORG
   domain: example.org
