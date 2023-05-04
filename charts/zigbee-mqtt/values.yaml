@@ -1,10 +1,10 @@
 replicaCount: 1
 
 image:
-  repository: koenkk/zigbee2mqtt
+  repository: 
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest-dev"
+  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -25,48 +25,15 @@ ingress:
   annotations: {}
 
   hosts:
-    - host: zigbee.local
+    - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls: []
 
-env:
-  - name: TZ
-    value: asia/calcutta
-  - name: "ZIGBEE2MQTT_DATA"
-    value: "/data"
-  - name: ZIGBEE2MQTT_CONFIG_MQTT_SERVER
-    value: "mqtt://10.43.225.15:1883"
-volumeMounts:
-- name: zigbee2mqtt-data
-  mountPath: /data
-- name: zigbee2mqtt-config
-  mountPath: /app/configuration.yaml
-  subPath: configuration.yaml
-- name: zigbee2mqtt-device
-  mountPath: /data/devices.yaml
-  subPath: devices.yaml
-- name: zigbee2mqtt-udev
-  mountPath: /dev/serial/by-id
-- name: ttyacm
-  mountPath: /dev/ttyACM0
-volumes:
-- name: zigbee2mqtt-data
-  persistentVolumeClaim:
-    claimName: zigbee2mqtt-data
-- name: zigbee2mqtt-udev
-  hostPath:
-    path: /dev/serial/by-id
-- name: ttyacm
-  hostPath:
-    path: /dev/ttyACM0
-- name: zigbee2mqtt-config
-  configMap:
-    name: zigbee2mqtt-config
-- name: zigbee2mqtt-device
-  configMap:
-    name: zigbee2mqtt-device
+env: []
+volumeMounts: []
+volumes: []
 
 persistance:
   accessModes: ReadWriteOnce
