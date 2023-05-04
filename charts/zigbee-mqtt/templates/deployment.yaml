@@ -35,7 +35,14 @@ spec:
           env:
           {{- if $.Values.env }}
 {{ toYaml $.Values.env | indent 12 }}
-          {{- end }}
+          {{- else}}
+          - name: TZ
+            value: asia/calcutta
+          - name: "ZIGBEE2MQTT_DATA"
+            value: "/data"
+          - name: ZIGBEE2MQTT_CONFIG_MQTT_SERVER
+            value: "mqtt://mosquitto:1883"
+            {{- end}}
           securityContext:
             privileged: true
           ports:
