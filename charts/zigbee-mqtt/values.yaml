@@ -1,0 +1,108 @@
+replicaCount: 1
+
+image:
+  repository: koenkk/zigbee2mqtt
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest-dev"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "zigbee2mqtt"
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: zigbee.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+env:
+  - name: TZ
+    value: asia/calcutta
+  - name: "ZIGBEE2MQTT_DATA"
+    value: "/data"
+  - name: ZIGBEE2MQTT_CONFIG_MQTT_SERVER # optional - can also be configured in the configuration.yaml in the configmap
+    value: "mqtt://10.43.225.15:1883"
+volumeMounts:
+- name: zigbee2mqtt-data
+  mountPath: /data
+- name: zigbee2mqtt-config
+  mountPath: /app/configuration.yaml
+  subPath: configuration.yaml
+- name: zigbee2mqtt-device
+  mountPath: /data/devices.yaml
+  subPath: devices.yaml
+- name: zigbee2mqtt-udev
+  mountPath: /dev/serial/by-id
+- name: ttyacm
+  mountPath: /dev/ttyACM0
+volumes:
+- name: zigbee2mqtt-data
+  persistentVolumeClaim:
+    claimName: zigbee2mqtt-data
+- name: zigbee2mqtt-udev
+  hostPath:
+    path: /dev/serial/by-id
+- name: ttyacm
+  hostPath:
+    path: /dev/ttyACM0
+- name: zigbee2mqtt-config
+  configMap:
+    name: zigbee2mqtt-config
+- name: zigbee2mqtt-device
+  configMap:
+    name: zigbee2mqtt-device
+
+persistance:
+  accessModes: ReadWriteOnce
+  storage: 100Mi
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

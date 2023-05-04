@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "zigbee2mqtt.fullname" . }}-data
+  labels:
+    {{- include "zigbee2mqtt.labels" . | nindent 4 }}-data
+spec:
+  accessModes:
+    - {{.Values.persistance.accessModes}}
+  resources:
+    requests:
+      storage: {{.Values.persistance.storage}}
+status: {}
