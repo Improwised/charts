@@ -1,10 +1,8 @@
 # Default values for frigate.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
 # -- upgrade strategy type (e.g. Recreate or RollingUpdate)
 strategyType: Recreate
-
 image:
   # -- Docker registry/repository to pull the image from
   repository: ghcr.io/blakeblackshear/frigate
@@ -51,8 +49,7 @@ shmSize: 1Gi
 nameOverride: ""
 
 # fullnameOverride -- Overrides the Full Name of resources
-fullnameOverride: ""  
-
+fullnameOverride: ""
 # -- frigate configuration - see [Docs](https://docs.frigate.video/configuration/index) for more info
 config: |
   mqtt:
@@ -69,8 +66,6 @@ config: |
         enabled: False # <---- disable detection until you have a working camera feed
         width: 1280 # <---- update for your camera's resolution
         height: 720 # <---- update for your camera's resolution
-
-
 
 # Probes configuration
 probes:
@@ -155,7 +150,7 @@ persistence:
     ## If you want to reuse an existing claim, you can pass the name of the PVC using
     ## the existingClaim variable
     # existingClaim: my-claim
-    # subPath: 
+    # subPath: some-subpath
 
     # -- [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes) to use for the PVC
     accessMode: ReadWriteOnce
