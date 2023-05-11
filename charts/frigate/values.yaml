@@ -9,7 +9,7 @@ image:
   # -- Overrides the default tag (appVersion) used in Chart.yaml ([Docker Hub](https://hub.docker.com/r/blakeblackshear/frigate/tags?page=1))
   tag: 0.12.0
   # -- Docker image pull policy
-  pullPolicy: 
+  pullPolicy:
 # if using nfs then use nfs-client to mount
 storageClassName: local-path
 # -- Docker image pull policy
