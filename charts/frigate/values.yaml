@@ -9,9 +9,9 @@ image:
   # -- Overrides the default tag (appVersion) used in Chart.yaml ([Docker Hub](https://hub.docker.com/r/blakeblackshear/frigate/tags?page=1))
   tag: 0.12.0
   # -- Docker image pull policy
-  pullPolicy: IfNotPresent
-
-storageClassName: local-path #if using nfs then use nfs-client to mount 
+  pullPolicy: 
+# if using nfs then use nfs-client to mount
+storageClassName: local-path  
 # -- Docker image pull policy
 imagePullSecrets: []
 # -- additional ENV variables to set. Prefix with FRIGATE_ to target Frigate configuration values
@@ -28,7 +28,6 @@ coral:
   enabled: true
   # -- path on the host to which to mount the Coral device
   hostPath: /dev/bus/usb
-
 gpu:
   nvidia:
     # -- Enables NVIDIA GPU compatibility. Must also use the "amd64nvidia" tagged image
