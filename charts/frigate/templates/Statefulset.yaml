@@ -138,7 +138,7 @@ spec:
     spec:
       accessModes:
         - ReadWriteOnce
-      storageClassName: "nfs-client"
+      storageClassName: {{ .Values.storageClassName }}
       resources:
         requests:
           storage: 1Gi

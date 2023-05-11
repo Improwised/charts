@@ -11,9 +11,9 @@ image:
   # -- Docker image pull policy
   pullPolicy: IfNotPresent
 
+storageClassName: local-path #if using nfs then use nfs-client to mount 
 # -- Docker image pull policy
 imagePullSecrets: []
-
 # -- additional ENV variables to set. Prefix with FRIGATE_ to target Frigate configuration values
 env: {}
   # TZ: UTC
