@@ -41,6 +41,9 @@ spec:
       {{- end }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default $.Values.serviceTemplate.terminationGracePeriodSeconds }}
+      securityContext:
+          runAsUser: {{ $.Values.securityContext.runAsUser }}
+          runAsgroup: {{ $.Values.securityContext.runAsGroup }}
       containers:
         - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}"
           {{- if .image }}

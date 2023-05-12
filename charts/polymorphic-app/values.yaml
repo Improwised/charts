@@ -81,6 +81,11 @@ serviceTemplate:
 
 services: []
 
+# securityContext
+securityContext:
+    runAsUser:
+    runAsGroup:
+
 # worker template
 workerTemplate:
   name: worker
