@@ -28,6 +28,7 @@ serviceTemplate:
     enabled: false
     type: httpGet
     path: /healthz
+    port: http
 
   autoscaling: false
   minReplicaCount: 1
