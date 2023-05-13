@@ -121,13 +121,13 @@ spec:
           livenessProbe:
             tcpSocket:
               port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
-            initialDelaySeconds: 15
+            initialDelaySeconds: 20
             periodSeconds: 20
           readinessProbe:
             tcpSocket:
               port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            initialDelaySeconds: 20
+            periodSeconds: 20
           {{- end }}
         {{- end }}
 
