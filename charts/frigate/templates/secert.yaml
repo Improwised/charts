@@ -8,6 +8,6 @@ metadata:
     helm.sh/chart: {{ include "frigate.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-data:
+stringData:
   config.yml: |
 {{ .Values.config | indent 4 }}
