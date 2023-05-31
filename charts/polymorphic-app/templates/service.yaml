@@ -109,13 +109,29 @@ spec:
           livenessProbe:
             httpGet:
               path: {{ .healthcheck.path | default $.Values.serviceTemplate.healthcheck.path }}
-              port: http
+              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
             timeoutSeconds: 7
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
           readinessProbe:
             httpGet:
               path: {{ .healthcheck.path | default $.Values.serviceTemplate.healthcheck.path }}
-              port: http
+              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
             timeoutSeconds: 7
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+          {{- end }}
+          {{- if and (or (eq .healthcheck.type "tcpSocket") (eq $.Values.serviceTemplate.healthcheck.type "tcpSocket")) (or .healthcheck.port $.Values.serviceTemplate.healthcheck.port) }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           {{- end }}
         {{- end }}
 
