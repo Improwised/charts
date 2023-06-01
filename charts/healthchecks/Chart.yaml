@@ -5,12 +5,12 @@ maintainers:
   - email: rakshit@improwised.com
     name: rakshit
 type: application
-version: 1.1.0
+version: 1.1.1
 appVersion: 2.7.0
 sources:
   - https://github.com/healthchecks/healthchecks
 dependencies:
   - name: postgresql
-    version: 10.14.3
-    repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+    version: 12.1.6
+    repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled,global.postgresql.enabled

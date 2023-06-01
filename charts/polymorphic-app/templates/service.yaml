@@ -44,6 +44,12 @@ spec:
       {{- end }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default $.Values.serviceTemplate.terminationGracePeriodSeconds }}
+      {{- if or ($.Values.serviceTemplate.initContainer) (.initContainer) }}
+        {{- with .initContainer | default $.Values.serviceTemplate.initContainer }}
+      initContainers:
+      {{ toYaml . | indent 8 }}
+        {{- end }}
+      {{- end }}
       containers:
         - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}"
           {{- if .image }}
@@ -91,6 +97,12 @@ spec:
         {{- with .resources | default $.Values.serviceTemplate.resources }}
           resources:
 {{ toYaml . | indent 12 }}
+        {{- end }}
+        {{- if or ($.Values.serviceTemplate.lifecycleHooks) (.lifecycleHooks) }}
+          {{- with .lifecycleHooks | default $.Values.serviceTemplate.lifecycleHooks }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
         {{- end }}
           volumeMounts:
           {{- if .volumeMounts }}
