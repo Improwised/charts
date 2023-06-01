@@ -117,6 +117,21 @@ entries:
   frigate:
   - apiVersion: v2
     appVersion: 0.12.0
+    created: "2023-06-01T00:52:25.164035288Z"
+    description: NVR With Realtime Object Detection for IP Cameras
+    digest: 6052022c6dedf2060728009d4d9d8ceca7152626e33f12b7ea86145124efaded
+    keywords:
+    - tensorflow
+    - coral
+    - ml
+    maintainers:
+    - name: Improwised
+    name: frigate
+    urls:
+    - https://github.com/Improwised/charts/releases/download/frigate-1.0.1/frigate-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 0.12.0
     created: "2023-05-27T14:00:47.186812868Z"
     description: NVR With Realtime Object Detection for IP Cameras
     digest: 2dbbe65d3bd6af99dae91d3640ad91469d9d297e07eb50386364b2c14d365e0f
@@ -256,4 +271,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2023-05-27T14:00:47.187099778Z"
+generated: "2023-06-01T00:52:25.164186888Z"
