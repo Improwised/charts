@@ -10,7 +10,7 @@ image:
   repository: freeipa/freeipa-server
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "centos-8"
+  tag: "centos-8-4.9.6"
 
 # args:
 #   realm: EXAMPLE.TESTY
@@ -54,7 +54,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  #clusterIP: 10.43.201.201
+  # clusterIP: 10.43.201.201
   port: 80
 
 ingress:

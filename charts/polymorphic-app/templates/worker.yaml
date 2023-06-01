@@ -81,6 +81,10 @@ spec:
           resources:
 {{ toYaml . | indent 12 }}
         {{- end }}
+        {{- with .lifecycleHooks | default $.Values.workerTemplate.lifecycleHooks }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+        {{- end }}
           volumeMounts:
           {{- if .volumeMounts }}
 {{ toYaml .volumeMounts | indent 10 }}
