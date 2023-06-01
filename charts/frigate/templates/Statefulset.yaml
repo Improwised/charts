@@ -120,8 +120,8 @@ spec:
             {{- end }}
       volumes:
         - name: config
-          configMap:
-            name: {{ template "frigate.fullname" . }}
+          secret:
+            secretName: {{ template "frigate.fullname" . }}
         {{- if .Values.coral.enabled }}
         - name: coral-dev
           hostPath:
