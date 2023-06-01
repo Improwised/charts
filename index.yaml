@@ -64,6 +64,26 @@ entries:
   freeipa:
   - apiVersion: v2
     appVersion: 4.10.1
+    created: "2023-06-01T04:00:32.416936342Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: FreeIPA is an integrated security information management solution
+      combining Linux (Fedora), 389 Directory Server, MIT Kerberos, NTP, DNS, Dogtag
+      (Certificate System).
+    digest: b75b412ffa0fd521f7d20d33d9ccccc897ce5b525ddc9e003d71c5bb9060e57d
+    maintainers:
+    - name: improwised
+    name: freeipa
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/freeipa-0.4.1/freeipa-0.4.1.tgz
+    version: 0.4.1
+  - apiVersion: v2
+    appVersion: 4.10.1
     created: "2023-04-01T07:31:32.145637267Z"
     dependencies:
     - name: common
@@ -148,6 +168,26 @@ entries:
   healthchecks:
   - apiVersion: v2
     appVersion: 2.7.0
+    created: "2023-06-01T04:00:32.573644668Z"
+    dependencies:
+    - condition: postgresql.enabled,global.postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.1.6
+    description: A Helm chart for Kubernetes
+    digest: bb6e06d46203c3e71b522bddb82b8713d8fee42aa92f8674eb4d3ddca28c24e7
+    maintainers:
+    - email: rakshit@improwised.com
+      name: rakshit
+    name: healthchecks
+    sources:
+    - https://github.com/healthchecks/healthchecks
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/healthchecks-1.1.1/healthchecks-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v2
+    appVersion: 2.7.0
     created: "2023-04-01T07:31:32.362659043Z"
     dependencies:
     - condition: postgresql.enabled,global.postgresql.enabled
@@ -207,6 +247,19 @@ entries:
     - https://improwised.github.io/charts/charts/healthchecks-1.0.5.tgz
     version: 1.0.5
   polymorphic-app:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-06-01T04:00:32.729540299Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 73f6904b9f6cdeabe4a59b9cf438690f41c771c6be7530602ef234508635d4bc
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.1.0/polymorphic-app-1.1.0.tgz
+    version: 1.1.0
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2023-05-15T05:05:57.50359779Z"
@@ -271,4 +324,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2023-06-01T00:52:25.164186888Z"
+generated: "2023-06-01T04:00:32.729578099Z"
