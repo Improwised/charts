@@ -1,7 +1,7 @@
 {{- range .Values.services }}
 ---
-apiVersion: {{ include "deployment.apiVersion" $ }}
-kind: Deployment
+apiVersion: {{ include "statefulset.apiVersion" $ }}
+kind: {{ if eq .type "StatefulSet"}}StatefulSet{{- else }}Deployment{{- end }}
 metadata:
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
   labels:
@@ -12,11 +12,14 @@ metadata:
     {{- toYaml . | nindent 4 }}
 {{- end }}
 spec:
+  {{ if .type }}
+  {{- else }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 50%
       maxSurge: 100%
+  {{- end }}
   replicas: {{ .minReplicaCount  | default $.Values.serviceTemplate.minReplicaCount }}
   selector:
     matchLabels:
@@ -134,7 +137,6 @@ spec:
             periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           {{- end }}
         {{- end }}
-
       volumes:
       {{- if .volumes }}
 {{ toYaml .volumes | indent 8 }}
@@ -166,7 +168,17 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
-
+{{- if .volumeClaimTemplates }}
+  volumeClaimTemplates:
+      
+{{ toYaml .volumeClaimTemplates | indent 8 }}
+      {{- end }}
+      {{- if $.Values.volumeClaimTemplates }}
+{{ toYaml $.Values.volumeClaimTemplates | indent 8 }}
+      {{- end }}
+      {{- if $.Values.serviceTemplate.volumeClaimTemplates }}
+{{ toYaml $.Values.serviceTemplate.volumeClaimTemplates | indent 8 }}
+      {{- end }}
 {{- if .autoscaling | default $.Values.serviceTemplate.autoscaling }}
 ---
 apiVersion: autoscaling/v2beta2
@@ -213,7 +225,10 @@ metadata:
 {{- end }}
 spec:
   type: {{ .service.type | default $.Values.serviceTemplate.service.type }}
-  ports:
+  {{- if .service.ClusterIP }}
+  ClusterIP: {{ .service.ClusterIP }}
+  {{- end}}
+  ports: 
 {{- with (.service.ports | default $.Values.serviceTemplate.service.ports) }}
     {{ toYaml . | nindent 4 }}
 {{- end }}
@@ -260,4 +275,6 @@ spec:
         {{- end }}
   {{- end }}
 {{- end }}
+
 {{- end }}
+
