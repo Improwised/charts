@@ -191,7 +191,7 @@ metadata:
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: Deployment
+    kind: {{ if eq .type "StatefulSet"}}StatefulSet{{- else }}Deployment{{- end }}
     name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
   minReplicas: {{ .minReplicaCount | default $.Values.serviceTemplate.minReplicaCount }}
   maxReplicas: {{ .maxReplicaCount | default $.Values.serviceTemplate.maxReplicaCount }}
