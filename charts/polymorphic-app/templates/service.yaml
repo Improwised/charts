@@ -1,6 +1,6 @@
 {{- range .Values.services }}
 ---
-apiVersion: {{ include "statefulset.apiVersion" $ }}
+apiVersion: {{ include "deployment.apiVersion" $ }}
 kind: {{ if eq .type "StatefulSet"}}StatefulSet{{- else }}Deployment{{- end }}
 metadata:
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
