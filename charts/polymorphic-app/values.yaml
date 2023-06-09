@@ -91,7 +91,7 @@ serviceTemplate:
     #    hosts:
     #      - chart-example.local
 
-services: 
+services:
 - name: demo
   image:
     repository: nginx
@@ -108,14 +108,14 @@ services:
   nodeSelector: {}
   tolerations: []
   volumeClaimTemplates:
-      - metadata:
-          name: data
-        spec:
-          accessModes: [ "ReadWriteOnce" ]
-          # storageClassName: ""
-          resources:
-            requests:
-              storage: 1Gi
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      # storageClassName: ""
+      resources:
+        requests:
+          storage: 1Gi
 
 # worker template
 workerTemplate:
