@@ -21,6 +21,9 @@ spec:
       maxSurge: 100%
   {{- end }}
   replicas: {{ .minReplicaCount  | default $.Values.serviceTemplate.minReplicaCount }}
+  {{ if eq .type "StatefulSet"}}
+  serviceName: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  {{- end }}
   selector:
     matchLabels:
       {{- include "polymorphic-app.selectorLabels" $ | nindent 6 }}
