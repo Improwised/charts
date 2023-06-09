@@ -92,6 +92,30 @@ serviceTemplate:
     #      - chart-example.local
 
 services: []
+# - name: demo
+#   image:
+#     repository: nginx
+#     tag: latest
+#   healthcheck:
+#     enabled: false
+#   volumeMounts:
+#     - name: data
+#       mountPath: /data
+#   type: StatefulSet
+#   args: []
+#   env: []
+#   envFrom: []
+#   nodeSelector: {}
+#   tolerations: []
+#   volumeClaimTemplates:
+#       - metadata:
+#           name: data
+#         spec:
+#           accessModes: [ "ReadWriteOnce" ]
+#           # storageClassName: ""
+#           resources:
+#             requests:
+#               storage: 1Gi
 
 # worker template
 workerTemplate:
