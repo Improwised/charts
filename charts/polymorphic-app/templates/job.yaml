@@ -82,13 +82,11 @@ spec:
           {{- if $.Values.jobTemplate.volumeMounts }}
 {{ toYaml $.Values.jobTemplate.volumeMounts | indent 10 }}
           {{- end }}
-      {{- with .affinity | default $.Values.jobTemplate.affinity }}
+      {{- with .securityContext | default $.Values.jobTemplate.securityContext }}
       securityContext:
-      {{- if .securityContext }}
-        fsGroup: {{ .securityContext.fsGroup }}
-        runAsGroup: {{ .securityContext.runAsGroup }}
-        runAsUser: {{ .securityContext.runAsUser }}
+{{ toYaml . | indent 8 }}
       {{- end }}
+      {{- with .affinity | default $.Values.jobTemplate.affinity }}
       affinity:
       {{ toYaml . | indent 8 }}
       {{- end }}

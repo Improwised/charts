@@ -139,11 +139,9 @@ spec:
             {{- end }}
             successThreshold: 1
         {{- end }}
+      {{- with .securityContext | default $.Values.workerTemplate.securityContext }}
       securityContext:
-      {{- if .securityContext }}
-        fsGroup: {{ .securityContext.fsGroup }}
-        runAsGroup: {{ .securityContext.runAsGroup }}
-        runAsUser: {{ .securityContext.runAsUser }}
+{{ toYaml . | indent 8 }}
       {{- end }}
       volumes:
       {{- if .volumes }}

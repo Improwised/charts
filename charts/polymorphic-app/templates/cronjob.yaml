@@ -82,13 +82,11 @@ spec:
           {{- if $.Values.cronJobTemplate.volumeMounts }}
 {{ toYaml $.Values.cronJobTemplate.volumeMounts | indent 12 }}
           {{- end }}
-          {{- with .affinity | default $.Values.cronJobTemplate.affinity }}
+          {{- with .securityContext | default $.Values.cronJobTemplate.securityContext }}
           securityContext:
-          {{- if .securityContext }}
-            fsGroup: {{ .securityContext.fsGroup }}
-            runAsGroup: {{ .securityContext.runAsGroup }}
-            runAsUser: {{ .securityContext.runAsUser }}
+{{ toYaml . | indent 12 }}
           {{- end }}
+          {{- with .affinity | default $.Values.cronJobTemplate.affinity }}
           affinity:
           {{ toYaml . | indent 12 }}
           {{- end }}
