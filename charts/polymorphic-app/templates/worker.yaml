@@ -139,6 +139,12 @@ spec:
             {{- end }}
             successThreshold: 1
         {{- end }}
+      securityContext:
+      {{- if .securityContext }}
+        fsGroup: {{ .securityContext.fsGroup }}
+        runAsGroup: {{ .securityContext.runAsGroup }}
+        runAsUser: {{ .securityContext.runAsUser }}
+      {{- end }}
       volumes:
       {{- if .volumes }}
 {{ toYaml .volumes | indent 8 }}

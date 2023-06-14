@@ -83,6 +83,12 @@ spec:
 {{ toYaml $.Values.cronJobTemplate.volumeMounts | indent 12 }}
           {{- end }}
           {{- with .affinity | default $.Values.cronJobTemplate.affinity }}
+          securityContext:
+          {{- if .securityContext }}
+            fsGroup: {{ .securityContext.fsGroup }}
+            runAsGroup: {{ .securityContext.runAsGroup }}
+            runAsUser: {{ .securityContext.runAsUser }}
+          {{- end }}
           affinity:
           {{ toYaml . | indent 12 }}
           {{- end }}

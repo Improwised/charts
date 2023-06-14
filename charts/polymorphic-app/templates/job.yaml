@@ -83,6 +83,12 @@ spec:
 {{ toYaml $.Values.jobTemplate.volumeMounts | indent 10 }}
           {{- end }}
       {{- with .affinity | default $.Values.jobTemplate.affinity }}
+      securityContext:
+      {{- if .securityContext }}
+        fsGroup: {{ .securityContext.fsGroup }}
+        runAsGroup: {{ .securityContext.runAsGroup }}
+        runAsUser: {{ .securityContext.runAsUser }}
+      {{- end }}
       affinity:
       {{ toYaml . | indent 8 }}
       {{- end }}

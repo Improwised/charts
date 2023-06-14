@@ -92,6 +92,10 @@ serviceTemplate:
     #      - chart-example.local
 
 services: []
+  # securityContext:
+  #   fsGroup: 1001
+  #   runAsGroup: 1001
+  #   runAsUser: 1001
 
 # worker template
 workerTemplate:
