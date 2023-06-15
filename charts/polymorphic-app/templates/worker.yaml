@@ -139,6 +139,10 @@ spec:
             {{- end }}
             successThreshold: 1
         {{- end }}
+      {{- with .securityContext | default $.Values.workerTemplate.securityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+      {{- end }}
       volumes:
       {{- if .volumes }}
 {{ toYaml .volumes | indent 8 }}

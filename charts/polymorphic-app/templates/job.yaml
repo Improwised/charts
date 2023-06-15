@@ -82,6 +82,10 @@ spec:
           {{- if $.Values.jobTemplate.volumeMounts }}
 {{ toYaml $.Values.jobTemplate.volumeMounts | indent 10 }}
           {{- end }}
+      {{- with .securityContext | default $.Values.jobTemplate.securityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+      {{- end }}
       {{- with .affinity | default $.Values.jobTemplate.affinity }}
       affinity:
       {{ toYaml . | indent 8 }}

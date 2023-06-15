@@ -61,7 +61,10 @@ serviceTemplate:
     # requests:
     #  cpu: 100m
     #  memory: 128Mi
-
+  securityContext: {}
+    # fsGroup: 1001
+    # runAsGroup: 1001
+    # runAsUser: 1001
   annotations: {}
   nodeSelector: {}
   tolerations: []
@@ -120,7 +123,10 @@ workerTemplate:
     # requests:
     #  cpu: 100m
     #  memory: 128Mi
-
+  securityContext: {}
+    # fsGroup: 1001
+    # runAsGroup: 1001
+    # runAsUser: 1001
   nodeSelector: {}
 
   tolerations: []
@@ -200,6 +206,10 @@ cronJobTemplate:
   volumeMounts: []
   annotations: {}
   volumes: []
+  securityContext: {}
+    # fsGroup: 1001
+    # runAsGroup: 1001
+    # runAsUser: 1001
 
 cronJobs:
 #   - name: update-status
@@ -242,7 +252,10 @@ jobTemplate:
   command:
   annotations: []
   volumeMounts: []
-
+  securityContext: {}
+    # fsGroup: 1001
+    # runAsGroup: 1001
+    # runAsUser: 1001
   volumes: []
 
 jobs:

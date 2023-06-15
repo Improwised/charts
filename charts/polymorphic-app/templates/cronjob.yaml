@@ -82,6 +82,10 @@ spec:
           {{- if $.Values.cronJobTemplate.volumeMounts }}
 {{ toYaml $.Values.cronJobTemplate.volumeMounts | indent 12 }}
           {{- end }}
+          {{- with .securityContext | default $.Values.cronJobTemplate.securityContext }}
+          securityContext:
+{{ toYaml . | indent 12 }}
+          {{- end }}
           {{- with .affinity | default $.Values.cronJobTemplate.affinity }}
           affinity:
           {{ toYaml . | indent 12 }}

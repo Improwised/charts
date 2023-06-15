@@ -152,6 +152,10 @@ spec:
             periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           {{- end }}
         {{- end }}
+      {{- with .securityContext | default $.Values.serviceTemplate.securityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+      {{- end }}
       volumes:
       {{- if .volumes }}
 {{ toYaml .volumes | indent 8 }}
