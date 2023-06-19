@@ -1,4 +1,3 @@
-
 image:
   repository: tccr.io/truecharts/eclipse-mosquitto
   tag: latest
@@ -63,9 +62,8 @@ configmap:
     enabled: true
     data:
       password.txt: |
-        # username:password 
+        # username:password
         # Use Encrypted password
-
 
 persistence:
   data:
