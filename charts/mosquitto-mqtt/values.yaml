@@ -62,7 +62,7 @@ configmap:
     enabled: true
     data:
       password.txt: |
-        # username:password
+        mosquitto:$7$101$2vnQEiJ6bywLvDbZ$qcNGWcaRQJwQYynVUIfMznNDdzDTYHo45gQ2fYh1hZS3GvvJvmMZ2354mRHh6qDYyvDovK+GlG8J6Nc33NtYOQ==
         # Use Encrypted password
 
 persistence:

@@ -531,7 +531,6 @@ service:
     # -- [[ref](https://kubernetes.io/docs/tutorials/services/source-ip/)]
     externalTrafficPolicy:
 
-
     # -- Configure the Service port information here.
     # Additional ports can be added by adding a dictionary key similar to the 'http' service.
     # @default -- See below
