@@ -34,7 +34,7 @@ websockets:
 
 configmap:
   config:
-    enabled: false
+    enabled: true
     data:
       mosquitto.conf: |
         listener {{ .Values.service.main.ports.main.targetPort }}
@@ -59,7 +59,7 @@ configmap:
         require_certificate false
         use_identity_as_username false
   password:
-    enabled: false
+    enabled: true
     data:
       password.txt: |
         mosquitto:$7$101$2vnQEiJ6bywLvDbZ$qcNGWcaRQJwQYynVUIfMznNDdzDTYHo45gQ2fYh1hZS3GvvJvmMZ2354mRHh6qDYyvDovK+GlG8J6Nc33NtYOQ==
@@ -73,7 +73,7 @@ persistence:
     enabled: false
     mountPath: "/mosquitto/configinc"
   mosquitto-config:
-    enabled: "false"
+    enabled: "true"
     mountPath: "/mosquitto/config/mosquitto.conf"
     subPath: "mosquitto.conf"
     type: "custom"
@@ -81,7 +81,7 @@ persistence:
       configMap:
         name: '{{ template "tc.common.names.fullname" . }}-config'
   mosquitto-password:
-    enabled: "false"
+    enabled: "true"
     mountPath: "/mosquitto/config/password.txt"
     subPath: "password.txt"
     type: "custom"
