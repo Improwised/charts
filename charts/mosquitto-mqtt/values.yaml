@@ -26,7 +26,7 @@ ingress:
 
 auth:
   # -- By enabling this, `allow_anonymous` gets set to `false` in the mosquitto config.
-  enabled: true
+  enabled: false
 
 websockets:
   # -- By enabling this, an additional listener with protocol websockets is added in the mosquitto config.
