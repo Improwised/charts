@@ -7,7 +7,7 @@ service:
   main:
     # -- Set the service type
     # Options: Simple(Loadbalancer), LoadBalancer, ClusterIP, NodePort
-    type: LoadBalancer
+    type: ClusterIP
     ports:
       main:
         port: 1883
