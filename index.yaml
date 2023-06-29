@@ -246,6 +246,36 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/healthchecks-1.0.5.tgz
     version: 1.0.5
+  mosquitto:
+  - annotations:
+      truecharts.org/SCALE-support: "true"
+      truecharts.org/catagories: |
+        - homeautomation
+      truecharts.org/grade: U
+    apiVersion: v2
+    appVersion: 2.0.15
+    created: "2023-06-29T05:21:05.033016926Z"
+    dependencies:
+    - name: common
+      repository: ""
+      version: 11.1.2
+    description: Eclipse Mosquitto - An open source MQTT broker
+    digest: 40618bf41c659f4b40f641f83bc9b25d3235170c566d65bf2035b021327b2e27
+    keywords:
+    - mosquitto
+    - MQTT
+    - eclipse-iot
+    kubeVersion: '>=1.16.0-0'
+    maintainers:
+    - name: improwised
+    name: mosquitto
+    sources:
+    - https://github.com/truecharts/charts/tree/master/charts/stable/mosquitto
+    - https://github.com/eclipse/mosquitto
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/mosquitto-8.0.12/mosquitto-8.0.12.tgz
+    version: 8.0.12
   polymorphic-app:
   - apiVersion: v2
     appVersion: 1.0.0
@@ -350,4 +380,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2023-06-15T10:17:41.46749972Z"
+generated: "2023-06-29T05:21:05.033057228Z"
