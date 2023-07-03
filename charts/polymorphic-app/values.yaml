@@ -65,6 +65,16 @@ serviceTemplate:
     # fsGroup: 1001
     # runAsGroup: 1001
     # runAsUser: 1001
+  dnsConfig: {}
+    # nameservers:
+    #   - 192.0.2.1 # this is an example
+    # searches:
+    #   - ns1.svc.cluster-domain.example
+    #   - my.dns.search.suffix
+    # options:
+    #   - name: ndots
+    #     value: "2"
+    #   - name: edns0
   annotations: {}
   nodeSelector: {}
   tolerations: []
@@ -127,6 +137,16 @@ workerTemplate:
     # fsGroup: 1001
     # runAsGroup: 1001
     # runAsUser: 1001
+  dnsConfig: {}
+    # nameservers:
+    #   - 192.0.2.1 # this is an example
+    # searches:
+    #   - ns1.svc.cluster-domain.example
+    #   - my.dns.search.suffix
+    # options:
+    #   - name: ndots
+    #     value: "2"
+    #   - name: edns0
   nodeSelector: {}
 
   tolerations: []
@@ -210,6 +230,8 @@ cronJobTemplate:
     # fsGroup: 1001
     # runAsGroup: 1001
     # runAsUser: 1001
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
 
 cronJobs:
 #   - name: update-status
