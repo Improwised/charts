@@ -11,7 +11,7 @@ image:
   # -- Docker image pull policy
   pullPolicy:
 # if using nfs then use nfs-client to mount
-storageClassName: local-path
+storageClassName: standard
 # -- Docker image pull policy
 imagePullSecrets: []
 # -- additional ENV variables to set. Prefix with FRIGATE_ to target Frigate configuration values
