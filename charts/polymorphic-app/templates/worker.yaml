@@ -139,6 +139,10 @@ spec:
             {{- end }}
             successThreshold: 1
         {{- end }}
+      {{- with .dnsConfig | default $.Values.workerTemplate.dnsConfig }}
+      dnsConfig:
+{{ toYaml . | indent 8 }}
+      {{- end }}
       {{- with .securityContext | default $.Values.workerTemplate.securityContext }}
       securityContext:
 {{ toYaml . | indent 8 }}

@@ -152,6 +152,10 @@ spec:
             periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           {{- end }}
         {{- end }}
+      {{- with .dnsConfig | default $.Values.workerTemplate.dnsConfig }}
+      dnsConfig:
+{{ toYaml . | indent 8 }}
+      {{- end }}
       {{- with .securityContext | default $.Values.serviceTemplate.securityContext }}
       securityContext:
 {{ toYaml . | indent 8 }}
@@ -296,4 +300,3 @@ spec:
 {{- end }}
 
 {{- end }}
-
