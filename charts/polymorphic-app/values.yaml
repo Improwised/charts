@@ -24,7 +24,7 @@ serviceTemplate:
   name: svc
   image:
 
-  ## initContainer:
+  ## initContainers:
   ##   - name: something
   ##     image: alpine
   ##     command: ['command', 'here']

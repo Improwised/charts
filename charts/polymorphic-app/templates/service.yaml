@@ -47,8 +47,8 @@ spec:
       {{- end }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default $.Values.serviceTemplate.terminationGracePeriodSeconds }}
-      {{- if or ($.Values.serviceTemplate.initContainer) (.initContainer) }}
-        {{- with .initContainer | default $.Values.serviceTemplate.initContainer }}
+      {{- if or ($.Values.serviceTemplate.initContainers) (.initContainers) }}
+        {{- with .initContainers | default $.Values.serviceTemplate.initContainers }}
       initContainers:
 {{ toYaml . | indent 8 }}
       {{- end }}
