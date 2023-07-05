@@ -35,7 +35,7 @@ serviceTemplate:
 
   healthcheck:
     enabled: false
-    # type: httpGet
+    type: httpGet
     # path: /healthz
     # port: http
     # initialDelaySeconds: 30
