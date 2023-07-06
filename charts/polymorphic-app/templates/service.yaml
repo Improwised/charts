@@ -275,10 +275,8 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-{{- if .ingress.className }}
-  ingressClassName: {{ .ingress.className }}
-{{- else if $.Values.serviceTemplate.ingress.className }}
-  ingressClassName: {{ $.Values.serviceTemplate.ingress.className }}
+{{- if .ingress.className | default $.Values.serviceTemplate.ingress.className }}
+  ingressClassName: {{ .ingress.className | default $.Values.serviceTemplate.ingress.className }}
 {{- end }}
 {{- if gt (len (.ingress.tls | default $.Values.serviceTemplate.ingress.tls)) 0 }}
   tls:
