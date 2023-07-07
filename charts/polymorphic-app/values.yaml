@@ -95,6 +95,7 @@ serviceTemplate:
 
   ingress:
     enabled: false
+    # className: nginx
     annotations: {}
     hosts:
       - host: app.example.com
