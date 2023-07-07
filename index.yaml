@@ -294,6 +294,19 @@ entries:
   polymorphic-app:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2023-07-07T05:37:05.025486238Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: e9b90ca8060ed4f113bcd692db424b88a6d3231e4575c45bb295beabd98383ef
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.6/polymorphic-app-1.2.6.tgz
+    version: 1.2.6
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2023-07-06T12:07:59.44800458Z"
     description: A Helm chart for deploying any custom applications, specifically
       polymorphic applications.
@@ -447,4 +460,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2023-07-06T12:07:59.448069281Z"
+generated: "2023-07-07T05:37:05.025603852Z"
