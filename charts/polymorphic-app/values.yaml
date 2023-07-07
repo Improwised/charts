@@ -84,7 +84,6 @@ serviceTemplate:
 
   service:
     enabled: true
-    # className: nginx
     type: ClusterIP
     ports:
     - name: http
@@ -95,6 +94,7 @@ serviceTemplate:
 
   ingress:
     enabled: false
+    # className: nginx
     annotations: {}
     hosts:
       - host: app.example.com
