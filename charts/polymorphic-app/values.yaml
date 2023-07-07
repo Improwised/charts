@@ -84,6 +84,7 @@ serviceTemplate:
 
   service:
     enabled: true
+    # className: nginx
     type: ClusterIP
     ports:
     - name: http
