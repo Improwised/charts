@@ -13,12 +13,8 @@ metadata:
     {{- toYaml . | nindent 4 }}
 {{- end }}
 spec:
-{{- with .successfulJobsHistoryLimit | default $.Values.cronJobTemplate.successfulJobsHistoryLimit }}
-  successfulJobsHistoryLimit: {{ toYaml . }}
-{{- end }}
-{{- with .failedJobsHistoryLimit | default $.Values.cronJobTemplate.failedJobsHistoryLimit }}
-  failedJobsHistoryLimit: {{ toYaml . }}
-{{- end }}
+  successfulJobsHistoryLimit: {{ .successfulJobsHistoryLimit  | default $.Values.cronJobTemplate.successfulJobsHistoryLimit | default 0 }}
+  failedJobsHistoryLimit: {{ .failedJobsHistoryLimit   | default $.Values.cronJobTemplate.failedJobsHistoryLimit | default 0 }}
   schedule: {{ .schedule | quote }}
   suspend: {{ .suspend | default false }}
   jobTemplate:

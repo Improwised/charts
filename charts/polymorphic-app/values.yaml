@@ -232,8 +232,8 @@ cronJobTemplate:
     # fsGroup: 1001
     # runAsGroup: 1001
     # runAsUser: 1001
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
+  # successfulJobsHistoryLimit: 1
+  # failedJobsHistoryLimit: 1
 
 cronJobs:
 #   - name: update-status
