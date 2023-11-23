@@ -36,7 +36,7 @@ spec:
     spec:
       {{- if $.Values.serviceTemplate.imagePullSecrets }}
       imagePullSecrets:
-{{ toYaml .imagePullSecrets | indent 8 }}
+{{ toYaml $.Values.serviceTemplate.imagePullSecrets | indent 8 }}
       {{- else if .imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .imagePullSecrets | indent 8 }}
@@ -57,6 +57,8 @@ spec:
         - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}"
           {{- if .image }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
+          {{- else if $.Values.serviceTemplate.image }}
+          image: "{{ $.Values.serviceTemplate.image.repository }}:{{ $.Values.serviceTemplate.image.tag }}"
           {{- else }}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
           {{- end }}
@@ -81,13 +83,13 @@ spec:
           {{- if $.Values.serviceTemplate.envFrom }}
 {{ toYaml $.Values.serviceTemplate.envFrom | indent 12 }}
           {{- end }}
-        {{- if .command }}
+        {{- if or ($.Values.serviceTemplate.command) (.command) }}
           {{- with .command | default $.Values.serviceTemplate.command }}
           command:
 {{ toYaml . | indent 12 }}
           {{- end }}
         {{- end }}
-        {{- if .args }}
+        {{- if or ($.Values.serviceTemplate.args) (.args) }}
           {{- with .args | default $.Values.serviceTemplate.args }}
           args:
 {{ toYaml . | indent 12 }}
@@ -125,14 +127,14 @@ spec:
               port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
             timeoutSeconds: 7
             initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           readinessProbe:
             httpGet:
               path: {{ .healthcheck.path | default $.Values.serviceTemplate.healthcheck.path }}
               port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
             timeoutSeconds: 7
             initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           {{- else if and (or (eq .healthcheck.type "tcpSocket") (eq $.Values.serviceTemplate.healthcheck.type "tcpSocket")) (or .healthcheck.port $.Values.serviceTemplate.healthcheck.port) }}
           livenessProbe:
             tcpSocket:
@@ -146,7 +148,7 @@ spec:
             periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           {{- end }}
         {{- end }}
-      {{- with .dnsConfig | default $.Values.workerTemplate.dnsConfig }}
+      {{- with .dnsConfig | default $.Values.serviceTemplate.dnsConfig }}
       dnsConfig:
 {{ toYaml . | indent 8 }}
       {{- end }}
@@ -187,7 +189,7 @@ spec:
     {{- end }}
 {{- if .volumeClaimTemplates }}
   volumeClaimTemplates:
-      
+
 {{ toYaml .volumeClaimTemplates | indent 8 }}
       {{- end }}
       {{- if $.Values.volumeClaimTemplates }}
@@ -245,7 +247,7 @@ spec:
   {{- if .service.ClusterIP }}
   ClusterIP: {{ .service.ClusterIP }}
   {{- end}}
-  ports: 
+  ports:
 {{- with (.service.ports | default $.Values.serviceTemplate.service.ports) }}
     {{ toYaml . | nindent 4 }}
 {{- end }}
