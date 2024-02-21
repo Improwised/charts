@@ -32,7 +32,7 @@ spec:
   {{ if eq .type "StatefulSet"}}
     {{- if $.Values.prefixWithReleaseName.enabled }}
   serviceName: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-    {{  - else }}
+    {{- else }}
   serviceName: "{{ .name | default $.Values.serviceTemplate.name }}"
     {{- end }}
   {{- end }}
