@@ -3,10 +3,18 @@
 apiVersion: {{ include "deployment.apiVersion" $ }}
 kind: Deployment
 metadata:
-  name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}"
+  {{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
+  {{- else }}
+  name: "{{ .name | default $.Values.workerTemplate.name }}"
+  {{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}
+    {{- if $.Values.prefixWithReleaseName.enabled }}
+    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
+    {{- else }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.workerTemplate.name }}"
+    {{- end }}
 spec:
   strategy:
     type: RollingUpdate
@@ -17,12 +25,20 @@ spec:
   selector:
     matchLabels:
       {{- include "polymorphic-app.selectorLabels" $ | nindent 6 }}
-      app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}"
+    {{- if $.Values.prefixWithReleaseName.enabled }}
+      app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
+    {{- else }}
+      app.kubernetes.io/component: "{{ .name | default $.Values.workerTemplate.name }}"
+    {{- end }}
   template:
     metadata:
       labels:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
-        app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}
+    {{- if $.Values.prefixWithReleaseName.enabled }}
+        app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
+    {{- else }}
+        app.kubernetes.io/component: "{{ .name | default $.Values.workerTemplate.name }}"
+    {{- end }}
     spec:
       {{- if $.Values.workerTemplate.imagePullSecrets }}
       imagePullSecrets:
@@ -38,7 +54,11 @@ spec:
       {{- end }}
       terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default $.Values.workerTemplate.terminationGracePeriodSeconds }}
       containers:
-        - name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}"
+        {{- if $.Values.prefixWithReleaseName.enabled }}
+        - name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
+        {{- else }}
+        - name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
+        {{- end }}
           {{- if .image }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
           {{- else }}
@@ -175,15 +195,27 @@ spec:
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}"
+{{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
+{{- else }}
+  name: "{{ .name | default $.Values.workerTemplate.name }}"
+{{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}
+{{- if $.Values.prefixWithReleaseName.enabled }}
+    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc
+{{- else }}
+    app.kubernetes.io/component: {{ .name | default $.Values.workerTemplate.name }}
+{{- end }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1beta2
     kind: Deployment
-    name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}"
+    {{- if $.Values.prefixWithReleaseName.enabled }}
+    name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
+    {{- else }}
+    name: "{{ .name | default $.Values.workerTemplate.name }}"
+    {{- end }}
   minReplicas: {{ .minReplicaCount | default $.Values.workerTemplate.minReplicaCount }}
   maxReplicas: {{ .maxReplicaCount | default $.Values.workerTemplate.maxReplicaCount }}
   metrics:
@@ -195,7 +227,11 @@ spec:
       target:
         apiVersion: apps/v1
         kind: Deployment
-        name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}"
+        {{- if $.Values.prefixWithReleaseName.enabled }}
+        name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
+        {{- else }}
+        name: "{{ .name | default $.Values.workerTemplate.name }}"
+        {{- end }}
       targetValue: 100
 {{- end }}
 {{- end }}
