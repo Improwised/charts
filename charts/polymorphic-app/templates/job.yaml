@@ -11,9 +11,9 @@ metadata:
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
         {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}-svc
+    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}-svc"
         {{- else}}
-    app.kubernetes.io/component: {{ .name | default $.Values.jobTemplate.name }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
         {{- end }}
   annotations:
     linkerd.io/inject: disabled
@@ -26,9 +26,9 @@ spec:
       labels:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
         {{- if $.Values.prefixWithReleaseName.enabled }}
-        app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}-svc
+        app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}-svc"
         {{- else}}
-        app.kubernetes.io/component: {{ .name | default $.Values.jobTemplate.name }}
+        app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
         {{- end }}
     spec:
       {{- if $.Values.jobTemplate.imagePullSecrets }}

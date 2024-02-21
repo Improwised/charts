@@ -203,9 +203,9 @@ metadata:
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
 {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc
+    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}-svc"
 {{- else }}
-    app.kubernetes.io/component: {{ .name | default $.Values.workerTemplate.name }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.workerTemplate.name }}"
 {{- end }}
 spec:
   scaleTargetRef:

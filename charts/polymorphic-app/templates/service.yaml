@@ -11,9 +11,9 @@ metadata:
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
     {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
     {{- else }}
-    app.kubernetes.io/component: {{ .name | default $.Values.serviceTemplate.name }}-svc
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}-svc"
     {{- end }}
 {{- with .annotations | default $.Values.serviceTemplate.annotations }}
   annotations:
@@ -32,7 +32,7 @@ spec:
   {{ if eq .type "StatefulSet"}}
     {{- if $.Values.prefixWithReleaseName.enabled }}
   serviceName: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-    {{- else }}
+    {{  - else }}
   serviceName: "{{ .name | default $.Values.serviceTemplate.name }}"
     {{- end }}
   {{- end }}
@@ -236,7 +236,7 @@ metadata:
 {{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-sv-svcc
+    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

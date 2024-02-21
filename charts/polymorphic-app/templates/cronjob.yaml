@@ -11,9 +11,9 @@ metadata:
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
 {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}-svc
+    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}-svc"
 {{- else}}
-    app.kubernetes.io/component: {{ .name | default $.Values.cronJobTemplate.name }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.cronJobTemplate.name }}"
 {{- end }}
   annotations:
     linkerd.io/inject: disabled
