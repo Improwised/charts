@@ -4,14 +4,14 @@ apiVersion: {{ include "cronjob.apiVersion" $ }}
 kind: CronJob
 metadata:
 {{- if $.Values.prefixWithReleaseName.enabled }}
-  name: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}-svc"
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}"
 {{- else}}
   name: "{{ .name | default $.Values.cronJobTemplate.name }}"
 {{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
 {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}-svc"
+    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}"
 {{- else}}
     app.kubernetes.io/component: "{{ .name | default $.Values.cronJobTemplate.name }}"
 {{- end }}
@@ -44,7 +44,7 @@ spec:
           restartPolicy: Never
           containers:
           {{- if $.Values.prefixWithReleaseName.enabled }}
-          - name: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}-svc"
+          - name: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}"
           {{- else}}
           - name: "{{ .name | default $.Values.cronJobTemplate.name }}"
           {{- end }}

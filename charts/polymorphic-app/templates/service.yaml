@@ -13,7 +13,7 @@ metadata:
     {{- if $.Values.prefixWithReleaseName.enabled }}
     app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
     {{- else }}
-    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}-svc"
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
     {{- end }}
 {{- with .annotations | default $.Values.serviceTemplate.annotations }}
   annotations:
@@ -75,7 +75,7 @@ spec:
       {{- end }}
       containers:
       {{- if $.Values.prefixWithReleaseName.enabled }}
-        - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+        - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}"
       {{- else}}
         - name: "{{ .name | default $.Values.serviceTemplate.name }}"
       {{- end }}
@@ -236,7 +236,11 @@ metadata:
 {{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
+    {{- if $.Values.prefixWithReleaseName.enabled }}
     app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+    {{- else}}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+    {{- end }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
