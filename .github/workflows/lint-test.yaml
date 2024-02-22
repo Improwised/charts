@@ -28,18 +28,18 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Helm
-        uses: azure/setup-helm@v3
+        uses: azure/setup-helm@v4.0.0
         with:
-          version: v3.11.1
+          version: v3.14.1
 
       - name: Adding bitnamirepo
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add bitnami-full-index https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: "3.12.2"
           check-latest: true
 
       - name: Set up chart-testing
@@ -59,9 +59,9 @@ jobs:
 
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
-        uses: helm/kind-action@v1.8.0
+        uses: helm/kind-action@v1.9.0
         with:
-          version: "v0.17.0"
+          version: "v0.21.0"
           node_image: "kindest/node:v${{ matrix.k8s }}"
 
       - name: Run chart-testing (install)
