@@ -208,9 +208,8 @@ spec:
       {{- if $.Values.serviceTemplate.volumeClaimTemplates }}
 {{ toYaml $.Values.serviceTemplate.volumeClaimTemplates | indent 8 }}
       {{- end }}
-{{- if .autoscaling | default $.Values.serviceTemplate.autoscaling }}
+{{- if and (.autoscaling | default $.Values.serviceTemplate.autoscaling) (ne .type "StatefulSet")}}
 ---
-{{- if ne .type "StatefulSet"}}
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -242,7 +241,6 @@ spec:
   #     target:
   #       type: AverageValue
   #       averageValue: 100Mi
-{{- end }}
 {{- end }}
 
 {{- if and .service (.service.enabled | default $.Values.serviceTemplate.service.enabled) }}
