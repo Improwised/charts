@@ -10,11 +10,7 @@ metadata:
 {{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-    {{- else }}
     app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
-    {{- end }}
 {{- with .annotations | default $.Values.serviceTemplate.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -39,20 +35,12 @@ spec:
   selector:
     matchLabels:
       {{- include "polymorphic-app.selectorLabels" $ | nindent 6 }}
-      {{- if $.Values.prefixWithReleaseName.enabled }}
-      app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-      {{- else}}
       app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
-      {{- end }}
   template:
     metadata:
       labels:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
-        {{- if $.Values.prefixWithReleaseName.enabled }}
-        app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-        {{- else}}
         app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
-        {{- end }}
     spec:
       {{- if $.Values.serviceTemplate.imagePullSecrets }}
       imagePullSecrets:
@@ -201,11 +189,7 @@ spec:
               labelSelector:
                 matchLabels:
                   {{- include "polymorphic-app.labels" $ | nindent 18 }}
-                  {{- if $.Values.prefixWithReleaseName.enabled }}
-                  app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-                  {{- else}}
                   app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
-                  {{- end }}
     {{- with .affinity | default $.Values.serviceTemplate.affinity }}
 {{ toYaml . | indent 8 }}
     {{- end }}
@@ -226,6 +210,7 @@ spec:
       {{- end }}
 {{- if .autoscaling | default $.Values.serviceTemplate.autoscaling }}
 ---
+{{- if ne .type "StatefulSet"}}
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -236,20 +221,12 @@ metadata:
 {{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-    {{- else}}
     app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
-    {{- end }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: {{ if eq .type "StatefulSet"}}StatefulSet{{- else }}Deployment{{- end }}
-  {{- if $.Values.prefixWithReleaseName.enabled }}
-    name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-  {{- else}}
+    kind: Deployment
     name: "{{ .name | default $.Values.serviceTemplate.name }}"
-  {{- end }}
   minReplicas: {{ .minReplicaCount | default $.Values.serviceTemplate.minReplicaCount }}
   maxReplicas: {{ .maxReplicaCount | default $.Values.serviceTemplate.maxReplicaCount }}
   metrics:
@@ -266,6 +243,7 @@ spec:
   #       type: AverageValue
   #       averageValue: 100Mi
 {{- end }}
+{{- end }}
 
 {{- if and .service (.service.enabled | default $.Values.serviceTemplate.service.enabled) }}
 ---
@@ -279,11 +257,7 @@ metadata:
 {{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-    {{- else}}
     app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
-    {{- end }}
 {{- with (.service.annotations | default $.Values.serviceTemplate.service.annotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -299,16 +273,13 @@ spec:
 {{- end }}
   selector:
     {{- include "polymorphic-app.selectorLabels" $ | nindent 4 }}
-    {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
-    {{- else}}
     app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
-    {{- end }}
 {{- end }}
 
 
 {{- if and .ingress (.ingress.enabled | default $.Values.serviceTemplate.ingress.enabled) }}
 ---
+{{- $svcName := .name | default $.Values.serviceTemplate.name -}}
 {{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}}
 apiVersion: {{ include "ingress.apiVersion" $ }}
 kind: Ingress
@@ -346,7 +317,11 @@ spec:
         {{- range .paths }}
           - path: {{ .path }}
             pathType: {{ .pathType }}
+            {{- if $.Values.prefixWithReleaseName.enabled }}
             backend: {{- include "ingress.backend" (dict "serviceName" $fullName "servicePort" .servicePort "context" $)  | nindent 14 }}
+            {{- else}}
+            backend: {{- include "ingress.backend" (dict "serviceName" $svcName "servicePort" .servicePort "context" $)  | nindent 14 }}
+            {{- end }}
         {{- end }}
   {{- end }}
 {{- end }}

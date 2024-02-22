@@ -10,11 +10,7 @@ metadata:
 {{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-        {{- if $.Values.prefixWithReleaseName.enabled }}
-    app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}"
-        {{- else}}
     app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
-        {{- end }}
   annotations:
     linkerd.io/inject: disabled
 {{- with .annotations | default $.Values.jobTemplate.annotations }}
@@ -25,11 +21,7 @@ spec:
     metadata:
       labels:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
-        {{- if $.Values.prefixWithReleaseName.enabled }}
-        app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}"
-        {{- else}}
         app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
-        {{- end }}
     spec:
       {{- if $.Values.jobTemplate.imagePullSecrets }}
       imagePullSecrets:
