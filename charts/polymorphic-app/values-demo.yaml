@@ -1,0 +1,85 @@
+image:
+  repository: oryd/hydra
+  tag: 1.4.8
+  pullPolicy: IfNotPresent
+  env:
+  - name: HYDRA_PROXY_URL
+    value: http://hydra-webui-hydra-svc.hydra-webui:4445
+services:
+  - name: web
+    image:
+      repository: improwised/hydra-webui
+      tag: master-09e4d70-1695381027 
+    service:
+      enabled: true
+      type: ClusterIP
+      ports:
+      - name: http
+        port: 80
+        targetPort: http
+        protocol: TCP
+    ports:
+    - name: http
+      containerPort: 80
+      protocol: TCP
+    env:
+      - name: HYDRA_ADMIN_URL
+        value: http://hydra-webui-hydra-svc.hydra-webui:4445
+      - name: PUBLIC_URL
+        value: http://hydra-webui-hydra-svc.hydra-webui:4444
+      - name: HYDRA_PROXY_URL
+        value: http://hydra-webui-hydra-svc.hydra-webui:4445
+    healthcheck:
+      enabled: false
+    ingress:
+      enabled: true
+      className: nginx
+      hosts:
+        - host: hydra-webui.improwised.local
+          paths:
+          - path: /
+            pathType: Prefix
+            servicePort: http
+  - name: hydra
+    service:
+      type: ClusterIP
+      ports:
+      - name: public
+        port: 4444
+        targetPort: public
+        protocol: TCP
+      - name: admin
+        port: 4445
+        targetPort: admin
+        protocol: TCP
+      - name: token
+        port: 5555
+        targetPort: token
+        protocol: TCP
+    ports:
+    - name: public
+      containerPort: 4444
+      protocol: TCP
+    - name: admin
+      containerPort: 4445
+      protocol: TCP
+    - name: token
+      containerPort: 5555
+      protocol: TCP
+    env:
+    - name: OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES
+      value: public,pairwise
+    - name: URLS_CONSENT
+      value: http://hydra-webui-web-svc.hydra-webui:80/consent
+    - name: URLS_LOGIN
+      value: http://hydra-webui-web-svc.hydra-webui:80/login
+    - name: URLS_LOGOUT
+      value: http://hydra-webui-web-svc.hydra-webui:80/logout
+    - name: URLS_SELF_ISSUER
+      value: http://hydra-webui-web-svc.hydra-webui:80
+    args:
+      - serve
+      - all
+      - --dangerous-force-http
+    healthcheck:
+      enabled: false
