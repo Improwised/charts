@@ -130,33 +130,65 @@ spec:
 {{ toYaml $.Values.serviceTemplate.volumeMounts | indent 10 }}
           {{- end }}
         {{- if or ($.Values.serviceTemplate.healthcheck.enabled) (.healthcheck.enabled) }}
-          {{- if and (or (eq .healthcheck.type "httpGet") (eq $.Values.serviceTemplate.healthcheck.type "httpGet")) (or .healthcheck.path $.Values.serviceTemplate.healthcheck.path) }}
+        {{- if .healthcheck }}
+{{- $healthType := .healthcheck.type -}}
+          {{- if and (eq $healthType "httpGet") (.healthcheck.path ) }}
           livenessProbe:
             httpGet:
-              path: {{ .healthcheck.path | default $.Values.serviceTemplate.healthcheck.path }}
-              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
+              path: {{ .healthcheck.path }}
+              port: {{ .healthcheck.port }}
             timeoutSeconds: 7
-            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}            
           readinessProbe:
             httpGet:
-              path: {{ .healthcheck.path | default $.Values.serviceTemplate.healthcheck.path }}
-              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
+              path: {{ .healthcheck.path }}
+              port: {{ .healthcheck.port }}
             timeoutSeconds: 7
-            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
-          {{- else if and (or (eq .healthcheck.type "tcpSocket") (eq $.Values.serviceTemplate.healthcheck.type "tcpSocket")) (or .healthcheck.port $.Values.serviceTemplate.healthcheck.port) }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}            
+          {{- else if and (eq $healthType "tcpSocket") ( .healthcheck.port ) }}
           livenessProbe:
             tcpSocket:
-              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
-            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+              port: {{ .healthcheck.port }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
           readinessProbe:
             tcpSocket:
-              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
-            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+              port: {{ .healthcheck.port }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
           {{- end }}
+{{- else }}
+{{- $healthType := $.Values.serviceTemplate.healthcheck.type -}}
+          {{- if and (eq $healthType "httpGet") ($.Values.serviceTemplate.healthcheck.path) }}
+          livenessProbe:
+            httpGet:
+              path: {{ $.Values.serviceTemplate.healthcheck.path }}
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            timeoutSeconds: 7
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+          readinessProbe:
+            httpGet:
+              path: {{ $.Values.serviceTemplate.healthcheck.path }}
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            timeoutSeconds: 7
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+          {{- else if and (eq $healthType "tcpSocket") ($.Values.serviceTemplate.healthcheck.port) }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          {{- end }}
+{{- end }}
         {{- end }}
       {{- with .dnsConfig | default $.Values.workerTemplate.dnsConfig }}
       dnsConfig:
@@ -242,8 +274,8 @@ spec:
   #       type: AverageValue
   #       averageValue: 100Mi
 {{- end }}
-
-{{- if and .service (.service.enabled | default $.Values.serviceTemplate.service.enabled) }}
+{{- if .service}}
+{{- if or ( .service.enabled ) ($.Values.serviceTemplate.service.enabled) }}
 ---
 apiVersion: v1
 kind: Service
@@ -256,17 +288,44 @@ metadata:
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
     app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
-{{- with (.service.annotations | default $.Values.serviceTemplate.service.annotations) }}
+{{- with .service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
 {{- end }}
 spec:
-  type: {{ .service.type | default $.Values.serviceTemplate.service.type }}
+  type: {{ .service.type }}
   {{- if .service.ClusterIP }}
   ClusterIP: {{ .service.ClusterIP }}
   {{- end}}
   ports: 
-{{- with (.service.ports | default $.Values.serviceTemplate.service.ports) }}
+{{- with .service.ports }}
+    {{ toYaml . | nindent 4 }}
+{{- end }}
+  selector:
+    {{- include "polymorphic-app.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+{{- else if $.Values.serviceTemplate.service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+{{- else}}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+  labels:
+    {{- include "polymorphic-app.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- with $.Values.serviceTemplate.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ $.Values.serviceTemplate.service.type }}
+  ports: 
+{{- with $.Values.serviceTemplate.service.ports }}
     {{ toYaml . | nindent 4 }}
 {{- end }}
   selector:
