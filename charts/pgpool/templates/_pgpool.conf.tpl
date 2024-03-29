@@ -1,0 +1,35 @@
+listen_addresses = {{ .Values.config.listen_addresses | default "*" }}
+port = {{ .Values.config.port | default 5432 }}
+socket_dir = '/var/run/pgpool'
+pcp_listen_addresses = {{ .Values.config.pcp_listen_addresses | default "*" }}
+pcp_port = {{ .Values.config.pcp_port | default 9898 }}
+pcp_socket_dir = '/var/run/pgpool'
+backend_hostname0 = {{ .Values.config.backend_hostname0 }}
+backend_port0 = {{ .Values.config.backend_port0 | default 5432 }}
+backend_weight0 = {{ .Values.config.backend_weight0 | default 1 }}
+backend_flag0 = {{ .Values.config.backend_flag0 | default "'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'" }}
+{{- if .Values.config.backend_hostname1 }}
+backend_hostname1 = {{ .Values.config.backend_hostname1 | default ""}}
+backend_port1 = {{ .Values.config.backend_port1 | default 5432 }}
+backend_weight1 = {{ .Values.config.backend_weight1 | default 2 }}
+backend_flag1 = {{ .Values.config.backend_flag1 | default "DISALLOW_TO_FAILOVER" }}
+{{- end }}
+sr_check_period = {{ .Values.config.sr_check_period | default 0 }}
+health_check_period = {{ .Values.config.health_check_period | default 0 }}
+backend_clustering_mode = {{ .Values.config.backend_clustering_mode | default "streaming_replication" }}
+num_init_children = {{ .Values.config.num_init_children | default 32 }}
+max_pool = {{ .Values.config.max_pool | default 4 }}
+child_life_time = {{ .Values.config.child_life_time | default 300 }}
+child_max_connections = {{ .Values.config.child_max_connections | default 0 }}
+connection_life_time = {{ .Values.config.connection_life_time | default 0 }}
+client_idle_limit = {{ .Values.config.client_idle_limit | default 0 }}
+log_per_node_statement = {{ .Values.config.log_per_node_statement | default "on" }}
+master_slave_sub_mode = {{ .Values.config.master_slave_sub_mode | default "stream" }}
+master_slave_mode = {{ .Values.config.master_slave_mode | default "on" }}
+load_balance_mode = {{ .Values.config.load_balance_mode | default "on" }}
+ssl = {{ .Values.config.ssl | default "on" }}
+enable_pool_hba = {{ .Values.config.enable_pool_hba | default "off" }}
+failover_on_backend_error = {{ .Values.config.failover_on_backend_error | default "off" }}
+log_min_messages = {{ .Values.config.log_min_messages | default "warning" }}
+log_statement = {{ .Values.config.log_statement | default "on" }}
+log_destination = {{ .Values.config.log_destination | default "'syslog,stderr'" }}
