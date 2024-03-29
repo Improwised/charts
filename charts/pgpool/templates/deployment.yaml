@@ -71,4 +71,3 @@ spec:
       {{- if .volumes }}
 {{ toYaml .Values.volumes | indent 8 }}
       {{- end }}
-      
