@@ -294,6 +294,17 @@ entries:
   pgpool:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2024-03-29T12:33:31.343193573Z"
+    description: A Helm chart for Pgpool
+    digest: 1a7e39403adb125d0e0d96899d9c9d19851039867707cae0ab767a8a9f533251
+    maintainers:
+    - name: improwised
+    name: pgpool
+    urls:
+    - https://github.com/Improwised/charts/releases/download/pgpool-1.0.1/pgpool-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2024-03-29T10:45:31.488792428Z"
     description: A Helm chart for Pgpool
     digest: 1009a0fdf9be737c9a586461ee923734fcc38c795caaaaf0d48c6f0d7c5febbe
@@ -524,4 +535,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2024-03-29T10:45:31.488873159Z"
+generated: "2024-03-29T12:33:31.343279494Z"
