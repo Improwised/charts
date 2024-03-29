@@ -36,16 +36,16 @@ spec:
           volumeMounts:
             - name: pgpool-config
               mountPath: /config
-          {{- if .volumeMounts }}
+          {{- if .Values.volumeMounts }}
 {{ toYaml .Values.volumeMounts | indent 12 }}
           {{- end }}
           env:
-          {{- if .env }}
-{{ toYaml .env | indent 12 }}
+          {{- if .Values.env }}
+{{ toYaml .Values.env | indent 12 }}
           {{- end }}
           envFrom:
-          {{- if .envFrom }}
-{{ toYaml .envFrom | indent 12 }}
+          {{- if .Values.envFrom }}
+{{ toYaml .Values.envFrom | indent 12 }}
           {{- end }}
           ports:
             - containerPort: {{ .Values.config.port | default 5432 }}
@@ -68,6 +68,6 @@ spec:
       - name: pgpool-config
         configMap:
           name: {{ include "pgpool.fullname" . }}-configmap
-      {{- if .volumes }}
-{{ toYaml .Values.volumes | indent 8 }}
+      {{- if .Values.volumes }}
+{{ toYaml .Values.volumes | indent 6 }}
       {{- end }}
