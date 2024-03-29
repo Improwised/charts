@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pgpool.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "pgpool.name" . }}
+    helm.sh/chart: {{ include "pgpool.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+{{- with .Values.annotations }}
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "pgpool.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "pgpool.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: pgpool-config
+              mountPath: /config
+          {{- if .volumeMounts }}
+{{ toYaml .Values.volumeMounts | indent 12 }}
+          {{- end }}
+          env:
+          {{- if .env }}
+{{ toYaml .env | indent 12 }}
+          {{- end }}
+          envFrom:
+          {{- if .envFrom }}
+{{ toYaml .envFrom | indent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.config.port | default 5432 }}
+              name: pgpool-psql
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+      - name: pgpool-config
+        configMap:
+          name: {{ include "pgpool.fullname" . }}-configmap
+      {{- if .volumes }}
+{{ toYaml .Values.volumes | indent 8 }}
+      {{- end }}
+      
