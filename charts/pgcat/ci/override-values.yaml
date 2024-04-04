@@ -1,12 +1,12 @@
 configuration:
-  pools: 
+  pools:
     - name: "db"
-      users: 
+      users:
       - username: "user"
         password: "pass"
         pool_size: 9
         statement_timeout: 0
-      shards: 
+      shards:
       - servers:
         - host: "postgres"
           port: 5432
