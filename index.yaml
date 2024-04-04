@@ -291,6 +291,20 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/mosquitto-8.0.12/mosquitto-8.0.12.tgz
     version: 8.0.12
+  pgcat:
+  - apiVersion: v2
+    appVersion: 1.1.1
+    created: "2024-04-04T10:22:51.236392667Z"
+    description: A Helm chart for PgCat a PostgreSQL pooler and proxy (like PgBouncer)
+      with support for sharding, load balancing, failover and mirroring.
+    digest: 04e94000b9344fd882aa59bce9e193a90fd8f82494814e0b265275f719befe02
+    maintainers:
+    - email: support@w6d.io
+      name: Wildcard
+    name: pgcat
+    urls:
+    - https://github.com/Improwised/charts/releases/download/pgcat-0.1.0/pgcat-0.1.0.tgz
+    version: 0.1.0
   pgpool:
   - apiVersion: v2
     appVersion: 1.0.0
@@ -535,4 +549,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2024-03-29T12:33:31.343279494Z"
+generated: "2024-04-04T10:22:51.236458099Z"
