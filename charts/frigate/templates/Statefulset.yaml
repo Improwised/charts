@@ -101,7 +101,10 @@ spec:
             - mountPath: {{ .Values.coral.hostPath }}
               name: coral-dev
             {{- end }}
-            - mountPath: /config
+            - mountPath: /config/config.yml
+              subPath: config.yml
+              name: config-yaml
+            - mountPath: /config/
               name: config
             - mountPath: /data
               name: data
@@ -120,6 +123,9 @@ spec:
             {{- end }}
       volumes:
         - name: config
+          persistentVolumeClaim:
+            claimName: {{ include "frigate.fullname" . }}-pv-claim
+        - name: config-yaml
           secret:
             secretName: {{ template "frigate.fullname" . }}
         {{- if .Values.coral.enabled }}
@@ -132,16 +138,6 @@ spec:
             medium: Memory
             sizeLimit: {{ .Values.shmSize }}
         {{- if .Values.extraVolumes  }}{{ toYaml .Values.extraVolumes | trim | nindent 8 }}{{ end }}
-  volumeClaimTemplates:
-  - metadata:
-      name: data
-    spec:
-      accessModes:
-        - ReadWriteOnce
-      storageClassName: {{ .Values.storageClassName }}
-      resources:
-        requests:
-          storage: 1Gi
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -154,3 +150,21 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+  {{- if .Values.persistence.data.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: # [ "ReadWriteOnce" ]
+        {{ toYaml .Values.persistence.data.accessMode }}
+      resources:
+        requests:
+          storage: "{{ .Values.persistence.data.size }}"
+      {{- if .Values.persistence.data.storageClass }}
+      {{- if (eq "-" .Values.persistence.data.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.persistence.data.storageClass }}"
+      {{- end }}
+      {{- end }}
+{{- end }}
