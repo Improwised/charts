@@ -24,7 +24,7 @@ envFrom: []
 serviceTemplate:
   name: svc
   image:
-
+  averageUtilization: 50
   ## initContainers:
   ##   - name: something
   ##     image: alpine
@@ -121,7 +121,7 @@ workerTemplate:
     enabled: false
   env: []
   envFrom: []
-
+  averageUtilization: 100
   volumeMounts: []
   volumes: []
 

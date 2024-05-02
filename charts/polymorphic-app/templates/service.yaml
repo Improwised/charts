@@ -242,7 +242,7 @@ spec:
       {{- end }}
 {{- if and (.autoscaling | default $.Values.serviceTemplate.autoscaling) (ne .type "StatefulSet")}}
 ---
-apiVersion: autoscaling/v2beta2
+apiVersion: {{ include "hpa.apiVersion" $ }}
 kind: HorizontalPodAutoscaler
 metadata:
 {{- if $.Values.prefixWithReleaseName.enabled }}
@@ -255,9 +255,13 @@ metadata:
     app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
+    apiVersion: {{ include "deployment.apiVersion" $ }}
     kind: Deployment
+    {{- if $.Values.prefixWithReleaseName.enabled }}
+    name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+    {{- else }}
     name: "{{ .name | default $.Values.serviceTemplate.name }}"
+    {{- end }}
   minReplicas: {{ .minReplicaCount | default $.Values.serviceTemplate.minReplicaCount }}
   maxReplicas: {{ .maxReplicaCount | default $.Values.serviceTemplate.maxReplicaCount }}
   metrics:
@@ -266,7 +270,7 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 50
+        averageUtilization: {{ .averageUtilization | default $.Values.serviceTemplate.averageUtilization }}
   # - type: Resource
   #   resource:
   #     name: memory
