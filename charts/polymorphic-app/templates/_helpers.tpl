@@ -125,6 +125,14 @@ Return the appropriate apiVersion for deployment.
 {{- end -}}
 {{- end -}}
 
+{{- define "hpa.apiVersion" -}}
+{{- if semverCompare ">1.25-0" .Capabilities.KubeVersion.Version -}}
+{{- print "autoscaling/v2" -}}
+{{- else -}}
+{{- print "autoscaling/v2beta2" -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Return the appropriate apiVersion for ingress.
 */}}

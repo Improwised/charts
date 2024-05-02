@@ -180,7 +180,7 @@ spec:
 
 {{- if .autoscaling | default $.Values.workerTemplate.autoscaling }}
 ---
-apiVersion: autoscaling/v2beta1
+apiVersion: {{ include "hpa.apiVersion" $ }}
 kind: HorizontalPodAutoscaler
 metadata:
 {{- if $.Values.prefixWithReleaseName.enabled }}
@@ -193,7 +193,7 @@ metadata:
     app.kubernetes.io/component: "{{ .name | default $.Values.workerTemplate.name }}"
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1beta2
+    apiVersion: {{ include "deployment.apiVersion" $ }}
     kind: Deployment
     {{- if $.Values.prefixWithReleaseName.enabled }}
     name: "{{ $.Release.Name }}-{{ .name | default $.Values.workerTemplate.name }}"
@@ -203,15 +203,11 @@ spec:
   minReplicas: {{ .minReplicaCount | default $.Values.workerTemplate.minReplicaCount }}
   maxReplicas: {{ .maxReplicaCount | default $.Values.workerTemplate.maxReplicaCount }}
   metrics:
-  - type: Object
-    object:
-      {{- if or (.metricName) ($.Values.workerTemplate.metricName) }}
-      metricName: {{ .metricName | default $.Values.workerTemplate.metricName }}
-      {{- end }}
+  - type: Resource
+    resource:
+      name: cpu
       target:
-        apiVersion: apps/v1
-        kind: Deployment
-        name: "{{ .name | default $.Values.workerTemplate.name }}"
-      targetValue: 100
+        type: Utilization
+        averageUtilization: {{ .averageUtilization | default $.Values.serviceTemplate.averageUtilization }}
 {{- end }}
 {{- end }}
