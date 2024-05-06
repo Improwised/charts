@@ -26,3 +26,6 @@ version: 0.1.2
 
 # A URL to an SVG or PNG image to be used as an icon
 icon: https://avatars.githubusercontent.com/u/54469796?s=280&v=4
+
+maintainers:
+  - name: Improwised
