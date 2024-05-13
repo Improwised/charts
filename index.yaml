@@ -577,4 +577,15 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
+  supabase:
+  - apiVersion: v2
+    appVersion: v0.1.0
+    created: "2024-05-13T07:31:32.762111323Z"
+    description: A Helm chart for supabase
+    digest: 7afd9b0b42cac151886666c9a2a1d9a698bc22d188fee253fce06c9a52cb7838
+    name: thunderdome-planning-poker
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/supabase-0.1.0/supabase.tgz
+    version: 0.1.0
 generated: "2024-05-02T09:27:47.346480749Z"
