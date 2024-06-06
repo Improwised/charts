@@ -45,7 +45,7 @@ env: []
 # MYSQL_QUERY_RULES=match_pattern;destination_hostgroup;apply;active as you needed
 # MYSQL_QUERY_RULES=^SELECT .* FOR UPDATE$;1;1;1,^SELECT;1;0;1,^CREATE;11;1;0
 
-#if you have proxysql config file as a secret
+# if you have proxysql config file as a secret
 # existingSecret: demo
 
 resources: {}
