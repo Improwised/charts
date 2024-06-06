@@ -33,7 +33,7 @@ env: []
 # MONITOR_USERNAME=monitor
 # MONITOR_PASSWORD=monitor
 
-# for seprating diffrent calues there are two seprators ",",";" 
+# for seprating diffrent calues there are two seprators ",",";"
 # where "," is seprating diffrent list and ";" for seprating diffrent compont of list object
 # MYSQL_SERVERS has value address,port,hostgroup,max_connections,weight,status,compression which can be written as
 # MYSQL_SERVERS=lcoalhost;1230;1;100;1;ONLINE;0,lcoalhost;1234;2;100;2;ONLINE;1
@@ -67,4 +67,3 @@ affinity: {}
 
 podDisruptionBudget: |
   maxUnavailable: 1
-
