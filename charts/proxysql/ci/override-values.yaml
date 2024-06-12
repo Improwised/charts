@@ -1,22 +1,9 @@
-image:
-  repository: improwised/proxysql
-  tag: "master-6b26e59-1717650638"
-  pullPolicy: IfNotPresent
-
-nameOverride: ""
-fullnameOverride: ""
-
 replicaCount: 1
 
 service:
   dbPort: 6033
   adminPort: 6032
   webPort: 6080
-
-
-queryRules: {}
-
-resources: {}
 
 podDisruptionBudget: |
   maxUnavailable: 1
