@@ -1,0 +1,9 @@
+replicaCount: 1
+
+service:
+  dbPort: 6033
+  adminPort: 6032
+  webPort: 6080
+
+podDisruptionBudget: |
+  maxUnavailable: 1
