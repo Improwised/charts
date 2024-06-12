@@ -561,6 +561,29 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/polymorphic-app-1.0.0.tgz
     version: 1.0.0
+  proxysql:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-06-12T10:08:34.96308376Z"
+    description: A Helm chart for ProxySQL
+    digest: 245f9cea1261073b0d5887a59e773c3d2de3123a7a422d70d9ec8790153d9c09
+    maintainers:
+    - name: improwised
+    name: proxysql
+    urls:
+    - https://github.com/Improwised/charts/releases/download/proxysql-1.0.0/proxysql-1.0.0.tgz
+    version: 1.0.0
+  supabase:
+  - apiVersion: v2
+    appVersion: v0.1.0
+    created: "2024-05-13T07:31:32.762111323Z"
+    description: A Helm chart for supabase
+    digest: 7afd9b0b42cac151886666c9a2a1d9a698bc22d188fee253fce06c9a52cb7838
+    name: thunderdome-planning-poker
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/supabase-0.1.0/supabase.tgz
+    version: 0.1.0
   thunderdome-planning-poker:
   - apiVersion: v2
     appVersion: v2.29.2
@@ -577,15 +600,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-  supabase:
-  - apiVersion: v2
-    appVersion: v0.1.0
-    created: "2024-05-13T07:31:32.762111323Z"
-    description: A Helm chart for supabase
-    digest: 7afd9b0b42cac151886666c9a2a1d9a698bc22d188fee253fce06c9a52cb7838
-    name: thunderdome-planning-poker
-    type: application
-    urls:
-    - https://github.com/Improwised/charts/releases/download/supabase-0.1.0/supabase.tgz
-    version: 0.1.0
-generated: "2024-05-02T09:27:47.346480749Z"
+generated: "2024-06-12T10:08:34.963159612Z"
