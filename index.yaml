@@ -3,7 +3,25 @@ entries:
   erpnext:
   - apiVersion: v2
     appVersion: v13.4.1
-    created: "2024-06-28T19:06:12.696187161+05:30"
+    created: "2023-04-01T07:31:31.944600482Z"
+    dependencies:
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 9.3.14
+    description: Kubernetes Helm Chart for the lastest stable ERPNext branch
+    digest: 2fa975d3fc8d36f555eb44a560acd394ceeb86769e407cc58478fc7a02e06941
+    icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
+    maintainers:
+    - name: improwised
+    name: erpnext
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/erpnext-3.3.0/erpnext-3.3.0.tgz
+    version: 3.3.0
+  - apiVersion: v2
+    appVersion: v13.4.1
+    created: "2022-11-01T11:40:05.695144845+05:30"
     dependencies:
     - condition: mariadb.enabled
       name: mariadb
@@ -21,7 +39,7 @@ entries:
     version: 3.2.5
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2024-06-28T19:06:12.694210697+05:30"
+    created: "2022-11-01T11:40:05.690227588+05:30"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 63c096ba0d92e323d95675e413511af68f59d4427637d7fe951a4b9c7cc25263
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -34,7 +52,7 @@ entries:
     version: 3.2.0
   - apiVersion: v2
     appVersion: v13.0.1
-    created: "2024-06-28T19:06:12.693748831+05:30"
+    created: "2022-11-01T11:40:05.689276415+05:30"
     description: Kubernetes Helm Chart for the lastest stable ERPNext branch
     digest: 65e10398e4021cf427d1fe21f2b61e31a24d4975ae4f4f864c6847d1cebe2694
     icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
@@ -45,8 +63,48 @@ entries:
     version: 3.0.3
   freeipa:
   - apiVersion: v2
+    appVersion: 4.10.1
+    created: "2023-06-01T04:00:32.416936342Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: FreeIPA is an integrated security information management solution
+      combining Linux (Fedora), 389 Directory Server, MIT Kerberos, NTP, DNS, Dogtag
+      (Certificate System).
+    digest: b75b412ffa0fd521f7d20d33d9ccccc897ce5b525ddc9e003d71c5bb9060e57d
+    maintainers:
+    - name: improwised
+    name: freeipa
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/freeipa-0.4.1/freeipa-0.4.1.tgz
+    version: 0.4.1
+  - apiVersion: v2
+    appVersion: 4.10.1
+    created: "2023-04-01T07:31:32.145637267Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: FreeIPA is an integrated security information management solution
+      combining Linux (Fedora), 389 Directory Server, MIT Kerberos, NTP, DNS, Dogtag
+      (Certificate System).
+    digest: e13f77d1d0e0e82dac465b5a5930ed0317fd52372c08f43cbf7b08e847c8f6dd
+    maintainers:
+    - name: improwised
+    name: freeipa
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/freeipa-0.4.0/freeipa-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v2
     appVersion: 4.9.10
-    created: "2024-06-28T19:06:12.69729842+05:30"
+    created: "2022-11-01T11:40:05.697709507+05:30"
     dependencies:
     - name: common
       repository: https://charts.bitnami.com/bitnami
@@ -66,7 +124,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2024-06-28T19:06:12.696471489+05:30"
+    created: "2022-11-01T11:40:05.69574549+05:30"
     description: A Helm chart for Kubernetes
     digest: 9f63bdb1e8a51ad34af788c21e3a52fec2c0c6c35adad0a749273fb3d8a82d84
     maintainers:
@@ -76,10 +134,111 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/freeipa-0.2.0.tgz
     version: 0.2.0
+  frigate:
+  - apiVersion: v2
+    appVersion: 0.13.0
+    created: "2024-04-18T12:35:57.650071721Z"
+    description: NVR With Realtime Object Detection for IP Cameras
+    digest: 8cbf6c8d4f03806184903a18ebfaef45ae141ba38fef0502f3b5d9a478cf8c06
+    keywords:
+    - tensorflow
+    - coral
+    - ml
+    maintainers:
+    - name: Improwised
+    name: frigate
+    urls:
+    - https://github.com/Improwised/charts/releases/download/frigate-1.1.0/frigate-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
+    appVersion: 0.12.0
+    created: "2023-07-03T11:50:52.892920216Z"
+    description: NVR With Realtime Object Detection for IP Cameras
+    digest: ab8d5586f9837c3dcccffccace5a3835ff9bd6c8787e40065c04d5f712a1ea5b
+    keywords:
+    - tensorflow
+    - coral
+    - ml
+    maintainers:
+    - name: Improwised
+    name: frigate
+    urls:
+    - https://github.com/Improwised/charts/releases/download/frigate-1.0.2/frigate-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
+    appVersion: 0.12.0
+    created: "2023-06-01T00:52:25.164035288Z"
+    description: NVR With Realtime Object Detection for IP Cameras
+    digest: 6052022c6dedf2060728009d4d9d8ceca7152626e33f12b7ea86145124efaded
+    keywords:
+    - tensorflow
+    - coral
+    - ml
+    maintainers:
+    - name: Improwised
+    name: frigate
+    urls:
+    - https://github.com/Improwised/charts/releases/download/frigate-1.0.1/frigate-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 0.12.0
+    created: "2023-05-27T14:00:47.186812868Z"
+    description: NVR With Realtime Object Detection for IP Cameras
+    digest: 2dbbe65d3bd6af99dae91d3640ad91469d9d297e07eb50386364b2c14d365e0f
+    keywords:
+    - tensorflow
+    - coral
+    - ml
+    maintainers:
+    - name: Improwised
+    name: frigate
+    urls:
+    - https://github.com/Improwised/charts/releases/download/frigate-1.0.0/frigate-1.0.0.tgz
+    version: 1.0.0
   healthchecks:
   - apiVersion: v2
+    appVersion: 2.7.0
+    created: "2023-06-01T04:00:32.573644668Z"
+    dependencies:
+    - condition: postgresql.enabled,global.postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.1.6
+    description: A Helm chart for Kubernetes
+    digest: bb6e06d46203c3e71b522bddb82b8713d8fee42aa92f8674eb4d3ddca28c24e7
+    maintainers:
+    - email: rakshit@improwised.com
+      name: rakshit
+    name: healthchecks
+    sources:
+    - https://github.com/healthchecks/healthchecks
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/healthchecks-1.1.1/healthchecks-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v2
+    appVersion: 2.7.0
+    created: "2023-04-01T07:31:32.362659043Z"
+    dependencies:
+    - condition: postgresql.enabled,global.postgresql.enabled
+      name: postgresql
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 10.14.3
+    description: A Helm chart for Kubernetes
+    digest: 889dca9f16bf8983ab891a3f1d79c04da3a9ca3fb084d7aeae8b84b5f07b3bb4
+    maintainers:
+    - email: rakshit@improwised.com
+      name: rakshit
+    name: healthchecks
+    sources:
+    - https://github.com/healthchecks/healthchecks
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/healthchecks-1.1.0/healthchecks-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
     appVersion: 1.16.0
-    created: "2024-06-28T19:06:12.702301915+05:30"
+    created: "2022-11-01T11:40:05.707227851+05:30"
     dependencies:
     - condition: postgresql.enabled,global.postgresql.enabled
       name: postgresql
@@ -99,7 +258,7 @@ entries:
     version: 1.0.6
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2024-06-28T19:06:12.700080863+05:30"
+    created: "2022-11-01T11:40:05.702952759+05:30"
     dependencies:
     - condition: postgresql.enabled,global.postgresql.enabled
       name: postgresql
@@ -117,58 +276,272 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/healthchecks-1.0.5.tgz
     version: 1.0.5
-  nifi:
-  - apiVersion: v2
-    appVersion: 2.0.0-M1
-    created: "2024-06-28T19:06:12.707862331+05:30"
+  mosquitto:
+  - annotations:
+      truecharts.org/SCALE-support: "true"
+      truecharts.org/catagories: |
+        - homeautomation
+      truecharts.org/grade: U
+    apiVersion: v2
+    appVersion: 2.0.15
+    created: "2023-06-29T05:21:05.033016926Z"
     dependencies:
-    - condition: zookeeper.enabled
-      name: zookeeper
-      repository: https://charts.bitnami.com/bitnami
-      version: 9.2.7
-    - alias: registry
-      condition: registry.enabled
-      name: nifi-registry
-      repository: https://dysnix.github.io/charts/
-      version: 1.0.0
-    - condition: ca.enabled
-      name: ca
+    - name: common
       repository: ""
-      version: 1.0.1
-    - condition: openldap.enabled
-      name: openldap
-      repository: https://charts.helm.sh/stable
-      version: ~1.2.4
-    description: Apache NiFi is a software project from the Apache Software Foundation
-      designed to automate the flow of data between software systems.
-    digest: 9287ac7c5de234b7a135a689e13f545cf211d903a28888d14a2b239beaab7ef5
-    home: https://nifi.apache.org/
-    icon: https://svn.apache.org/repos/asf/nifi/site/trunk/images/niFi-logo-horizontal-scaled.png
+      version: 11.1.2
+    description: Eclipse Mosquitto - An open source MQTT broker
+    digest: 40618bf41c659f4b40f641f83bc9b25d3235170c566d65bf2035b021327b2e27
     keywords:
-    - nifi
-    - data
-    - process
+    - mosquitto
+    - MQTT
+    - eclipse-iot
+    kubeVersion: '>=1.16.0-0'
     maintainers:
-    - email: sebastien.dupont@cetic.be
-      name: banzo
-      url: https://github.com/banzo
-    - email: amen.ayadi@cetic.be
-      name: AyadiAmen
-      url: https://github.com/AyadiAmen
-    - email: alexandre.nuttinck@cetic.be
-      name: alexnuttinck
-      url: https://github.com/alexnuttinck
-    - email: zakaria.hajja@cetic.be
-      name: zakaria2905
-      url: https://github.com/zakaria2905
-    name: nifi
+    - name: improwised
+    name: mosquitto
+    sources:
+    - https://github.com/truecharts/charts/tree/master/charts/stable/mosquitto
+    - https://github.com/eclipse/mosquitto
+    type: application
     urls:
-    - https://improwised.github.io/charts/charts/nifi-2.0.0.tgz
-    version: 2.0.0
+    - https://github.com/Improwised/charts/releases/download/mosquitto-8.0.12/mosquitto-8.0.12.tgz
+    version: 8.0.12
+  pgcat:
+  - apiVersion: v2
+    appVersion: 1.1.1
+    created: "2024-04-04T10:22:51.236392667Z"
+    description: A Helm chart for PgCat a PostgreSQL pooler and proxy (like PgBouncer)
+      with support for sharding, load balancing, failover and mirroring.
+    digest: 04e94000b9344fd882aa59bce9e193a90fd8f82494814e0b265275f719befe02
+    maintainers:
+    - email: support@w6d.io
+      name: Wildcard
+    name: pgcat
+    urls:
+    - https://github.com/Improwised/charts/releases/download/pgcat-0.1.0/pgcat-0.1.0.tgz
+    version: 0.1.0
+  pgpool:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-03-29T12:33:31.343193573Z"
+    description: A Helm chart for Pgpool
+    digest: 1a7e39403adb125d0e0d96899d9c9d19851039867707cae0ab767a8a9f533251
+    maintainers:
+    - name: improwised
+    name: pgpool
+    urls:
+    - https://github.com/Improwised/charts/releases/download/pgpool-1.0.1/pgpool-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-03-29T10:45:31.488792428Z"
+    description: A Helm chart for Pgpool
+    digest: 1009a0fdf9be737c9a586461ee923734fcc38c795caaaaf0d48c6f0d7c5febbe
+    maintainers:
+    - name: improwised
+    name: pgpool
+    urls:
+    - https://github.com/Improwised/charts/releases/download/pgpool-1.0.0/pgpool-1.0.0.tgz
+    version: 1.0.0
   polymorphic-app:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2024-06-28T19:06:12.708744507+05:30"
+    created: "2024-05-02T09:27:47.346369522Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: aac58f17ff03a046a9ba2441be3971e8bdf566af730200380ec5a72d310dd380
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-2.1.0/polymorphic-app-2.1.0.tgz
+    version: 2.1.0
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-03-04T14:40:36.168857561Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: bd3a19c5335379af7b948f5f07561f56ee1f8b17448303f5a4d9a29f0835a35b
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-2.0.0/polymorphic-app-2.0.0.tgz
+    version: 2.0.0
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-02-22T12:16:14.927447879Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 61b28175f0f361e67ca8f3b45b74d87111e7a2cac51a980487153c4426a9f376
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.3.0/polymorphic-app-1.3.0.tgz
+    version: 1.3.0
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-08-10T09:10:10.853370833Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 7ac60098e81c597005df76d459bdc03eee3e9885f11873b41338dd57778d4404
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.8/polymorphic-app-1.2.8.tgz
+    version: 1.2.8
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-07-31T09:07:38.170371349Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: e3273d103b39a6ec3924265eada2be1877c2e82ece911ac0b0fdf68e1e60f3d2
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.7/polymorphic-app-1.2.7.tgz
+    version: 1.2.7
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-07-07T05:37:05.025486238Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: e9b90ca8060ed4f113bcd692db424b88a6d3231e4575c45bb295beabd98383ef
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.6/polymorphic-app-1.2.6.tgz
+    version: 1.2.6
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-07-06T12:07:59.44800458Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 8166b334a30eee279c6ac0f08dce668d3864846ff1910d521ed86de691c11463
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.5/polymorphic-app-1.2.5.tgz
+    version: 1.2.5
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-07-06T01:55:44.850189608Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 3ae3dfbc70a14bccd658f240139ff35722e3e9fcba8360360f449508f5331ba3
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.4/polymorphic-app-1.2.4.tgz
+    version: 1.2.4
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-07-03T14:02:19.149985607Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 5a064029c6ddb0cab7d8c0df0c1ab902ac00fbc2c9ee1171ebfb0e25e5581c7b
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.3/polymorphic-app-1.2.3.tgz
+    version: 1.2.3
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-07-03T11:35:40.569336547Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 277b9e1a34563d1600145817d73d43211d05b7909b83295e186617b34a7f3b07
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.2/polymorphic-app-1.2.2.tgz
+    version: 1.2.2
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-06-15T10:17:41.46744952Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: cee7a04a89fcb8b10bcd0ed5499ac75a759d5b7ffbe65139a0a7ca6b099b8e45
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.1/polymorphic-app-1.2.1.tgz
+    version: 1.2.1
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-06-11T15:35:59.797329301Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 21effb551a41aa53dfcd1071de970b65adc31f5f5da629f603f535a4665f6ac2
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.2.0/polymorphic-app-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-06-01T04:00:32.729540299Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 73f6904b9f6cdeabe4a59b9cf438690f41c771c6be7530602ef234508635d4bc
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.1.0/polymorphic-app-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-05-15T05:05:57.50359779Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: dd981f0984ab1541b135f40ab5d0aed48516c76504eae25f90d96b8ca2c2fcec
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.0.3/polymorphic-app-1.0.3.tgz
+    version: 1.0.3
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-04-01T07:31:32.55971993Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: bf7e83177250cdf5ef01ab61ccef2d61e60e75b5604e25d1aa19cc2ae6eb5bee
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-1.0.2/polymorphic-app-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2022-11-01T11:40:05.708644666+05:30"
     description: A Helm chart for deploying any custom applications, specifically
       polymorphic applications.
     digest: d01921142e646a3426e67c8a61f92d2ce6da1427faafc2d45f1bcec66c7d0128
@@ -179,7 +552,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2024-06-28T19:06:12.708347175+05:30"
+    created: "2022-11-01T11:40:05.707928925+05:30"
     description: A Helm chart for deploying any custom applications, specifically
       polymorphic applications.
     digest: 28d17b0c88a8bd02a1ca0d82da08c8c025a3621b584b8d06f4f2fac0a24de7d3
@@ -188,4 +561,43 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/polymorphic-app-1.0.0.tgz
     version: 1.0.0
-generated: "2024-06-28T19:06:12.693230462+05:30"
+  proxysql:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-06-12T10:08:34.96308376Z"
+    description: A Helm chart for ProxySQL
+    digest: 245f9cea1261073b0d5887a59e773c3d2de3123a7a422d70d9ec8790153d9c09
+    maintainers:
+    - name: improwised
+    name: proxysql
+    urls:
+    - https://github.com/Improwised/charts/releases/download/proxysql-1.0.0/proxysql-1.0.0.tgz
+    version: 1.0.0
+  supabase:
+  - apiVersion: v2
+    appVersion: v0.1.0
+    created: "2024-05-13T07:31:32.762111323Z"
+    description: A Helm chart for supabase
+    digest: 7afd9b0b42cac151886666c9a2a1d9a698bc22d188fee253fce06c9a52cb7838
+    name: thunderdome-planning-poker
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/supabase-0.1.0/supabase.tgz
+    version: 0.1.0
+  thunderdome-planning-poker:
+  - apiVersion: v2
+    appVersion: v2.29.2
+    created: "2023-04-01T07:31:32.762111323Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.2.6
+    description: A Helm chart for thunderdome-planning-poker
+    digest: 3616cfbfcdf120a308b2b506b7d5b312f05794705fc6afd8327e9bc8407a5364
+    name: thunderdome-planning-poker
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
+    version: 1.0.0
+generated: "2024-06-12T10:08:34.963159612Z"
