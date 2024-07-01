@@ -600,4 +600,25 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
+  nifi:
+  - apiVersion: v2
+    appVersion: 2.0.0-M3
+    created: "2024-07-01T16:00:48.440556733+05:30"
+    description: Apache NiFi is a software project from the Apache Software Foundation
+      designed to automate the flow of data between software systems.
+    digest: 20c8dc46c9e15c958328cb54a75463643c05ca96b62b594fac6191e22961bb8e
+    home: https://nifi.apache.org/
+    icon: https://svn.apache.org/repos/asf/nifi/site/trunk/images/niFi-logo-horizontal-scaled.png
+    keywords:
+    - nifi
+    - data
+    - process
+    maintainers:
+    - email: shivani.rathod@improwised.com
+      name: Improwised
+      url: https://github.com/shivani446
+    name: nifi
+    urls:
+    - https://github.com/Improwised/charts/releases/download/nifi-2.0.0/nifi-2.0.0.tgz
+    version: 2.0.0
 generated: "2024-06-12T10:08:34.963159612Z"
