@@ -621,4 +621,24 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/nifi-2.0.0/nifi-2.0.0.tgz
     version: 2.0.0
+  - apiVersion: v2
+    appVersion: 2.0.0-M3
+    created: "2024-07-12T13:22:51.563682223+05:30"
+    description: Apache NiFi is a software project from the Apache Software Foundation
+      designed to automate the flow of data between software systems.
+    digest: 6de654c0aed87e0ce6977c3bbc4b58a199e9af29fdab785f29f4632a7794f59a
+    home: https://nifi.apache.org/
+    icon: https://svn.apache.org/repos/asf/nifi/site/trunk/images/niFi-logo-horizontal-scaled.png
+    keywords:
+    - nifi
+    - data
+    - process
+    maintainers:
+    - email: shivani.rathod@improwised.com
+      name: Improwised
+      url: https://github.com/shivani446
+    name: nifi
+    urls:
+    - charts/nifi-2.0.1.tgz
+    version: 2.0.1
 generated: "2024-06-12T10:08:34.963159612Z"
