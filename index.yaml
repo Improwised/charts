@@ -639,6 +639,6 @@ entries:
       url: https://github.com/shivani446
     name: nifi
     urls:
-    - charts/nifi-2.0.1.tgz
+    - https://github.com/Improwised/charts/releases/download/nifi-2.0.1/nifi-2.0.1.tgz
     version: 2.0.1
 generated: "2024-06-12T10:08:34.963159612Z"
