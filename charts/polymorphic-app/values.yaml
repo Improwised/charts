@@ -156,6 +156,8 @@ workerTemplate:
 
   affinity: {}
 
+  annotations: {}
+
 workers:
 #######################################
 # pulsar-billing-service
