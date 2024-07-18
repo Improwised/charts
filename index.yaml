@@ -306,6 +306,47 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/mosquitto-8.0.12/mosquitto-8.0.12.tgz
     version: 8.0.12
+  nifi:
+  - apiVersion: v2
+    appVersion: 2.0.0-M3
+    created: "2024-07-12T13:22:51.563682223+05:30"
+    description: Apache NiFi is a software project from the Apache Software Foundation
+      designed to automate the flow of data between software systems.
+    digest: 6de654c0aed87e0ce6977c3bbc4b58a199e9af29fdab785f29f4632a7794f59a
+    home: https://nifi.apache.org/
+    icon: https://svn.apache.org/repos/asf/nifi/site/trunk/images/niFi-logo-horizontal-scaled.png
+    keywords:
+    - nifi
+    - data
+    - process
+    maintainers:
+    - email: shivani.rathod@improwised.com
+      name: Improwised
+      url: https://github.com/shivani446
+    name: nifi
+    urls:
+    - https://github.com/Improwised/charts/releases/download/nifi-2.0.1/nifi-2.0.1.tgz
+    version: 2.0.1
+  - apiVersion: v2
+    appVersion: 2.0.0-M3
+    created: "2024-07-01T16:00:48.440556733+05:30"
+    description: Apache NiFi is a software project from the Apache Software Foundation
+      designed to automate the flow of data between software systems.
+    digest: 20c8dc46c9e15c958328cb54a75463643c05ca96b62b594fac6191e22961bb8e
+    home: https://nifi.apache.org/
+    icon: https://svn.apache.org/repos/asf/nifi/site/trunk/images/niFi-logo-horizontal-scaled.png
+    keywords:
+    - nifi
+    - data
+    - process
+    maintainers:
+    - email: shivani.rathod@improwised.com
+      name: Improwised
+      url: https://github.com/shivani446
+    name: nifi
+    urls:
+    - https://github.com/Improwised/charts/releases/download/nifi-2.0.0/nifi-2.0.0.tgz
+    version: 2.0.0
   pgcat:
   - apiVersion: v2
     appVersion: 1.1.1
@@ -344,6 +385,19 @@ entries:
     - https://github.com/Improwised/charts/releases/download/pgpool-1.0.0/pgpool-1.0.0.tgz
     version: 1.0.0
   polymorphic-app:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-07-18T12:22:21.833436592Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 6ae20e71154018408ed763d5bc57bdadafb6eda4541930d16526bebf42a75951
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-2.1.1/polymorphic-app-2.1.1.tgz
+    version: 2.1.1
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2024-05-02T09:27:47.346369522Z"
@@ -600,45 +654,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-  nifi:
-  - apiVersion: v2
-    appVersion: 2.0.0-M3
-    created: "2024-07-01T16:00:48.440556733+05:30"
-    description: Apache NiFi is a software project from the Apache Software Foundation
-      designed to automate the flow of data between software systems.
-    digest: 20c8dc46c9e15c958328cb54a75463643c05ca96b62b594fac6191e22961bb8e
-    home: https://nifi.apache.org/
-    icon: https://svn.apache.org/repos/asf/nifi/site/trunk/images/niFi-logo-horizontal-scaled.png
-    keywords:
-    - nifi
-    - data
-    - process
-    maintainers:
-    - email: shivani.rathod@improwised.com
-      name: Improwised
-      url: https://github.com/shivani446
-    name: nifi
-    urls:
-    - https://github.com/Improwised/charts/releases/download/nifi-2.0.0/nifi-2.0.0.tgz
-    version: 2.0.0
-  - apiVersion: v2
-    appVersion: 2.0.0-M3
-    created: "2024-07-12T13:22:51.563682223+05:30"
-    description: Apache NiFi is a software project from the Apache Software Foundation
-      designed to automate the flow of data between software systems.
-    digest: 6de654c0aed87e0ce6977c3bbc4b58a199e9af29fdab785f29f4632a7794f59a
-    home: https://nifi.apache.org/
-    icon: https://svn.apache.org/repos/asf/nifi/site/trunk/images/niFi-logo-horizontal-scaled.png
-    keywords:
-    - nifi
-    - data
-    - process
-    maintainers:
-    - email: shivani.rathod@improwised.com
-      name: Improwised
-      url: https://github.com/shivani446
-    name: nifi
-    urls:
-    - https://github.com/Improwised/charts/releases/download/nifi-2.0.1/nifi-2.0.1.tgz
-    version: 2.0.1
-generated: "2024-06-12T10:08:34.963159612Z"
+generated: "2024-07-18T12:22:21.83362399Z"
