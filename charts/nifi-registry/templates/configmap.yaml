@@ -1,0 +1,190 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "nifi-registry.fullname" . }}-startup-script
+  namespace: {{ .Release.Namespace }}
+data:
+  startup.sh: |
+    mkdir -p "$HOME"/.ssh
+    chmod 700 "$HOME"/.ssh
+    touch "$HOME"/.ssh/known_hosts
+    chmod 600 "$HOME"/.ssh/known_hosts
+    prop_replace () {
+      target_file=${NIFI_REGISTRY_HOME}/conf/${3:-nifi-registry.properties}
+      echo "updating ${1} in ${target_file}"
+      if egrep "^${1}=" ${target_file} &> /dev/null; then
+        sed -i -e "s|^$1=.*$|$1=$2|"  ${target_file}
+      else
+        echo ${1}=${2} >> ${target_file}
+      fi
+      }
+    {{- if .Values.flow.git.ssh.secret }}
+    cp --dereference /sshSecret/id_rsa "$HOME"/.ssh
+    chmod 600 "$HOME"/.ssh/id_rsa
+    {{- end }}
+    {{- if .Values.flow.git.ssh.config }}
+    cp --dereference /sshConfig/config "$HOME"/.ssh
+    chmod 600 "$HOME"/.ssh/config
+    {{- end }}
+    {{- if .Values.auth.authConf }}
+    cp --dereference /AuthConfConfigMap/authorizations.xml ./auth-conf/
+    cp --dereference /AuthConfConfigMap/users.xml ./auth-conf/
+    {{- /* if .Values.auth.authConf */}}{{ end }}
+    {{- if .Values.flow.git.enabled }}
+    scripts_dir='/opt/nifi-registry/scripts'
+    . "${scripts_dir}/update_flow_provider.sh"
+    xmlstarlet ed --inplace --subnode "/providers/flowPersistenceProvider" --type elem -n property -v "${NIFI_REGISTRY_GIT_REPO:-}" -i \$prev --type attr -n name -v "Remote Clone Repository" "${NIFI_REGISTRY_HOME}/conf/providers.xml"
+    {{- end }}
+    {{- if .Values.database.postgres.enabled }}
+    cd /opt/nifi-registry/nifi-registry-current/ext
+    mkdir postgresql
+    cd postgresql
+    curl -k "{{ .Values.database.postgres.driverURL }}{{ .Values.database.postgres.fileName }}" -o "{{ .Values.database.postgres.fileName }}"
+    scripts_dir='/opt/nifi-registry/scripts'
+    . "${scripts_dir}/update_database.sh"
+    {{ end }}
+    {{- if .Values.auth.authConf }}
+    cp --dereference /AuthConfConfigMap/authorizations.xml ./auth-conf/
+    cp --dereference /AuthConfConfigMap/users.xml ./auth-conf/
+    {{ end }}
+    . ${NIFI_REGISTRY_BASE_DIR}/scripts/common.sh
+    echo >> ${NIFI_REGISTRY_HOME}/conf/nifi-registry.properties
+    scripts_dir='/opt/nifi-registry/scripts'
+    . "${scripts_dir}/update_flow_provider.sh"
+    {{- if .Values.https.cert.enabled }}
+      # Note opportunity here to inject additional trusted certs named ca.crt in other
+      # subdirectories of /opt/nifi/nifi-current/tls/, using custom secrets and/or configmaps.
+      # If any of those trusted certs expire then you will need to restart the pod to pick
+      # them up, as the truststore is only created at pod startup and Kubernetes won't
+      # update secrets mounted as subPaths anyway.
+      # c.f. https://kubernetes.io/docs/concepts/storage/volumes/#secret
+    /bin/rm -fv "${NIFI_REGISTRY_HOME}/tls/truststore.jks" \
+                "${NIFI_REGISTRY_HOME}/tls/keystore.jks" \
+                "/tmp/tls.p12"
+    for ca in "${NIFI_REGISTRY_HOME}"/tls/*/ca.crt
+    do
+      ALIAS=$(echo $ca | awk -F "/" '{print $(NF-1) }' -)
+      keytool -import \
+              -noprompt \
+              -trustcacerts \
+              -alias $ALIAS \
+              -storetype JKS \
+              -file $ca \
+              -keystore "${NIFI_REGISTRY_HOME}/tls/truststore.jks" \
+              -storepass "{{ .Values.https.cert.truststorePasswd }}"
+    done
+    keytool -list -keystore "${NIFI_REGISTRY_HOME}/tls/truststore.jks" \
+                -storepass "{{ .Values.https.cert.truststorePasswd }}"
+
+    openssl pkcs12 -export -in      "${NIFI_REGISTRY_HOME}/tls/cert-manager/tls.crt" \
+                            -inkey   "${NIFI_REGISTRY_HOME}/tls/cert-manager/tls.key" \
+                            -name    "$(hostname)" \
+                            -out     "/tmp/tls.p12" \
+                            -passout "pass:{{ .Values.https.cert.keystorePasswd }}"
+    keytool -importkeystore \
+            -noprompt \
+            -destkeystore "${NIFI_REGISTRY_HOME}/tls/keystore.jks" \
+            -srckeystore "/tmp/tls.p12" \
+            -srcstoretype PKCS12 \
+            -deststoretype JKS \
+            -srcstorepass "{{ .Values.https.cert.keystorePasswd }}" \
+            -deststorepass "{{ .Values.https.cert.keystorePasswd }}"
+    keytool -list -keystore "${NIFI_REGISTRY_HOME}/tls/keystore.jks" \
+                  -storepass "{{ .Values.https.cert.keystorePasswd }}"
+    {{ if .Values.https.cert.replaceDefaultTrustStore }}
+    echo >> ${NIFI_REGISTRY_HOME}/conf/bootstrap.conf
+    echo "# Something basic like OIDC needs to trust a non-standard Certificate Authority"
+    echo "java.arg.7=-Djavax.net.ssl.trustStore=/opt/nifi-registry/nifi-registry-current/tls/truststore.jks" >> ${NIFI_REGISTRY_HOME}/conf/bootstrap.conf
+    {{ end }}
+    {{- /* if .Values.https.cert.enabled */}}{{ end }}
+
+    {{ if .Values.auth.enabled }}
+    {{ if .Values.auth.oidc.enabled }}
+    prop_replace nifi.registry.security.identity.provider ""
+    prop_replace nifi.registry.security.user.oidc.discovery.url {{ .Values.auth.oidc.URL }}
+    prop_replace nifi.registry.security.user.oidc.client.id "${OIDC_CLIENT_ID}"
+    prop_replace nifi.registry.security.user.oidc.client.secret "${OIDC_CLIENT_SECRET}"
+    prop_replace nifi.registry.security.user.oidc.claim.identifying.user {{ .Values.auth.oidc.ClaimIdentifyingUser }}
+    prop_replace nifi.registry.security.user.oidc.connect.timeout "{{ .Values.auth.oidc.ConnectTimeout }}"
+    prop_replace nifi.registry.security.user.oidc.read.timeout "{{ .Values.auth.oidc.ReadTimeout }}"
+    {{ end }}
+    {{ end }}
+
+    {{ if .Values.auth.enabled }}
+    prop_replace nifi.registry.security.needClientAuth "{{ .Values.auth.needclientauth }}"
+    xmlstarlet ed --inplace --update "//authorizers/userGroupProvider/property[@name='Users File']" -v './auth-conf/users.xml' "${NIFI_REGISTRY_HOME}/conf/authorizers.xml"
+    xmlstarlet ed --inplace --update "//authorizers/accessPolicyProvider/property[@name='Authorizations File']" -v './auth-conf/authorizations.xml' "${NIFI_REGISTRY_HOME}/conf/authorizers.xml"
+    xmlstarlet ed --inplace --update "//authorizers/accessPolicyProvider/property[@name='Initial Admin Identity']" -v '{{ .Values.auth.admin }}' "${NIFI_REGISTRY_HOME}/conf/authorizers.xml"
+    xmlstarlet ed --inplace --update "//authorizers/userGroupProvider/property[@name='Initial User Identity 1']" -v '{{ .Values.auth.admin }}' "${NIFI_REGISTRY_HOME}/conf/authorizers.xml"
+    # Establish initial user and an associated admin identity
+    sed -i -e 's|<property name="Initial User Identity 1">.*</property>|<property name="Initial User Identity 1">'"${INITIAL_ADMIN_IDENTITY}"'</property>|'  ${NIFI_REGISTRY_HOME}/conf/authorizers.xml
+    sed -i -e 's|<property name="Initial Admin Identity">.*</property>|<property name="Initial Admin Identity">'"${INITIAL_ADMIN_IDENTITY}"'</property>|'  ${NIFI_REGISTRY_HOME}/conf/authorizers.xml
+  
+    # Shamelessly stolen from $NIFI_REGISTRY_BASE_DIR/scripts/secure.sh
+    # and $NIFI_REGISTRY_BASE_DIR/scripts/start.sh
+
+    scripts_dir='/opt/nifi-registry/scripts'
+    . "${scripts_dir}/update_database.sh"
+    . "${scripts_dir}/update_bundle_provider.sh"
+
+    prop_replace 'nifi.registry.security.keystore'           "${KEYSTORE_PATH}"
+    prop_replace 'nifi.registry.security.keystoreType'       "${KEYSTORE_TYPE}"
+    prop_replace 'nifi.registry.security.keystorePasswd'     "${KEYSTORE_PASSWORD}"
+    prop_replace 'nifi.registry.security.keyPasswd'          "${KEY_PASSWORD:-$KEYSTORE_PASSWORD}"
+    prop_replace 'nifi.registry.security.truststore'         "${TRUSTSTORE_PATH}"
+    prop_replace 'nifi.registry.security.truststoreType'     "${TRUSTSTORE_TYPE}"
+    prop_replace 'nifi.registry.security.truststorePasswd'   "${TRUSTSTORE_PASSWORD}"
+    {{- end }}
+
+    {{ if .Values.https.enabled }}
+    # Disable HTTP and enable HTTPS
+    prop_replace 'nifi.registry.web.http.port'   ''
+    prop_replace 'nifi.registry.web.http.host'   ''
+    prop_replace 'nifi.registry.web.https.port'  "${NIFI_REGISTRY_WEB_HTTPS_PORT:-18443}"
+    prop_replace 'nifi.registry.web.https.host'  "${NIFI_REGISTRY_WEB_HTTPS_HOST:-$HOSTNAME}"
+    {{- end }}
+
+
+
+    # Log everything to the console, not to files
+    xmlstarlet ed --inplace --delete "//configuration/logger/appender-ref[@ref='CONSOLE']" "${NIFI_REGISTRY_HOME}/conf/logback.xml"
+    xmlstarlet ed --inplace --update "//configuration/logger/appender-ref[@ref='BOOTSTRAP_FILE']/@ref" -v CONSOLE "${NIFI_REGISTRY_HOME}/conf/logback.xml"
+    xmlstarlet ed --inplace --update "//configuration/logger/appender-ref[@ref='EVENTS_FILE']/@ref" -v CONSOLE "${NIFI_REGISTRY_HOME}/conf/logback.xml"
+    xmlstarlet ed --inplace --update "//configuration/logger/appender-ref[@ref='APP_FILE']/@ref" -v CONSOLE "${NIFI_REGISTRY_HOME}/conf/logback.xml"
+    xmlstarlet ed --inplace --update "//configuration/root/appender-ref[@ref='APP_FILE']/@ref" -v CONSOLE "${NIFI_REGISTRY_HOME}/conf/logback.xml"
+    cd /opt/nifi-registry/nifi-registry-current/
+    mkdir -p ./flow_storage
+
+    prop_enable() {
+      target_file=${3:-${nifi_registry_props_file}}
+      echo "File [${target_file}] enabled [${1}]"
+      sed -i -e "s|^\# $1=.*$|$1=$2|" ${target_file}
+    } 
+    [ ! -z "${SSL_IDENTITY_MAPPING_PATTERN_DN}" ] && prop_enable 'nifi.registry.security.identity.mapping.pattern.dn' "${SSL_IDENTITY_MAPPING_PATTERN_DN}"
+    [ ! -z "${SSL_IDENTITY_MAPPING_VALUE_DN}" ] && prop_enable 'nifi.registry.security.identity.mapping.value.dn'   "${SSL_IDENTITY_MAPPING_VALUE_DN}"
+
+    exec ${NIFI_REGISTRY_HOME}/bin/nifi-registry.sh run
+  {{ if .Values.flow.git.ssh.config }}
+  config: |
+      {{- if contains "\n" .Values.flow.git.ssh.config }}
+          {{- range $value := .Values.flow.git.ssh.config | splitList "\n" }}
+            {{ print $value }}
+      {{- end }}
+      {{- else }}
+          {{ .Values.flow.git.ssh.config }}
+      {{- end }}
+  {{ end }}
+  {{ if .Values.flow.git.ssh.known_hosts }}
+  known_hosts: |
+      {{- if contains "\n" .Values.flow.git.ssh.known_hosts }}
+          {{- range $value := .Values.flow.git.ssh.known_hosts | splitList "\n" }}
+            {{ print $value }}
+      {{- end }}
+      {{- else }}
+          {{ .Values.flow.git.ssh.known_hosts }}
+      {{- end }}
+  {{ end }}
+  {{ if .Values.flow.git.config.enabled }}
+  gitconfig: | 
+    {{ .Values.flowProvider.git.config.data }}
+  {{ end }}
