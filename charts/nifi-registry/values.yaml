@@ -1,0 +1,198 @@
+# Default values for nifi-registry.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# do not change the replicaCount
+replicaCount: 1
+
+image:
+  repository: apache/nifi-registry
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "1.27.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+## initContainers fo volume
+initContainers:
+  alpine:
+    image: alpine
+    tag: 3.6
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 18443
+
+ingress:
+  enabled: true
+  className: ""
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: nifi-registry.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+storageClass: ""
+https:
+  enabled: false
+  port: 18443
+  host: "0.0.0.0"
+  cert:
+    enabled: false
+    clientCommonName: "Initial Administrator"
+    clusterDomain: cluster.local
+    keystorePasswd: changeme
+    truststorePasswd: changeme
+    additionalDnsNames:
+      - nifi.local
+    caSecrets:
+    replaceDefaultTrustStore: true
+    refreshSeconds: 300
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    certDuration: 87660h
+    caDuration: 87660h
+
+auth:
+  enabled: false
+  needclientauth: false
+  admin: "admin"
+  authconf:
+  oidc:
+    enabled: false
+    URL: "http://my-release-keycloak.default/realms/master/.well-known/openid-configuration"
+    # ClientId: "nifiregistry"
+    # ClientSecret: "clientSecret"
+    ClaimIdentifyingUser: email
+    ConnectTimeout: "5 secs"
+    ReadTimeout: "5 secs"
+    oidcsecret: keycloak
+    oidcsecretclientid: id
+    oidcsecretclientsecret: secret
+
+database:
+  postgres:
+    enabled: false
+    driverURL: https://jdbc.postgresql.org/download/
+    fileName: postgresql-42.2.6.jar
+    driverClass: org.postgresql.Driver
+    url: jdbc:postgresql://my-release-postgresql.default:5432/nifireg
+    username: postgres
+    dbsecretName: my-release-postgresql
+    dbsecretKey: postgres-password
+
+flow:
+  git:
+    enabled: false
+    url: git@github.com:aniketgohelimp/nifiregistry.git
+    remote: origin
+    user: demo
+    password: amolet
+    config:
+      enabled: false
+      data: ""
+    ssh:
+      secret: nifi-registry-git-ssh
+      known_hosts:
+      gitSshCommand: "ssh -v"
+      config: |
+        StrictHostKeyChecking accept-new
+
+bundle:
+  s3:
+    enabled: false
+    region: us-central-1
+    bucketName: nifi-registry-bucket
+    keyPrefix: ""
+    credentialsProvider: STATIC
+    accessKey: ""
+    secretAccessKey: ""
+    accessSecret:
+      name: nifi-registry-creds
+    endpoint: s3://s3.us-central-1.amazonaws.com
+
+volumeClaimTemplates: []
+  ## if database postgres is not used than uncomment this
+  # - name: database
+  #   size: "1Gi"
+  # ## if https is used uncomment this
+  # - name: auth-conf
+  #   size: "1Gi"
+  # ## if flow-storage git is not used than uncomment this
+  # - name: flow-storage
+  #   size: "1Gi"
+  # ## if bundle-storage s3 is not used than uncomment this
+  # - name: bundle-storage
+  #   size: "1Gi"
+
+volumeMounts: []
+  # ## if database postgres is not used than uncomment this
+  # - name: database
+  #   mountPath: /opt/nifi-registry/nifi-registry-current/database
+  # ## if https is used uncomment this
+  # - name: auth-conf
+  #   mountPath: /opt/nifi-registry/nifi-registry-current/auth-conf
+  # ## if flow-storage git is not used than uncomment this
+  # - name: flow-storage
+  #   mountPath: /opt/nifi-registry/nifi-registry-current/flow-storage
+  # ## if bundle-storage s3 is not used than uncomment this
+  # - name: bundle-storage
+  #   mountPath: /opt/nifi-registry/nifi-registry-current/bundle-storage
+
+
+# -
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env: []

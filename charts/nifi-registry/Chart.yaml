@@ -1,0 +1,8 @@
+apiVersion: v2
+name: nifi-registry
+description: A Helm chart for nifi-registry
+type: application
+maintainers:
+  - name: improwised
+version: 1.0.0
+appVersion: "1.27.0"
