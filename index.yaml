@@ -347,6 +347,19 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/nifi-2.0.0/nifi-2.0.0.tgz
     version: 2.0.0
+  nifi-registry:
+  - apiVersion: v2
+    appVersion: 1.27.0
+    created: "2024-07-26T11:30:10.353849676Z"
+    description: A Helm chart for nifi-registry
+    digest: 8eac843cfb339b2b18ebe36d541b42a5fccf8d2bff7b6cbe472fe481b8e49517
+    maintainers:
+    - name: improwised
+    name: nifi-registry
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/nifi-registry-1.0.0/nifi-registry-1.0.0.tgz
+    version: 1.0.0
   pgcat:
   - apiVersion: v2
     appVersion: 1.1.1
@@ -654,4 +667,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2024-07-18T12:22:21.83362399Z"
+generated: "2024-07-26T11:30:10.353947499Z"
