@@ -71,13 +71,13 @@ ingress:
   #      - chart-example.local
 
 resources: {}
-storageClass: "local-path"
+storageClass: ""
 https:
-  enabled: true
+  enabled: false
   port: 18443
   host: "0.0.0.0"
   cert:
-    enabled: true
+    enabled: false
     clientCommonName: "Initial Administrator"
     clusterDomain: cluster.local
     keystorePasswd: changeme
@@ -98,12 +98,12 @@ https:
     caDuration: 87660h
 
 auth:
-  enabled: true
+  enabled: false
   needclientauth: false
   admin: "admin"
   authconf:
   oidc:
-    enabled: true
+    enabled: false
     URL: "http://my-release-keycloak.default/realms/master/.well-known/openid-configuration"
     # ClientId: "nifiregistry"
     # ClientSecret: "clientSecret"
@@ -116,7 +116,7 @@ auth:
 
 database:
   postgres:
-    enabled: true
+    enabled: false
     driverURL: https://jdbc.postgresql.org/download/
     fileName: postgresql-42.2.6.jar
     driverClass: org.postgresql.Driver
@@ -127,7 +127,7 @@ database:
 
 flow:
   git:
-    enabled: true
+    enabled: false
     url: git@github.com:aniketgohelimp/nifiregistry.git
     remote: origin
     user: demo
