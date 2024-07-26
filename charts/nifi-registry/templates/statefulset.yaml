@@ -30,17 +30,31 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       shareProcessNamespace: true
-
       initContainers:
         - name: take-data-dir-ownership
           image: "{{ .Values.initContainers.alpine.image }}:{{ .Values.initContainers.alpine.tag }}"
           command:
-            - chown
-            - -R
-            - 1000:1000
-            - /opt/nifi-registry/nifi-registry-current/database
-            - /opt/nifi-registry/nifi-registry-current/flow-storage
-            - /opt/nifi-registry/nifi-registry-current/bundle-storage
+            - sh
+            - -ce
+            - |
+              if [ -d /opt/nifi-registry/nifi-registry-current/database ]; then
+                chown
+                -R
+                1000:1000
+                /opt/nifi-registry/nifi-registry-current/database
+              fi
+              if [ -d /opt/nifi-registry/nifi-registry-current/flow-storage ]; then
+                chown
+                -R
+                1000:1000
+                /opt/nifi-registry/nifi-registry-current/flow-storage
+              fi
+              if [ -d /opt/nifi-registry/nifi-registry-current/bundle-storage ]; then
+                chown
+                -R
+                1000:1000
+                /opt/nifi-registry/nifi-registry-current/bundle-storage
+              fi
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
@@ -240,10 +254,12 @@ spec:
             - name: {{ include "nifi-registry.fullname" . }}-0
               mountPath: /opt/nifi-registry/nifi-registry-current/tls/cert-manager
             {{ end }}
+            {{- if .Values.flow.git.enabled }}
             {{- if .Values.flow.git.ssh.secret }}
             - name: ssh-key-secret
               mountPath: /sshSecret
               readOnly: true
+            {{ end }}
             {{ end }}
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
