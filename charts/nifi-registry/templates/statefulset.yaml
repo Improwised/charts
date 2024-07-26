@@ -224,7 +224,7 @@ spec:
           
           volumeMounts:
             - name: script-secret
-              mountPath: /scripts/
+              mountPath: /scripts/startup.sh
               subPath: startup.sh
               readOnly: true
             {{ if .Values.flow.git.ssh.config }}
