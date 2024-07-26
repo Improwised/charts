@@ -104,7 +104,7 @@ auth:
   authconf: 
   oidc:
     enabled: true
-    URL: "http://my-release-keycloak.default/realms/master/.well-known/openid-configuration"
+    URL: "http://localhost/realms/master/.well-known/openid-configuration"
     # ClientId: "nifiregistry"
     # ClientSecret: "clientSecret"
     ClaimIdentifyingUser: email
@@ -120,7 +120,7 @@ database:
     driverURL: https://jdbc.postgresql.org/download/
     fileName: postgresql-42.2.6.jar
     driverClass: org.postgresql.Driver
-    url: jdbc:postgresql://my-release-postgresql.default:5432/nifireg
+    url: jdbc:postgresql://localhost:5432/nifiregistry
     username: postgres
     dbsecretName: my-release-postgresql
     dbsecretKey: postgres-password
@@ -128,7 +128,7 @@ database:
 flow:
   git:
     enabled: true
-    url: git@github.com:aniketgohelimp/nifiregistry.git
+    url: git@github.com:user/nifiregistry.git
     remote: origin
     user: demo
     password: amolet
