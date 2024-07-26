@@ -225,18 +225,18 @@ spec:
           volumeMounts:
             - name: script-secret
               mountPath: /scripts/
-              subPaths: startup.sh
+              subPath: startup.sh
               readOnly: true
             {{ if .Values.flow.git.ssh.config }}
             - name: script-secret
               mountPath: /sshConfig
-              subPaths: config
+              subPath: config
               readOnly: true
             {{ end }}
             {{ if .Values.flow.git.ssh.known_hosts }}
             - name: script-secret
               mountPath: /sshKnownHosts
-              subPaths: known_hosts
+              subPath: known_hosts
               readOnly: true
             {{ end }}
             {{- if .Values.flow.git.config.enabled }}
