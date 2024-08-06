@@ -24,6 +24,11 @@ helm package <chart-directory-name>
 helm repo index --url https://improwised.github.io/charts .
 ```
 
+### In case we are not adding the chart to the chart directory with the PR and are pushing it directly to releases:
+After executing the above command and generating the index.yaml, check the commit changes. It might remove other existing charts from the index.yaml. Therefore, do not delete any index or lines from the existing index.yaml.
+
+To add your chart, simply look out and copy the generated index for the specific chart you want to add. Then, append this information to the existing index.yaml without removing any other lines.
+
 4. Add appropriate commit message and push it
 
 ## Adding CI first time
