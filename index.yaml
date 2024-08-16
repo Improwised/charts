@@ -276,6 +276,19 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/healthchecks-1.0.5.tgz
     version: 1.0.5
+  kore-board:
+  - apiVersion: v2
+    appVersion: v0.5.5
+    created: "2024-08-16T08:51:39.507938536Z"
+    description: Kubernetes multi-clusters dashboard
+    digest: 654b520d5c4f15d7ef7082c1867a7993d3150a340236bc3c3451164c30a65424
+    maintainers:
+    - name: improwised
+    name: kore-board
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/kore-board-0.5.7/kore-board-0.5.7.tgz
+    version: 0.5.7
   mosquitto:
   - annotations:
       truecharts.org/SCALE-support: "true"
@@ -667,4 +680,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2024-07-26T11:30:10.353947499Z"
+generated: "2024-08-16T08:51:39.508041307Z"
