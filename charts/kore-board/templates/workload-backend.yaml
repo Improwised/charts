@@ -1,0 +1,110 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: backend
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3001
+      targetPort: 3001
+  selector:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: backend
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/version: {{ .Chart.AppVersion }}
+      app.kubernetes.io/managed-by: helm
+      app.kubernetes.io/component: backend
+      app.kubernetes.io/part-of: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backend
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        app.kubernetes.io/managed-by: helm
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/part-of: {{ .Chart.Name }}
+        helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/kore3lab/kore-board.backend:{{ .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.backend.resources }}
+          resources: {{- toYaml .Values.backend.resources | nindent 12 }}
+          {{- end }}
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          args:
+            - --kubeconfig=strategy=configmap,configmap={{ .Chart.Name }}-kubeconfig,namespace={{ .Release.Namespace }},filename=config
+            - --metrics-scraper-url=http://metrics-scraper:8000
+            - --log-level=info
+            - --terminal-url=http://terminal:3003
+        {{- if .Values.backend.args }}
+          {{- with .Values.backend.args }}
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- end }}
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+        {{- if .Values.backend.extravolumeMounts }}
+          {{- with .Values.backend.extravolumeMounts }}
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- end }}
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+    {{- if .Values.backend.extravolumes }}
+      {{- with .Values.backend.extravolumes }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+    {{- end }}
+      serviceAccountName: {{ .Chart.Name }}
+      nodeSelector:
+        "kubernetes.io/os": linux
