@@ -1,5 +1,5 @@
 image:
-  pullPolicy: IfNotPresent  #Always
+  pullPolicy: IfNotPresent  # Always
 
 metricsScraper:
   persistence:
@@ -23,7 +23,7 @@ metricsScraper:
   ##
   ## Reuse exist Persistent Volume Claim
   ##
-  #persistence:
+  # persistence:
   #  existingClaim: "exist-pvc"
 
 backend:
