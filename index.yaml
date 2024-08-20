@@ -279,6 +279,18 @@ entries:
   kore-board:
   - apiVersion: v2
     appVersion: v0.5.5
+    created: "2024-08-20T05:04:44.732221318Z"
+    description: Kubernetes multi-clusters dashboard
+    digest: 9ce27a80d90d8608872c6cacf26d304fec3e5c2091c99255a0b67927fe8ce214
+    maintainers:
+    - name: improwised
+    name: kore-board
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/kore-board-0.5.8/kore-board-0.5.8.tgz
+    version: 0.5.8
+  - apiVersion: v2
+    appVersion: v0.5.5
     created: "2024-08-16T08:51:39.507938536Z"
     description: Kubernetes multi-clusters dashboard
     digest: 654b520d5c4f15d7ef7082c1867a7993d3150a340236bc3c3451164c30a65424
@@ -680,4 +692,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2024-08-16T08:51:39.508041307Z"
+generated: "2024-08-20T05:04:44.732296728Z"
