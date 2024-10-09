@@ -41,6 +41,10 @@ spec:
       labels:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
         app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+      {{ if .podAnnotations }}
+      annotations:
+{{ toYaml .podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       {{- if $.Values.serviceTemplate.imagePullSecrets }}
       imagePullSecrets:
