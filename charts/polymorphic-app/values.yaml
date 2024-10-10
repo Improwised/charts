@@ -34,7 +34,6 @@ serviceTemplate:
 
   lifecycleHooks: {}
 
-
   healthcheck:
     enabled: false
     type: httpGet
