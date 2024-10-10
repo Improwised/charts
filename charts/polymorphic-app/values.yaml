@@ -77,6 +77,8 @@ serviceTemplate:
     #     value: "2"
     #   - name: edns0
   annotations: {}
+  podAnnotations: {}
+    # my-annotation: "value"
   nodeSelector: {}
   tolerations: []
   affinity: {}
