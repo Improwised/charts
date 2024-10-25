@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "proxysql.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "proxysql.name" . }}
+    helm.sh/chart: {{ include "proxysql.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+{{- with .Values.annotations }}
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "proxysql.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "proxysql.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: PROXYSQL_SERVER
+              value: {{ include "proxysql.fullname" . }}
+            - name: DBPORT
+              value: {{ .Values.service.dbPort | quote }}
+            - name: ADMINPORT
+              value: {{ .Values.service.adminPort | quote }}
+            - name: WEBPORT
+              value: {{ .Values.service.webPort | quote }}
+          {{- if $.Values.env }}
+{{ toYaml $.Values.env | indent 12 }}
+          {{- end }}
+          envFrom:
+          {{- if $.Values.envFrom }}
+{{ toYaml $.Values.envFrom | indent 12 }}
+          {{- end }}
+          {{- if .Values.existingSecret }}
+          volumeMounts:
+            - name: proxysql-config
+              subPath: proxysql.cnf
+              mountPath: /etc/proxysql.cnf
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.service.dbPort }}
+              name: proxysql-mysql
+            - containerPort: {{ .Values.service.adminPort }}
+              name: proxysql-admin
+            - containerPort: {{ .Values.service.webPort }}
+              name: proxysql-web
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.existingSecret }}
+      volumes:
+      - name: proxysql-config
+        secret:
+          secretName: {{ .Values.existingSecret }}
+    {{- end }}
+  

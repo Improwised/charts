@@ -1,0 +1,69 @@
+# Default values for proxysql.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: improwised/proxysql
+  tag: "master-6b26e59-1717650638"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+## Replicas Set count
+replicaCount: 1
+annotations: {}
+service:
+  dbPort: 6033
+  adminPort: 6032
+  webPort: 6080
+
+envFrom: []
+
+env: []
+
+# default credential for admin is admin:admin
+
+# env for configuration
+# ADMIN_USERNAME=admin
+# ADMIN_PASSWORD=adminpass
+# SERVER_VERSION=9.0.3
+# ADMINPORT=6032
+# DBPORT=3306
+# MONITOR_USERNAME=monitor
+# MONITOR_PASSWORD=monitor
+
+# for seprating diffrent calues there are two seprators ",",";"
+# where "," is seprating diffrent list and ";" for seprating diffrent compont of list object
+# MYSQL_SERVERS has value address,port,hostgroup,max_connections,weight,status,compression which can be written as
+# MYSQL_SERVERS=lcoalhost;1230;1;100;1;ONLINE;0,lcoalhost;1234;2;100;2;ONLINE;1
+# you can specify only wanted other values will be default taken
+# default value address:"localhost",port:1111,hostgroup:589,max_connections:300,weight:1,status:"ONLINE",compression:0
+# MYSQL_USERS has value username, password, default_hostgroup , active which can be written as
+# MYSQL_USERS=root;root;1,root;pass,root;pass1;1;1
+# MYSQL_QUERY_RULES has value rule_id, match_pattern, destination_hostgroup, apply, active where rule_id is auto genreated so written as
+# MYSQL_QUERY_RULES=match_pattern;destination_hostgroup;apply;active as you needed
+# MYSQL_QUERY_RULES=^SELECT .* FOR UPDATE$;1;1;1,^SELECT;1;0;1,^CREATE;11;1;0
+
+# if you have proxysql config file as a secret
+# existingSecret: demo
+
+resources: {}
+#  requests:
+#    cpu: 100m
+#    memory: 100Mi
+#  limits:
+#    memory: 256Mi
+#    cpu: 256m
+
+## Node selector
+nodeSelector: {}
+
+## Tolerations
+tolerations: []
+
+## Affinity
+affinity: {}
+
+podDisruptionBudget: |
+  maxUnavailable: 1

@@ -13,14 +13,16 @@ jobs:
       matrix:
         # Latest k8s versions. There's no series-based tag, nor is there a latest tag.
         k8s:
-          - 1.19.16
-          - 1.20.15
           - 1.21.14
           - 1.22.17
           - 1.23.17
           - 1.24.12
           - 1.25.8
-          - 1.26.3
+          - 1.26.15
+          - 1.27.13
+          - 1.28.9
+          - 1.29.4
+          - 1.30.0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,7 +45,7 @@ jobs:
           check-latest: true
 
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.6.1
+        uses: helm/chart-testing-action@v2
 
       - name: Run chart-testing (list-changed)
         id: list-changed
@@ -59,7 +61,7 @@ jobs:
 
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
-        uses: helm/kind-action@v1.9.0
+        uses: helm/kind-action@v1
         with:
           version: "v0.21.0"
           node_image: "kindest/node:v${{ matrix.k8s }}"

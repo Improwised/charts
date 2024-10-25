@@ -1,0 +1,26 @@
+{{- if and .Values.metricsScraper.persistence.enabled (not .Values.metricsScraper.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  accessModes:
+    - {{ .Values.metricsScraper.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.metricsScraper.persistence.size | quote }}
+{{- if .Values.metricsScraper.persistence.storageClass }}
+{{- if (eq "-" .Values.metricsScraper.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.metricsScraper.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+{{- end }}

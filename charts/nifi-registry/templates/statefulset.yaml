@@ -1,0 +1,317 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "nifi-registry.fullname" . }}
+  labels:
+    {{- include "nifi-registry.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "nifi-registry.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "nifi-registry.fullname" . }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "nifi-registry.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nifi-registry.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      shareProcessNamespace: true
+      initContainers:
+        - name: take-data-dir-ownership
+          image: "{{ .Values.initContainers.alpine.image }}:{{ .Values.initContainers.alpine.tag }}"
+          command:
+            - sh
+            - -ce
+            - |
+              if [ -d /opt/nifi-registry/nifi-registry-current/database ]; then
+                chown
+                -R
+                1000:1000
+                /opt/nifi-registry/nifi-registry-current/database
+              fi
+              if [ -d /opt/nifi-registry/nifi-registry-current/flow-storage ]; then
+                chown
+                -R
+                1000:1000
+                /opt/nifi-registry/nifi-registry-current/flow-storage
+              fi
+              if [ -d /opt/nifi-registry/nifi-registry-current/bundle-storage ]; then
+                chown
+                -R
+                1000:1000
+                /opt/nifi-registry/nifi-registry-current/bundle-storage
+              fi
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["bin/nifi-registry.sh", "stop"]
+          command:
+            - bash
+            - -ce
+            - |
+              cp /scripts/* ./
+              bash ./startup.sh
+          ports:
+          {{ if .Values.https.enabled }}
+            - name: https
+              containerPort: {{ .Values.https.port }}
+              protocol: TCP
+          {{ else }}
+            - name: http
+              containerPort: 18080
+              protocol: TCP
+          {{ end }}
+          {{- if eq .Values.bundle.s3.credentialsProvider "DEFAULT_CHAIN" }}
+          envFrom:
+            - secretRef: 
+                name: {{ .Values.bundle.s3.accessSecret.name }}
+          {{- end }}
+          env:
+          {{- if .Values.bundle.s3.enabled }}
+            - name: NIFI_REGISTRY_BUNDLE_PROVIDER
+              value: s3
+            - name: NIFI_REGISTRY_S3_REGION
+              value: {{ .Values.bundle.s3.region }}
+            - name: NIFI_REGISTRY_S3_BUCKET_NAME
+              value: {{ .Values.bundle.s3.bucketName }}
+            - name: NIFI_REGISTRY_S3_KEY_PREFIX
+              value: {{ .Values.bundle.s3.keyPrefix }}
+            - name: NIFI_REGISTRY_S3_CREDENTIALS_PROVIDER
+              value: {{ .Values.bundle.s3.credentialsProvider }}
+              # The below access key and secret access key are only used if the credential provider is STATIC
+            - name: NIFI_REGISTRY_S3_ACCESS_KEY
+              value: {{ .Values.bundle.s3.accessKey }}
+            - name: NIFI_REGISTRY_S3_SECRET_ACCESS_KEY
+              value: {{ .Values.bundle.s3.secretAccessKey }}
+            - name: NIFI_REGISTRY_S3_ENDPOINT_URL
+              value: {{ .Values.bundle.s3.endpoint }}
+          {{- else }}
+            - name: NIFI_REGISTRY_BUNDLE_PROVIDER
+              value: file
+            - name: NIFI_REGISTRY_BUNDLE_STORAGE_DIR
+              value: /opt/nifi-registry/nifi-registry-current/budle
+          {{- end }}
+            
+          {{- if .Values.flow.git.enabled }}
+            - name: NIFI_REGISTRY_FLOW_PROVIDER
+              value: git
+            - name: NIFI_REGISTRY_GIT_REMOTE
+              value: {{ .Values.flow.git.remote }}
+            - name: NIFI_REGISTRY_GIT_USER
+              value: {{ .Values.flow.git.user }}
+            - name: NIFI_REGISTRY_GIT_PASSWORD
+            {{- if .Values.flow.git.passwordSecretName }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.flow.git.passwordSecretName }}
+                  key: {{ .Values.flow.git.passwordSecretKey }}
+            {{- else }}
+              value: {{ .Values.flow.git.password }}
+            {{- end }}
+            - name: NIFI_REGISTRY_GIT_REPO
+              value: {{ .Values.flow.git.url }}
+          {{- end }}
+          {{- if .Values.database.postgres.enabled }}
+            - name: NIFI_REGISTRY_DB_DIR
+              value: ./ext/postgresql
+            - name: NIFI_REGISTRY_DB_CLASS
+              value: {{ .Values.database.postgres.driverClass }}
+            - name: NIFI_REGISTRY_DB_URL
+              value: {{ .Values.database.postgres.url }}
+            - name: NIFI_REGISTRY_DB_USER
+              value: {{ .Values.database.postgres.username }}
+            - name: NIFI_REGISTRY_DB_PASS
+              {{- if .Values.database.postgres.dbsecretName }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.postgres.dbsecretName }}
+                  key: {{ .Values.database.postgres.dbsecretKey }}
+            {{- else }}
+              value: {{ .Values.database.postgres.password }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.https.cert.enabled }}
+            - name: KEYSTORE_PATH
+              value: /opt/nifi-registry/nifi-registry-current/tls/keystore.jks
+            - name: KEYSTORE_TYPE
+              value: JKS
+            - name: KEYSTORE_PASSWORD
+              value: {{ .Values.https.cert.keystorePasswd | quote }}
+            - name: TRUSTSTORE_PATH
+              value: /opt/nifi-registry/nifi-registry-current/tls/truststore.jks
+            - name: TRUSTSTORE_TYPE
+              value: JKS
+            - name: TRUSTSTORE_PASSWORD
+              value: {{ .Values.https.cert.truststorePasswd | quote }}
+          {{ end }}
+          {{- if .Values.https.enabled }}
+            - name: NIFI_REGISTRY_WEB_HTTPS_PORT
+              value: {{ .Values.https.port | quote }}
+            - name: NIFI_REGISTRY_WEB_HTTPS_HOST
+              value: {{ .Values.https.host | quote }}
+          {{ end }}
+          {{- if .Values.auth.enabled }}
+            - name: INITIAL_ADMIN_IDENTITY
+              value: {{ .Values.auth.admin | quote }}
+          {{- if .Values.auth.oidc.enabled }}
+            - name: AUTH
+              value: "oidc"
+            - name: OIDC_CLIENT_ID
+            {{- if .Values.auth.oidc.oidcsecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.auth.oidc.oidcsecret }}
+                  key: {{ .Values.auth.oidc.oidcsecretclientid }}
+            {{- else }}
+              value: {{ .Values.auth.oidc.ClientId }}
+            {{- end }}
+            - name: OIDC_CLIENT_SECRET
+            {{- if .Values.auth.oidc.oidcsecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.auth.oidc.oidcsecret }}
+                  key: {{ .Values.auth.oidc.oidcsecretclientsecret }}
+            {{- else }}
+              value: {{ .Values.auth.oidc.ClientSecret }}
+            {{- end }}
+          {{ end }}
+          {{ end }}
+          {{- if .Values.flow.git.ssh.gitSshCommand }}
+            - name: GIT_SSH_COMMAND
+              value: {{ .Values.flow.git.ssh.gitSshCommand }}
+          {{- /* if .Values.flow.git.ssh.gitSshCommand */}}{{ end }}
+          {{- if .Values.env }}
+            {{ toYaml .Values.env | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            tcpSocket:
+          {{ if .Values.https.enabled }}
+              port: {{ .Values.https.port }}
+          {{ else }}
+              port: 18080
+          {{ end }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 1
+            successThreshold: 2
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          
+          volumeMounts:
+            - name: script-secret
+              mountPath: /scripts/startup.sh
+              subPath: startup.sh
+              readOnly: true
+            {{ if .Values.flow.git.ssh.config }}
+            - name: script-secret
+              mountPath: /sshConfig
+              subPath: config
+              readOnly: true
+            {{ end }}
+            {{ if .Values.flow.git.ssh.known_hosts }}
+            - name: script-secret
+              mountPath: /sshKnownHosts
+              subPath: known_hosts
+              readOnly: true
+            {{ end }}
+            {{- if .Values.flow.git.config.enabled }}
+            - name: script-secret
+              mountPath: /home/nifi/.gitconfig
+              subPath: gitconfig
+              readOnly: true
+            {{- end }}
+            {{- if .Values.https.cert.enabled }}
+            # FIXME - cert-manager support limited to a single pod statefulset
+            - name: "tls"
+              mountPath: /opt/nifi-registry/nifi-registry-current/tls
+            - name: "run"
+              mountPath: /opt/nifi-registry/nifi-registry-current/run
+            - name: {{ include "nifi-registry.fullname" . }}-0
+              mountPath: /opt/nifi-registry/nifi-registry-current/tls/cert-manager
+            {{ end }}
+            {{- if .Values.flow.git.enabled }}
+            {{- if .Values.flow.git.ssh.secret }}
+            - name: ssh-key-secret
+              mountPath: /sshSecret
+              readOnly: true
+            {{ end }}
+            {{ end }}
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: script-secret
+          configMap:
+            name: {{ template "nifi-registry.fullname" . }}-startup-script
+            defaultMode: 0777
+        {{- if .Values.https.cert.enabled }}
+        - name: tls
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
+        - name: {{ template "nifi-registry.fullname" $ }}-0
+          secret:
+            secretName: {{ include "nifi-registry.fullname" $ }}-0
+        {{ end }}
+        {{- if .Values.flow.git.ssh.secret }}
+        - name: ssh-key-secret
+          secret:
+            secretName: {{ .Values.flow.git.ssh.secret }}
+            defaultMode: 0444
+        {{ end }}
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  volumeClaimTemplates:
+  {{- range .Values.volumeClaimTemplates }}
+  - metadata:
+      name: {{ .name }}
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      {{ if $.Values.storageClass }}
+      storageClassName: "{{ $.Values.storageClass }}"
+      {{ else }}
+      storageClassName: ""
+      {{ end }}
+      resources:
+        requests:
+          storage: {{ .size | quote }}
+  {{ end }}

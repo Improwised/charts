@@ -1,0 +1,111 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: metrics-scraper
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: metrics-scraper
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/component: metrics-scraper
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+  selector:
+    app.kubernetes.io/name: metrics-scraper
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/component: metrics-scraper
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: metrics-scraper
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: metrics-scraper
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/component: metrics-scraper
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: metrics-scraper
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/version: {{ .Chart.AppVersion }}
+      app.kubernetes.io/managed-by: helm
+      app.kubernetes.io/component: metrics-scraper
+      app.kubernetes.io/part-of: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: metrics-scraper
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        app.kubernetes.io/managed-by: helm
+        app.kubernetes.io/component: metrics-scraper
+        app.kubernetes.io/part-of: {{ .Chart.Name }}
+        helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+      annotations:
+        seccomp.security.alpha.kubernetes.io/pod: 'runtime/default'
+    spec:
+      containers:
+        - name: metrics-scraper
+          image: ghcr.io/kore3lab/kore-board.metrics-scraper:{{ .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.metricsScraper.resources }}
+          resources: {{- toYaml .Values.metricsScraper.resources | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /
+              port: 8000
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          args:
+            - --kubeconfig=/app/.kube/config
+            - --log-level=info
+            - --db-file=/app/data/metrics.db
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/.kube
+              name: kubeconfig
+            - mountPath: /app/data
+              name: data-volume
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1001
+            runAsGroup: 2001
+      volumes:
+        - name: kubeconfig
+          configMap:
+            name: kore-board-kubeconfig
+        - name: data-volume
+      {{- if .Values.metricsScraper.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ default "kore-board-metrics-scraper" .Values.metricsScraper.persistence.existingClaim  }}
+      {{- else }}
+          emptyDir: {}
+      {{- end }}
+      serviceAccountName: {{ .Chart.Name }}
+      nodeSelector:
+        "kubernetes.io/os": linux
