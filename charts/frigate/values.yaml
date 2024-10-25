@@ -7,7 +7,7 @@ image:
   # -- Docker registry/repository to pull the image from
   repository: ghcr.io/blakeblackshear/frigate
   # -- Overrides the default tag (appVersion) used in Chart.yaml ([Docker Hub](https://hub.docker.com/r/blakeblackshear/frigate/tags?page=1))
-  tag: 0.12.0
+  tag: 0.13.0
   # -- Docker image pull policy
   pullPolicy:
 # if using nfs then use nfs-client to mount
@@ -144,7 +144,7 @@ persistence:
     ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
     ##   GKE, AWS & OpenStack)
     ##
-    storageClass: "nfs-client"
+    storageClass: ""      # "nfs-client"
     ##
     ## If you want to reuse an existing claim, you can pass the name of the PVC using
     ## the existingClaim variable
@@ -152,10 +152,10 @@ persistence:
     # subPath: some-subpath
 
     # -- [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes) to use for the PVC
-    accessMode: ReadWriteOnce
+    accessMode: ["ReadWriteOnce"]
 
     # -- size/capacity of the PVC
-    size: 500Mi
+    size: 1Gi
 
     # -- Do not delete the pvc upon helm uninstall
     skipuninstall: false

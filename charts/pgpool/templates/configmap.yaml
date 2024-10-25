@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pgpool.fullname" . }}-configmap
+  labels:
+    app.kubernetes.io/name: {{ include "pgpool.name" . }}
+    helm.sh/chart: {{ include "pgpool.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  pgpool.conf: {{ include (print  (dir $.Template.Name) "/_pgpool.conf.tpl") . | quote }}
