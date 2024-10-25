@@ -394,6 +394,7 @@ spec:
   (and $.Values.serviceTemplate.podDisruptionBudget.enabled (not (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") (eq .podDisruptionBudget.enabled false)))) 
   (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") .podDisruptionBudget.enabled)
 }}
+---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
