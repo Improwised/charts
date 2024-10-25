@@ -42,6 +42,11 @@ serviceTemplate:
     # initialDelaySeconds: 30
     # periodSeconds: 30
 
+  podDisruptionBudget:
+    enabled: false
+    # Set either `minAvailable` OR `maxUnavailable`
+    # minAvailable: 1
+    # maxUnavailable: 1
   autoscaling: false
   minReplicaCount: 1
   maxReplicaCount: 1

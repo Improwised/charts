@@ -390,5 +390,40 @@ spec:
         {{- end }}
   {{- end }}
 {{- end }}
-
+{{- if or 
+  (and $.Values.serviceTemplate.podDisruptionBudget.enabled (not (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") (eq .podDisruptionBudget.enabled false)))) 
+  (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") .podDisruptionBudget.enabled)
+}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  {{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  {{- else }}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+  {{- end }}
+  labels:
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+spec:
+{{- if .podDisruptionBudget }}
+{{- $spec := dict }}
+{{- range $key, $value := .podDisruptionBudget }}
+  {{- if ne $key "enabled" }}
+    {{- $_ := set $spec $key $value }}
+  {{- end }}
+{{- end }}
+{{ toYaml $spec | nindent 2 }}
+{{- else if $.Values.serviceTemplate.podDisruptionBudget }}
+{{- $spec := dict }}
+{{- range $key, $value := $.Values.serviceTemplate.podDisruptionBudget }}
+  {{- if ne $key "enabled" }}
+    {{- $_ := set $spec $key $value }}
+  {{- end }}
+{{- end }}
+{{ toYaml $spec | nindent 2 }}
+{{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
 {{- end }}
