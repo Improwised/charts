@@ -1,0 +1,46 @@
+# Default values for proxysql.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+config:
+  backend_hostname0: db.local
+  # backend_hostname1: tsdb-mgmt-replica.orion.svc.cluster.local
+
+image:
+  repository: pgpool/pgpool
+  tag: 4.4.2
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+## Replicas Set count
+replicaCount: 1
+annotations: {}
+service:
+  port: 5432
+
+## Configure resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+## Resources are commente out as sometimes Memory/CPU limit causes spikes in query times
+## https://github.com/GoogleCloudPlatform/cloudsql-proxy/issues/168#issuecomment-394099416
+resources: {}
+#  requests:
+#    cpu: 100m
+#    memory: 100Mi
+#  limits:
+#    memory: 256Mi
+#    cpu: 256m
+
+## Node selector
+nodeSelector: {}
+
+## Tolerations
+tolerations: []
+
+## Affinity
+affinity: {}
+
+podDisruptionBudget: |
+  maxUnavailable: 1
+
+volumes: {}

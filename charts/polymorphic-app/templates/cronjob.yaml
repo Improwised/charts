@@ -3,10 +3,14 @@
 apiVersion: {{ include "cronjob.apiVersion" $ }}
 kind: CronJob
 metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}"
+{{- else}}
+  name: "{{ .name | default $.Values.cronJobTemplate.name }}"
+{{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.cronJobTemplate.name }}"
   annotations:
     linkerd.io/inject: disabled
 {{- with .annotations | default $.Values.cronJobTemplate.annotations }}
@@ -35,7 +39,11 @@ spec:
           {{- end }}
           restartPolicy: Never
           containers:
+          {{- if $.Values.prefixWithReleaseName.enabled }}
           - name: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}"
+          {{- else}}
+          - name: "{{ .name | default $.Values.cronJobTemplate.name }}"
+          {{- end }}
             {{- if .image }}
             image: "{{ .image.repository }}:{{ .image.tag }}"
             {{- else }}

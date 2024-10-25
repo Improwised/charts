@@ -62,6 +62,6 @@ spec:
     protocol: UDP
     targetPort: 88
   {{- if .Values.service.extraPorts }}
-  {{- include "common.tplvalues.render" (dict "value" .Values.service.extraPorts "context" $) | nindent 4 }}
+  {{- include "common.tplvalues.render" (dict "value" .Values.service.extraPorts "context" $) | nindent 2 }}
   {{- end }}
   selector: {{- include "common.labels.matchLabels" . | nindent 4 }}

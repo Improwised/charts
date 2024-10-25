@@ -3,10 +3,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}"
+{{- else}}
+  name: "{{ .name | default $.Values.jobTemplate.name }}"
+{{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
   annotations:
     linkerd.io/inject: disabled
 {{- with .annotations | default $.Values.jobTemplate.annotations }}
@@ -17,7 +21,7 @@ spec:
     metadata:
       labels:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
-        app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}
+        app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
     spec:
       {{- if $.Values.jobTemplate.imagePullSecrets }}
       imagePullSecrets:
@@ -33,7 +37,11 @@ spec:
       {{- end }}
       restartPolicy: Never
       containers:
+      {{- if $.Values.prefixWithReleaseName.enabled }}
         - name: "{{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}"
+      {{- else}}
+        - name: "{{ .name | default $.Values.jobTemplate.name }}"
+      {{- end }}
           {{- if .image }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
           {{- else }}

@@ -3,10 +3,14 @@
 apiVersion: {{ include "deployment.apiVersion" $ }}
 kind: {{ if eq .type "StatefulSet"}}StatefulSet{{- else }}Deployment{{- end }}
 metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+{{- else}}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
 {{- with .annotations | default $.Values.serviceTemplate.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -22,17 +26,25 @@ spec:
   {{- end }}
   replicas: {{ .minReplicaCount  | default $.Values.serviceTemplate.minReplicaCount }}
   {{ if eq .type "StatefulSet"}}
+    {{- if $.Values.prefixWithReleaseName.enabled }}
   serviceName: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+    {{- else }}
+  serviceName: "{{ .name | default $.Values.serviceTemplate.name }}"
+    {{- end }}
   {{- end }}
   selector:
     matchLabels:
       {{- include "polymorphic-app.selectorLabels" $ | nindent 6 }}
-      app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+      app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
   template:
     metadata:
       labels:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
-        app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+        app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+      {{ if .podAnnotations }}
+      annotations:
+{{ toYaml .podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       {{- if $.Values.serviceTemplate.imagePullSecrets }}
       imagePullSecrets:
@@ -54,7 +66,11 @@ spec:
       {{- end }}
       {{- end }}
       containers:
+      {{- if $.Values.prefixWithReleaseName.enabled }}
         - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}"
+      {{- else}}
+        - name: "{{ .name | default $.Values.serviceTemplate.name }}"
+      {{- end }}
           {{- if .image }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
           {{- else }}
@@ -118,33 +134,65 @@ spec:
 {{ toYaml $.Values.serviceTemplate.volumeMounts | indent 10 }}
           {{- end }}
         {{- if or ($.Values.serviceTemplate.healthcheck.enabled) (.healthcheck.enabled) }}
-          {{- if and (or (eq .healthcheck.type "httpGet") (eq $.Values.serviceTemplate.healthcheck.type "httpGet")) (or .healthcheck.path $.Values.serviceTemplate.healthcheck.path) }}
+        {{- if .healthcheck }}
+{{- $healthType := .healthcheck.type -}}
+          {{- if and (eq $healthType "httpGet") (.healthcheck.path ) }}
           livenessProbe:
             httpGet:
-              path: {{ .healthcheck.path | default $.Values.serviceTemplate.healthcheck.path }}
-              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
+              path: {{ .healthcheck.path }}
+              port: {{ .healthcheck.port }}
             timeoutSeconds: 7
-            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}            
           readinessProbe:
             httpGet:
-              path: {{ .healthcheck.path | default $.Values.serviceTemplate.healthcheck.path }}
-              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
+              path: {{ .healthcheck.path }}
+              port: {{ .healthcheck.port }}
             timeoutSeconds: 7
-            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
-          {{- else if and (or (eq .healthcheck.type "tcpSocket") (eq $.Values.serviceTemplate.healthcheck.type "tcpSocket")) (or .healthcheck.port $.Values.serviceTemplate.healthcheck.port) }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}            
+          {{- else if and (eq $healthType "tcpSocket") ( .healthcheck.port ) }}
           livenessProbe:
             tcpSocket:
-              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
-            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+              port: {{ .healthcheck.port }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
           readinessProbe:
             tcpSocket:
-              port: {{ .healthcheck.port | default $.Values.serviceTemplate.healthcheck.port }}
-            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+              port: {{ .healthcheck.port }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
           {{- end }}
+{{- else }}
+{{- $healthType := $.Values.serviceTemplate.healthcheck.type -}}
+          {{- if and (eq $healthType "httpGet") ($.Values.serviceTemplate.healthcheck.path) }}
+          livenessProbe:
+            httpGet:
+              path: {{ $.Values.serviceTemplate.healthcheck.path }}
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            timeoutSeconds: 7
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+          readinessProbe:
+            httpGet:
+              path: {{ $.Values.serviceTemplate.healthcheck.path }}
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            timeoutSeconds: 7
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+          {{- else if and (eq $healthType "tcpSocket") ($.Values.serviceTemplate.healthcheck.port) }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          {{- end }}
+{{- end }}
         {{- end }}
       {{- with .dnsConfig | default $.Values.workerTemplate.dnsConfig }}
       dnsConfig:
@@ -177,7 +225,7 @@ spec:
               labelSelector:
                 matchLabels:
                   {{- include "polymorphic-app.labels" $ | nindent 18 }}
-                  app.kubernetes.io/component: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+                  app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
     {{- with .affinity | default $.Values.serviceTemplate.affinity }}
 {{ toYaml . | indent 8 }}
     {{- end }}
@@ -196,20 +244,28 @@ spec:
       {{- if $.Values.serviceTemplate.volumeClaimTemplates }}
 {{ toYaml $.Values.serviceTemplate.volumeClaimTemplates | indent 8 }}
       {{- end }}
-{{- if .autoscaling | default $.Values.serviceTemplate.autoscaling }}
+{{- if and (.autoscaling | default $.Values.serviceTemplate.autoscaling) (ne .type "StatefulSet")}}
 ---
-apiVersion: autoscaling/v2beta2
+apiVersion: {{ include "hpa.apiVersion" $ }}
 kind: HorizontalPodAutoscaler
 metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+{{- else }}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: {{ if eq .type "StatefulSet"}}StatefulSet{{- else }}Deployment{{- end }}
+    apiVersion: {{ include "deployment.apiVersion" $ }}
+    kind: Deployment
+    {{- if $.Values.prefixWithReleaseName.enabled }}
     name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+    {{- else }}
+    name: "{{ .name | default $.Values.serviceTemplate.name }}"
+    {{- end }}
   minReplicas: {{ .minReplicaCount | default $.Values.serviceTemplate.minReplicaCount }}
   maxReplicas: {{ .maxReplicaCount | default $.Values.serviceTemplate.maxReplicaCount }}
   metrics:
@@ -218,7 +274,7 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 50
+        averageUtilization: {{ .averageUtilization | default $.Values.serviceTemplate.averageUtilization }}
   # - type: Resource
   #   resource:
   #     name: memory
@@ -226,43 +282,78 @@ spec:
   #       type: AverageValue
   #       averageValue: 100Mi
 {{- end }}
-
-{{- if and .service (.service.enabled | default $.Values.serviceTemplate.service.enabled) }}
+{{- if .service}}
+{{- if or ( .service.enabled ) ($.Values.serviceTemplate.service.enabled) }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+{{- else}}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
-{{- with (.service.annotations | default $.Values.serviceTemplate.service.annotations) }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- with .service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
 {{- end }}
 spec:
-  type: {{ .service.type | default $.Values.serviceTemplate.service.type }}
+  type: {{ .service.type }}
   {{- if .service.ClusterIP }}
   ClusterIP: {{ .service.ClusterIP }}
   {{- end}}
   ports: 
-{{- with (.service.ports | default $.Values.serviceTemplate.service.ports) }}
+{{- with .service.ports }}
     {{ toYaml . | nindent 4 }}
 {{- end }}
   selector:
     {{- include "polymorphic-app.selectorLabels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+{{- else if $.Values.serviceTemplate.service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+{{- else}}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+  labels:
+    {{- include "polymorphic-app.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- with $.Values.serviceTemplate.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ $.Values.serviceTemplate.service.type }}
+  ports: 
+{{- with $.Values.serviceTemplate.service.ports }}
+    {{ toYaml . | nindent 4 }}
+{{- end }}
+  selector:
+    {{- include "polymorphic-app.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
 {{- end }}
 
 
 {{- if and .ingress (.ingress.enabled | default $.Values.serviceTemplate.ingress.enabled) }}
 ---
+{{- $svcName := .name | default $.Values.serviceTemplate.name -}}
 {{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}}
-
 apiVersion: {{ include "ingress.apiVersion" $ }}
 kind: Ingress
 metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+{{- else}}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
   labels:
     {{- include "polymorphic-app.labels" $ | nindent 4 }}
   {{- with (.ingress.annotations | default $.Values.serviceTemplate.ingress.annotations) }}
@@ -291,9 +382,48 @@ spec:
         {{- range .paths }}
           - path: {{ .path }}
             pathType: {{ .pathType }}
+            {{- if $.Values.prefixWithReleaseName.enabled }}
             backend: {{- include "ingress.backend" (dict "serviceName" $fullName "servicePort" .servicePort "context" $)  | nindent 14 }}
+            {{- else}}
+            backend: {{- include "ingress.backend" (dict "serviceName" $svcName "servicePort" .servicePort "context" $)  | nindent 14 }}
+            {{- end }}
         {{- end }}
   {{- end }}
 {{- end }}
-
+{{- if or 
+  (and $.Values.serviceTemplate.podDisruptionBudget.enabled (not (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") (eq .podDisruptionBudget.enabled false)))) 
+  (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") .podDisruptionBudget.enabled)
+}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  {{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  {{- else }}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+  {{- end }}
+  labels:
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+spec:
+{{- if .podDisruptionBudget }}
+{{- $spec := dict }}
+{{- range $key, $value := .podDisruptionBudget }}
+  {{- if ne $key "enabled" }}
+    {{- $_ := set $spec $key $value }}
+  {{- end }}
+{{- end }}
+{{ toYaml $spec | nindent 2 }}
+{{- else if $.Values.serviceTemplate.podDisruptionBudget }}
+{{- $spec := dict }}
+{{- range $key, $value := $.Values.serviceTemplate.podDisruptionBudget }}
+  {{- if ne $key "enabled" }}
+    {{- $_ := set $spec $key $value }}
+  {{- end }}
+{{- end }}
+{{ toYaml $spec | nindent 2 }}
+{{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
 {{- end }}

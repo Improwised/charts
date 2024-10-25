@@ -1,0 +1,17 @@
+{{- if .Values.podDisruptionBudget }}
+apiVersion: {{ include "apiVersion.policy" . }}
+kind: PodDisruptionBudget
+metadata:
+  name: "{{ include "pgpool.fullname" . }}"
+  labels:
+    app.kubernetes.io/name: {{ include "pgpool.name" . }}
+    helm.sh/chart: {{ include "pgpool.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "pgpool.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{ .Values.podDisruptionBudget | indent 2 }}
+{{- end }}

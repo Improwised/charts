@@ -4,7 +4,8 @@
 
 nameOverride: ""
 fullnameOverride: ""
-
+prefixWithReleaseName:
+  enabled: true
 image:
   repository:
   tag:
@@ -23,7 +24,7 @@ envFrom: []
 serviceTemplate:
   name: svc
   image:
-
+  averageUtilization: 50
   ## initContainers:
   ##   - name: something
   ##     image: alpine
@@ -41,6 +42,11 @@ serviceTemplate:
     # initialDelaySeconds: 30
     # periodSeconds: 30
 
+  podDisruptionBudget:
+    enabled: false
+    # Set either `minAvailable` OR `maxUnavailable`
+    # minAvailable: 1
+    # maxUnavailable: 1
   autoscaling: false
   minReplicaCount: 1
   maxReplicaCount: 1
@@ -76,6 +82,8 @@ serviceTemplate:
     #     value: "2"
     #   - name: edns0
   annotations: {}
+  podAnnotations: {}
+    # my-annotation: "value"
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -120,7 +128,7 @@ workerTemplate:
     enabled: false
   env: []
   envFrom: []
-
+  averageUtilization: 100
   volumeMounts: []
   volumes: []
 
@@ -154,6 +162,8 @@ workerTemplate:
   tolerations: []
 
   affinity: {}
+
+  annotations: {}
 
 workers:
 #######################################
