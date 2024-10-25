@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "proxysql.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "proxysql.name" . }}
+    helm.sh/chart: {{ include "proxysql.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  ports:
+    - name: proxysql-mysql
+      protocol: TCP
+      port: {{ .Values.service.dbPort }}
+      targetPort: proxysql-mysql
+    - name: proxysql-admin
+      protocol: TCP
+      port: {{ .Values.service.adminPort }}
+      targetPort: proxysql-admin
+    - name: proxysql-web
+      protocol: TCP
+      port: {{ .Values.service.webPort }}
+      targetPort: proxysql-web
+  selector:
+    app.kubernetes.io/name: {{ include "proxysql.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}

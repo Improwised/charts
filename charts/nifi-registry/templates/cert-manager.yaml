@@ -1,0 +1,97 @@
+{{ if .Values.https.cert.enabled }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ template "nifi-registry.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "nifi-registry.fullname" $ }}-ca
+  namespace: {{ .Release.Namespace }}
+spec:
+  isCA: true
+  duration: {{ $.Values.https.cert.caDuration }}
+  renewBefore: 5m1s
+  commonName: {{ template "nifi-registry.fullname" $ }}-ca.{{ $.Release.Namespace }}.svc.{{ $.Values.https.cert.clusterDomain }}
+  subject:
+    organizations:
+      - Nifi Registry
+  secretName: {{ template "nifi-registry.fullname" $ }}-ca
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+  issuerRef:
+    name: {{ template "nifi-registry.fullname" $ }}
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ template "nifi-registry.fullname" $ }}-ca
+  namespace: {{ .Release.Namespace }}
+spec:
+  ca:
+    secretName: {{ template "nifi-registry.fullname" $ }}-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "nifi-registry.fullname" $ }}-client
+  namespace: {{ $.Release.Namespace }}
+spec:
+  duration: {{ $.Values.https.cert.certDuration }}
+  commonName: {{ .Values.https.cert.clientCommonName }}
+  subject:
+    organizations:
+      - Nifi Registry
+  secretName: {{ template "nifi-registry.fullname" $ }}-client
+  privateKey:
+    rotationPolicy: Always
+  usages:
+    - digital signature
+    - content commitment
+    - key encipherment
+    - data encipherment
+    - key agreement
+    - server auth
+    - client auth
+  issuerRef:
+    name: {{ template "nifi-registry.fullname" $ }}-ca
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "nifi-registry.fullname" $ }}-0
+  namespace: {{ .Release.Namespace }}
+spec:
+  commonName: nifi-reg-1-{{ template "nifi-registry.fullname" $ }}.nifi-5.svc.cluster.local
+  duration: {{ $.Values.https.cert.caDuration }}
+  subject:
+    organizations:
+      - Nifi Registry
+  secretName: {{ template "nifi-registry.fullname" $ }}-0
+  privateKey:
+    rotationPolicy: Always
+  usages:
+    - digital signature
+    - content commitment
+    - key encipherment
+    - data encipherment
+    - key agreement
+    - server auth
+    - client auth
+  dnsNames:
+{{ toYaml $.Values.https.cert.additionalDnsNames | indent 4 }}
+    - localhost
+  issuerRef:
+    name: {{ template "nifi-registry.fullname" $ }}-ca
+    kind: Issuer
+{{ end }}
