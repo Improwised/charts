@@ -143,14 +143,14 @@ spec:
               port: {{ .healthcheck.port }}
             timeoutSeconds: 7
             initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}            
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
           readinessProbe:
             httpGet:
               path: {{ .healthcheck.path }}
               port: {{ .healthcheck.port }}
             timeoutSeconds: 7
             initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}            
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
           {{- else if and (eq $healthType "tcpSocket") ( .healthcheck.port ) }}
           livenessProbe:
             tcpSocket:
@@ -172,14 +172,14 @@ spec:
               port: {{ $.Values.serviceTemplate.healthcheck.port }}
             timeoutSeconds: 7
             initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           readinessProbe:
             httpGet:
               path: {{ $.Values.serviceTemplate.healthcheck.path }}
               port: {{ $.Values.serviceTemplate.healthcheck.port }}
             timeoutSeconds: 7
             initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
-            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}            
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           {{- else if and (eq $healthType "tcpSocket") ($.Values.serviceTemplate.healthcheck.port) }}
           livenessProbe:
             tcpSocket:
@@ -235,7 +235,7 @@ spec:
     {{- end }}
 {{- if .volumeClaimTemplates }}
   volumeClaimTemplates:
-      
+
 {{ toYaml .volumeClaimTemplates | indent 8 }}
       {{- end }}
       {{- if $.Values.volumeClaimTemplates }}
@@ -289,7 +289,11 @@ apiVersion: v1
 kind: Service
 metadata:
 {{- if $.Values.prefixWithReleaseName.enabled }}
+  {{- if .service.ClusterIP }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc-headless"
+  {{- else }}
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  {{- end }}
 {{- else}}
   name: "{{ .name | default $.Values.serviceTemplate.name }}"
 {{- end }}
@@ -303,9 +307,9 @@ metadata:
 spec:
   type: {{ .service.type }}
   {{- if .service.ClusterIP }}
-  ClusterIP: {{ .service.ClusterIP }}
+  clusterIP: {{ .service.ClusterIP }}
   {{- end}}
-  ports: 
+  ports:
 {{- with .service.ports }}
     {{ toYaml . | nindent 4 }}
 {{- end }}
@@ -319,7 +323,11 @@ apiVersion: v1
 kind: Service
 metadata:
 {{- if $.Values.prefixWithReleaseName.enabled }}
+  {{- if $.Values.serviceTemplate.service.ClusterIP }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc-headless"
+  {{- else }}
   name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  {{- end }}
 {{- else}}
   name: "{{ .name | default $.Values.serviceTemplate.name }}"
 {{- end }}
@@ -332,7 +340,10 @@ metadata:
 {{- end }}
 spec:
   type: {{ $.Values.serviceTemplate.service.type }}
-  ports: 
+  {{- if $.Values.serviceTemplate.service.ClusterIP }}
+  clusterIP: {{ $.Values.serviceTemplate.service.ClusterIP }}
+  {{- end}}
+  ports:
 {{- with $.Values.serviceTemplate.service.ports }}
     {{ toYaml . | nindent 4 }}
 {{- end }}
@@ -390,8 +401,8 @@ spec:
         {{- end }}
   {{- end }}
 {{- end }}
-{{- if or 
-  (and $.Values.serviceTemplate.podDisruptionBudget.enabled (not (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") (eq .podDisruptionBudget.enabled false)))) 
+{{- if or
+  (and $.Values.serviceTemplate.podDisruptionBudget.enabled (not (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") (eq .podDisruptionBudget.enabled false))))
   (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") .podDisruptionBudget.enabled)
 }}
 ---
