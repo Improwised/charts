@@ -1,5 +1,23 @@
 apiVersion: v1
 entries:
+  cluster-api-provider-proxmox:
+  - annotations:
+      cluster.x-k8s.io/provider: proxmox
+      cluster.x-k8s.io/v1alpha3: v1alpha3
+      cluster.x-k8s.io/v1alpha4: v1alpha4
+      cluster.x-k8s.io/v1beta1: v1beta1_v1beta2
+    apiVersion: v2
+    appVersion: 0.5.1
+    created: "2025-03-24T10:32:32.416723371Z"
+    description: A Helm chart for Cluster API provider proxmox
+    digest: 19b0029bdbe0e1a97e7a51c738da2a4a9fe776973db50fda7e22c1bcacfe8385
+    maintainers:
+    - name: improwised
+    name: cluster-api-provider-proxmox
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/cluster-api-provider-proxmox-0.1.0/cluster-api-provider-proxmox-0.1.0.tgz
+    version: 0.1.0
   erpnext:
   - apiVersion: v2
     appVersion: v13.4.1
@@ -744,4 +762,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2025-02-03T14:15:12.652177186Z"
+generated: "2025-03-24T10:32:32.416860877Z"
