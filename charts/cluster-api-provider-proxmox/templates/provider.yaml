@@ -4,8 +4,8 @@ metadata:
   name: proxmox
 spec:
   version: v0.5.1
+  {{- if .Values.configSecret.name }}
   configSecret:
     name: {{ .Values.configSecret.name }}
     namespace: {{ .Values.configSecret.namespace | default .Release.Namespace | trunc 63 }}
   {{- end }}
-
