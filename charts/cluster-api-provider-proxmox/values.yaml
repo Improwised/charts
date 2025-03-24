@@ -1,0 +1,9 @@
+configSecret:
+  create: true
+  name: "proxmox-variables"
+  namespace: ""
+
+config:
+  secret: Cg==
+  token: Cg==
+  url: Cg==
