@@ -1,0 +1,26 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: ProxmoxMachineTemplate
+metadata:
+  name: {{ .Values.proxmoxMachineTemplate.name }}
+  namespace: {{ .Values.proxmoxMachineTemplate.namespace }}
+spec:
+  template:
+    spec:
+      full: {{ .Values.proxmoxMachineTemplate.spec.full }}
+      sourceNode: {{ .Values.proxmoxMachineTemplate.spec.sourceNode }}
+      templateID: {{ .Values.proxmoxMachineTemplate.spec.templateID }}
+      format: {{ .Values.proxmoxMachineTemplate.spec.format }}
+      numSockets: {{ .Values.proxmoxMachineTemplate.spec.numSockets }}
+      numCores: {{ .Values.proxmoxMachineTemplate.spec.numCores }}
+      memoryMiB: {{ .Values.proxmoxMachineTemplate.spec.memoryMiB }}
+      disks:
+        bootVolume:
+          disk: {{ .Values.proxmoxMachineTemplate.spec.disks.bootVolume.disk }}
+          sizeGb: {{ .Values.proxmoxMachineTemplate.spec.disks.bootVolume.sizeGb }}
+      network:
+        default:
+          bridge: {{ .Values.proxmoxMachineTemplate.spec.network.default.bridge }}
+          model: {{ .Values.proxmoxMachineTemplate.spec.network.default.model }}
+      checks:
+        skipQemuGuestAgent: {{ .Values.proxmoxMachineTemplate.spec.checks.skipQemuGuestAgent }}
+        skipCloudInitStatus: {{ .Values.proxmoxMachineTemplate.spec.checks.skipCloudInitStatus }}
