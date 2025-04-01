@@ -1,6 +1,6 @@
 apiVersion: v2
-name: proxmox
-description: A Helm chart for proxmox
+name: proxmox-hosted-cp
+description: A KCM template to deploy and manage proxmox clusters
 
 # A chart can be either an 'application' or a 'library' chart.
 #
