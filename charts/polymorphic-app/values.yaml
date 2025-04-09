@@ -114,18 +114,19 @@ serviceTemplate:
     #    hosts:
     #      - chart-example.local
 
+# Enables Gateway API HTTPRoute as a replacement for traditional Ingress resources
   httpRoute:
-      enabled: false
-      annotations: {}
-      parentRefs: []
-        # - name: contour #name of the gateway resource
-        #   namespace: projectcontour #name space where gateway resource running
-      hostnames: []
-      # - "app.example.com"
-      matches:
-        path:
-          type: PathPrefix
-          value: "/"
+    enabled: false
+    annotations: {}
+    parentRefs: []
+      # - name: contour #name of the gateway resource
+      #   namespace: projectcontour #name space where gateway resource running
+    hostnames: []
+    # - "app.example.com"
+    matches:
+      path:
+        type: PathPrefix
+        value: "/"
 
 services: []
 
