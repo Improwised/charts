@@ -393,6 +393,10 @@ spec:
       name: "{{ $svcName }}"
       {{- end }}
       port: {{ (index .service.ports 0).port | default (index $.Values.serviceTemplate.service.ports 0).port }}
+    {{- with .httpRoute.filters }}
+    filters:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
 {{- end }}
 
 {{- if and .ingress (.ingress.enabled | default $.Values.serviceTemplate.ingress.enabled) }}
