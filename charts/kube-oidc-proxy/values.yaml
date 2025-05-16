@@ -1,7 +1,7 @@
 # Default values for kube-oidc-proxy.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-#install the crds(default is true)
+# Install the crds(default is true)
 
 installCRDs: true
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
