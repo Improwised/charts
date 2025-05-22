@@ -96,11 +96,11 @@ spec:
       {{- end }}
       {{- with .affinity | default $.Values.jobTemplate.affinity }}
       affinity:
-      {{ toYaml . | indent 8 }}
+{{ toYaml . | indent 8 }}
       {{- end }}
       {{- with .tolerations | default $.Values.jobTemplate.tolerations }}
       tolerations:
-      {{ toYaml . | indent 8 }}
+{{ toYaml . | indent 8 }}
       {{- end }}
       volumes:
       {{- if .volumes }}
