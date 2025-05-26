@@ -1,0 +1,8 @@
+apiVersion: v2
+appVersion: "1.0.0"
+description: A Helm chart for kube-oidc-proxy
+maintainers:
+- name: improwised
+name: "kube-oidc-proxy"
+type: application
+version: 1.0.0

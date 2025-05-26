@@ -1,0 +1,491 @@
+{{- range .Values.services }}
+---
+apiVersion: {{ include "deployment.apiVersion" $ }}
+kind: {{ if eq .type "StatefulSet"}}StatefulSet{{- else }}Deployment{{- end }}
+metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+{{- else}}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- with .annotations | default $.Values.serviceTemplate.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  {{ if .type }}
+  {{- else }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 100%
+  {{- end }}
+  replicas: {{ .minReplicaCount  | default $.Values.serviceTemplate.minReplicaCount }}
+  {{ if eq .type "StatefulSet"}}
+    {{- if $.Values.prefixWithReleaseName.enabled }}
+  serviceName: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+    {{- else }}
+  serviceName: "{{ .name | default $.Values.serviceTemplate.name }}"
+    {{- end }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "kube-oidc-proxy.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+  template:
+    metadata:
+      labels:
+        {{- include "kube-oidc-proxy.labels" $ | nindent 8 }}
+        app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+      {{ if .podAnnotations }}
+      annotations:
+{{ toYaml .podAnnotations | indent 8 }}
+      {{- end }}
+    spec:
+      {{- if $.Values.serviceTemplate.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .imagePullSecrets | indent 8 }}
+      {{- else if .imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .imagePullSecrets | indent 8 }}
+      {{- else }}
+      {{- if $.Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml $.Values.imagePullSecrets | indent 8 }}
+      {{- end }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default $.Values.serviceTemplate.terminationGracePeriodSeconds }}
+      {{- if or ($.Values.serviceTemplate.initContainers) (.initContainers) }}
+        {{- with .initContainers | default $.Values.serviceTemplate.initContainers }}
+      initContainers:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- end }}
+      containers:
+      {{- if $.Values.prefixWithReleaseName.enabled }}
+        - name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}"
+      {{- else}}
+        - name: "{{ .name | default $.Values.serviceTemplate.name }}"
+      {{- end }}
+          {{- if .image }}
+          image: "{{ .image.repository }}:{{ .image.tag }}"
+          {{- else }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          env:
+          {{- if .env }}
+{{ toYaml .env | indent 12 }}
+          {{- end }}
+          {{- if $.Values.env }}
+{{ toYaml $.Values.env | indent 12 }}
+          {{- end }}
+          {{- if $.Values.serviceTemplate.env }}
+{{ toYaml $.Values.serviceTemplate.env | indent 12 }}
+          {{- end }}
+          envFrom:
+          {{- if .envFrom }}
+{{ toYaml .envFrom | indent 12 }}
+          {{- end }}
+          {{- if $.Values.envFrom }}
+{{ toYaml $.Values.envFrom | indent 12 }}
+          {{- end }}
+          {{- if $.Values.serviceTemplate.envFrom }}
+{{ toYaml $.Values.serviceTemplate.envFrom | indent 12 }}
+          {{- end }}
+        {{- if .command }}
+          {{- with .command | default $.Values.serviceTemplate.command }}
+          command:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- end }}
+        {{- if .args }}
+          {{- with .args | default $.Values.serviceTemplate.args }}
+          args:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- end }}
+          {{- with .ports | default $.Values.serviceTemplate.ports }}
+          ports:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- with .resources | default $.Values.serviceTemplate.resources }}
+          resources:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+        {{- if or ($.Values.serviceTemplate.lifecycleHooks) (.lifecycleHooks) }}
+          {{- with .lifecycleHooks | default $.Values.serviceTemplate.lifecycleHooks }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        {{- end }}
+          volumeMounts:
+          {{- if .volumeMounts }}
+{{ toYaml .volumeMounts | indent 10 }}
+          {{- end }}
+          {{- if $.Values.volumeMounts }}
+{{ toYaml $.Values.volumeMounts | indent 10 }}
+          {{- end }}
+          {{- if $.Values.serviceTemplate.volumeMounts }}
+{{ toYaml $.Values.serviceTemplate.volumeMounts | indent 10 }}
+          {{- end }}
+        {{- if or ($.Values.serviceTemplate.healthcheck.enabled) (.healthcheck.enabled) }}
+        {{- if .healthcheck }}
+{{- $healthType := .healthcheck.type -}}
+          {{- if and (eq $healthType "httpGet") (.healthcheck.path ) }}
+          livenessProbe:
+            httpGet:
+              path: {{ .healthcheck.path }}
+              port: {{ .healthcheck.port }}
+            timeoutSeconds: 7
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
+          readinessProbe:
+            httpGet:
+              path: {{ .healthcheck.path }}
+              port: {{ .healthcheck.port }}
+            timeoutSeconds: 7
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
+          {{- else if and (eq $healthType "tcpSocket") ( .healthcheck.port ) }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .healthcheck.port }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .healthcheck.port }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
+          {{- end }}
+{{- else }}
+{{- $healthType := $.Values.serviceTemplate.healthcheck.type -}}
+          {{- if and (eq $healthType "httpGet") ($.Values.serviceTemplate.healthcheck.path) }}
+          livenessProbe:
+            httpGet:
+              path: {{ $.Values.serviceTemplate.healthcheck.path }}
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            timeoutSeconds: 7
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          readinessProbe:
+            httpGet:
+              path: {{ $.Values.serviceTemplate.healthcheck.path }}
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            timeoutSeconds: 7
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          {{- else if and (eq $healthType "tcpSocket") ($.Values.serviceTemplate.healthcheck.port) }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ $.Values.serviceTemplate.healthcheck.port }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          {{- end }}
+{{- end }}
+        {{- end }}
+      {{- with .dnsConfig | default $.Values.serviceTemplate.dnsConfig }}
+      dnsConfig:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .securityContext | default $.Values.serviceTemplate.securityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      volumes:
+      {{- if .volumes }}
+{{ toYaml .volumes | indent 8 }}
+      {{- end }}
+      {{- if $.Values.volumes }}
+{{ toYaml $.Values.volumes | indent 8 }}
+      {{- end }}
+      {{- if $.Values.serviceTemplate.volumes }}
+{{ toYaml $.Values.serviceTemplate.volumes | indent 8 }}
+      {{- end }}
+    {{- with .nodeSelector | default $.Values.serviceTemplate.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  {{- include "kube-oidc-proxy.labels" $ | nindent 18 }}
+                  app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+    {{- with .affinity | default $.Values.serviceTemplate.affinity }}
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .tolerations | default $.Values.serviceTemplate.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+{{- if .volumeClaimTemplates }}
+  volumeClaimTemplates:
+
+{{ toYaml .volumeClaimTemplates | indent 8 }}
+      {{- end }}
+      {{- if $.Values.volumeClaimTemplates }}
+{{ toYaml $.Values.volumeClaimTemplates | indent 8 }}
+      {{- end }}
+      {{- if $.Values.serviceTemplate.volumeClaimTemplates }}
+{{ toYaml $.Values.serviceTemplate.volumeClaimTemplates | indent 8 }}
+      {{- end }}
+{{- if and (.autoscaling | default $.Values.serviceTemplate.autoscaling) (ne .type "StatefulSet")}}
+---
+apiVersion: {{ include "hpa.apiVersion" $ }}
+kind: HorizontalPodAutoscaler
+metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+{{- else }}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+spec:
+  scaleTargetRef:
+    apiVersion: {{ include "deployment.apiVersion" $ }}
+    kind: Deployment
+    {{- if $.Values.prefixWithReleaseName.enabled }}
+    name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+    {{- else }}
+    name: "{{ .name | default $.Values.serviceTemplate.name }}"
+    {{- end }}
+  minReplicas: {{ .minReplicaCount | default $.Values.serviceTemplate.minReplicaCount }}
+  maxReplicas: {{ .maxReplicaCount | default $.Values.serviceTemplate.maxReplicaCount }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .averageUtilization | default $.Values.serviceTemplate.averageUtilization }}
+  # - type: Resource
+  #   resource:
+  #     name: memory
+  #     target:
+  #       type: AverageValue
+  #       averageValue: 100Mi
+{{- end }}
+{{- if .service}}
+{{- if or ( .service.enabled ) ($.Values.serviceTemplate.service.enabled) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
+  {{- if .service.ClusterIP }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc-headless"
+  {{- else }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  {{- end }}
+{{- else}}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- with .service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ .service.type }}
+  {{- if .service.ClusterIP }}
+  clusterIP: {{ .service.ClusterIP }}
+  {{- end}}
+  ports:
+{{- with .service.ports }}
+    {{ toYaml . | nindent 4 }}
+{{- end }}
+  selector:
+    {{- include "kube-oidc-proxy.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+{{- else if $.Values.serviceTemplate.service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
+  {{- if $.Values.serviceTemplate.service.ClusterIP }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc-headless"
+  {{- else }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  {{- end }}
+{{- else}}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- with $.Values.serviceTemplate.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ $.Values.serviceTemplate.service.type }}
+  {{- if $.Values.serviceTemplate.service.ClusterIP }}
+  clusterIP: {{ $.Values.serviceTemplate.service.ClusterIP }}
+  {{- end}}
+  ports:
+{{- with $.Values.serviceTemplate.service.ports }}
+    {{ toYaml . | nindent 4 }}
+{{- end }}
+  selector:
+    {{- include "kube-oidc-proxy.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+
+{{- if and .httpRoute (.httpRoute.enabled | default $.Values.serviceTemplate.httpRoute.enabled) }}
+---
+{{- $svcName := .name | default $.Values.serviceTemplate.name -}}
+{{- $fullName := printf "%s-%s-svc" $.Release.Name ($svcName) -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ $svcName }}-svc"
+{{- else }}
+  name: "{{ $svcName }}"
+{{- end }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" $ | nindent 4 }}
+  {{- with (.httpRoute.annotations | default $.Values.serviceTemplate.httpRoute.annotations) }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with (.httpRoute.parentRefs | default $.Values.serviceTemplate.httpRoute.parentRefs) }}
+  parentRefs:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with (.httpRoute.hostnames | default $.Values.serviceTemplate.httpRoute.hostnames) }}
+  hostnames:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  rules:
+  - matches:
+    {{- with (.httpRoute.matches.path | default $.Values.serviceTemplate.httpRoute.matches.path) }}
+    - path:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .httpRoute.matches.timeouts }}
+    timeouts:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    backendRefs:
+    - kind: Service
+      {{- if $.Values.prefixWithReleaseName.enabled }}
+      name: "{{ $.Release.Name }}-{{ $svcName }}-svc"
+      {{- else }}
+      name: "{{ $svcName }}"
+      {{- end }}
+      port: {{ (index .service.ports 0).port | default (index $.Values.serviceTemplate.service.ports 0).port }}
+    {{- with .httpRoute.filters }}
+    filters:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+{{- end }}
+
+{{- if and .ingress (.ingress.enabled | default $.Values.serviceTemplate.ingress.enabled) }}
+---
+{{- $svcName := .name | default $.Values.serviceTemplate.name -}}
+{{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}}
+apiVersion: {{ include "ingress.apiVersion" $ }}
+kind: Ingress
+metadata:
+{{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+{{- else}}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" $ | nindent 4 }}
+  {{- with (.ingress.annotations | default $.Values.serviceTemplate.ingress.annotations) }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if .ingress.className | default $.Values.serviceTemplate.ingress.className }}
+  ingressClassName: {{ .ingress.className | default $.Values.serviceTemplate.ingress.className }}
+{{- end }}
+{{- if gt (len (.ingress.tls | default $.Values.serviceTemplate.ingress.tls)) 0 }}
+  tls:
+  {{- range (.ingress.tls | default $.Values.serviceTemplate.ingress.tls) }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ . | quote }}
+      {{- end }}
+      secretName: {{ .secretName }}
+  {{- end }}
+{{- end }}
+  rules:
+  {{- range (.ingress.hosts | default $.Values.serviceTemplate.ingress.hosts) }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+        {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            {{- if $.Values.prefixWithReleaseName.enabled }}
+            backend: {{- include "ingress.backend" (dict "serviceName" $fullName "servicePort" .servicePort "context" $)  | nindent 14 }}
+            {{- else}}
+            backend: {{- include "ingress.backend" (dict "serviceName" $svcName "servicePort" .servicePort "context" $)  | nindent 14 }}
+            {{- end }}
+        {{- end }}
+  {{- end }}
+{{- end }}
+{{- if or
+  (and $.Values.serviceTemplate.podDisruptionBudget.enabled (not (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") (eq .podDisruptionBudget.enabled false))))
+  (and .podDisruptionBudget (hasKey .podDisruptionBudget "enabled") .podDisruptionBudget.enabled)
+}}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  {{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
+  {{- else }}
+  name: "{{ .name | default $.Values.serviceTemplate.name }}"
+  {{- end }}
+  labels:
+    app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+spec:
+{{- if .podDisruptionBudget }}
+{{- $spec := dict }}
+{{- range $key, $value := .podDisruptionBudget }}
+  {{- if ne $key "enabled" }}
+    {{- $_ := set $spec $key $value }}
+  {{- end }}
+{{- end }}
+{{ toYaml $spec | nindent 2 }}
+{{- else if $.Values.serviceTemplate.podDisruptionBudget }}
+{{- $spec := dict }}
+{{- range $key, $value := $.Values.serviceTemplate.podDisruptionBudget }}
+  {{- if ne $key "enabled" }}
+    {{- $_ := set $spec $key $value }}
+  {{- end }}
+{{- end }}
+{{ toYaml $spec | nindent 2 }}
+{{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
+{{- end }}
+{{- end }}
