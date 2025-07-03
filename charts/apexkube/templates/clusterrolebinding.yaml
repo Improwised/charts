@@ -1,0 +1,14 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+{{ include "apexkube.labels" . | indent 4 }}
+  name: {{ include "apexkube.fullname" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "apexkube.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "apexkube.fullname" . }}
+  namespace: {{ .Release.Namespace }}
