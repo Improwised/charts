@@ -1,5 +1,18 @@
 apiVersion: v1
 entries:
+  apexkube:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-07-03T12:09:46.188169101Z"
+    description: A Helm chart for apexkube
+    digest: 6c5d210d295c5fdda0da9b0677571974a73a12b54a029d7e26ca52d956ff0d90
+    maintainers:
+    - name: improwised
+    name: apexkube
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/apexkube-1.0.0/apexkube-1.0.0.tgz
+    version: 1.0.0
   cluster-api-provider-proxmox:
   - annotations:
       cluster.x-k8s.io/provider: proxmox
@@ -814,4 +827,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2025-05-26T12:28:56.046444594Z"
+generated: "2025-07-03T12:09:46.188287854Z"
