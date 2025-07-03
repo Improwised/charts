@@ -1,0 +1,153 @@
+# Default values for apexkube.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+# Install crds
+installCRDs: true
+
+nameOverride: ""
+fullnameOverride: ""
+prefixWithReleaseName:
+  enabled: true
+image:
+  repository:
+  tag:
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+volumeMounts: []
+
+volumes: []
+
+env: []
+envFrom: []
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "apexkube"
+
+# service template
+serviceTemplate:
+  name: svc
+  image:
+  averageUtilization: 50
+  ## initContainers:
+  ##   - name: something
+  ##     image: alpine
+  ##     command: ['command', 'here']
+
+  initContainers: []
+
+  lifecycleHooks: {}
+
+  healthcheck:
+    enabled: false
+    type: httpGet
+    # path: /healthz
+    # port: http
+    # initialDelaySeconds: 30
+    # periodSeconds: 30
+
+  podDisruptionBudget:
+    enabled: false
+    # Set either `minAvailable` OR `maxUnavailable`
+    # minAvailable: 1
+    # maxUnavailable: 1
+  autoscaling: false
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  env: []
+  envFrom: []
+  ports:
+  - name: http
+    containerPort: 80
+    protocol: TCP
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+  securityContext: {}
+    # fsGroup: 1001
+    # runAsGroup: 1001
+    # runAsUser: 1001
+  dnsConfig: {}
+    # nameservers:
+    #   - 192.0.2.1 # this is an example
+    # searches:
+    #   - ns1.svc.cluster-domain.example
+    #   - my.dns.search.suffix
+    # options:
+    #   - name: ndots
+    #     value: "2"
+    #   - name: edns0
+  annotations: {}
+  podAnnotations: {}
+    # my-annotation: "value"
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  volumeMounts: []
+  volumes: []
+
+  service:
+    enabled: true
+    # className: nginx
+    type: ClusterIP
+    ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    annotations: {}
+
+  ingress:
+    enabled: false
+    # className: nginx
+    annotations: {}
+    hosts:
+      - host: app.example.com
+        paths: []
+
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+# Enables Gateway API HTTPRoute as a replacement for traditional Ingress resources
+  httpRoute:
+    enabled: false
+    annotations: {}
+    parentRefs: []
+      # - name: contour #name of the gateway resource
+      #   namespace: projectcontour #name space where gateway resource running
+    hostnames: []
+    # - "app.example.com"
+    matches:
+      path:
+        type: PathPrefix
+        value: "/"
+      timeouts: {}
+        # request: 10s  #Maximum time the Gateway waits to complete the full client request and response cycle.
+        # backendRequest: 10s # Maximum time the Gateway waits for a response from the backend service.
+    filters: []
+    # - type: RequestHeaderModifier
+    #   requestHeaderModifier:
+    #     set:
+    #       - name: X-Forwarded-Proto
+    #         value: https
+
+services: []
