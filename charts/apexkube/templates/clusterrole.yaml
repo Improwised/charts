@@ -59,8 +59,8 @@ rules:
 - apiGroups:
   - "organization.platformengineers.io"
   resources:
-  - "User"
-  - "Account"
+  - "users"
+  - "accounts"
   verbs:
   - "get"
   - "list"
