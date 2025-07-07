@@ -1,8 +1,8 @@
 apiVersion: v2
-appVersion: "1.0.1"
+appVersion: "1.0.2"
 description: A Helm chart for apexkube
 maintainers:
 - name: improwised
 name: "apexkube"
 type: application
-version: 1.0.1
+version: 1.0.2
