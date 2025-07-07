@@ -46,8 +46,8 @@ spec:
 {{ toYaml .podAnnotations | indent 8 }}
       {{- end }}
     spec:
-      serviceAccountName: {{ .Values.serviceAccount.name }}
-      {{- if $.Values.serviceTemplate.imagePullSecrets }}
+      serviceAccountName: {{ .serviceAccountName | default $.Values.serviceAccount.name | default "default" }}
+    {{- if $.Values.serviceTemplate.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .imagePullSecrets | indent 8 }}
       {{- else if .imagePullSecrets }}
