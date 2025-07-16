@@ -27,7 +27,22 @@ jobs:
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add bitnami-full-index https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
 
+      - name: Prepare GPG key #this step is for using exported keys and make your github runner
+        run: |
+          gpg_dir=.cr-gpg
+          mkdir "$gpg_dir"
+          keyring="$gpg_dir/secring.gpg" #referring keyring to private key of gpg
+          base64 -d <<< "$GPG_KEYRING_BASE64" > "$keyring" #storing base64 GPG key into keyring 
+          passphrase_file="$gpg_dir/passphrase"
+          echo "$GPG_PASSPHRASE" > "$passphrase_file" #storing passphrase data into a file
+          echo "CR_PASSPHRASE_FILE=$passphrase_file" >> "$GITHUB_ENV" #saving passphrase into github-environment
+          echo "CR_KEYRING=$keyring" >> "$GITHUB_ENV" #saving private key into github-environemnt
+        env:
+          GPG_KEYRING_BASE64: "${{ secrets.GPG_KEYRING_BASE64 }}" #Referring secrets of github above
+          GPG_PASSPHRASE: "${{ secrets.GPG_PASSPHRASE }}"  
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_KEY: "${{ secrets.CR_KEY }}"
+          CR_SIGN: true
