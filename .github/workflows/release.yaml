@@ -27,7 +27,15 @@ jobs:
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add bitnami-full-index https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
 
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_KEYRING_BASE64 }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+  
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_KEY: "${{ secrets.CR_KEY }}"
+          CR_SIGN: true
