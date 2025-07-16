@@ -32,10 +32,13 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_KEYRING_BASE64 }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
-  
+
+      - name: Export GPG key to legacy format
+        run: gpg --export-secret-keys > ~/.gnupg/pubring.gpg
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
+        with:
+          config: ./.github/configs/cr.yaml        
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_KEY: "${{ secrets.CR_KEY }}"
-          CR_SIGN: true
