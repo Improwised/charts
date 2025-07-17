@@ -71,3 +71,20 @@ jobs:
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
         run: ct install --target-branch ${{ github.event.repository.default_branch }} --excluded-charts freeipa
+
+      - name: Check GPG version and backend
+        run: |
+          echo "GPG version:"
+          gpg --version
+
+          echo
+          echo "GPG binary path:"
+          which gpg
+
+          echo
+          echo "GPG home directory:"
+          gpgconf --list-dirs
+
+          echo
+          echo "GPG agent version (if available):"
+          gpg-agent --version || echo "gpg-agent not available"
