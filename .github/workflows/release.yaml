@@ -34,7 +34,12 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Export GPG key to legacy format
-        run: gpg --export-secret-keys > ~/.gnupg/pubring.gpg
+        run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          gpg --batch --yes --always-trust --pinentry-mode loopback \
+              --passphrase "${{ secrets.GPG_PASSPHRASE }}" \
+              --export-secret-keys > ~/.gnupg/pubring.gpg
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
