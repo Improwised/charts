@@ -510,7 +510,119 @@
                     }
                 },
                 "initContainers": {
-                    "type": "array"
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "command": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "env": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "valueFrom": {
+                                            "type": "object",
+                                            "properties": {
+                                                "secretKeyRef": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                "configMapKeyRef": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "envFrom": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "configMapRef": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "secretRef": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "image": {
+                                "type": [
+                                    "string"
+                                ],
+                                "properties": {
+                                    "repository": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "tag": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                }
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "volumeMounts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mountPath": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
                 "lifecycleHooks": {
                     "type": "object"
@@ -697,6 +809,18 @@
                                 }
                             }
                         }
+                    }
+                },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "command": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 },
                 "service": {
@@ -1329,8 +1453,7 @@
                                 },
                                 "image": {
                                     "type": [
-                                        "object",
-                                        "null"
+                                        "string"
                                     ],
                                     "properties": {
                                         "repository": {
@@ -1838,6 +1961,18 @@
                     },
                     "additionalProperties": false
                 },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "command": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "dnsConfig": {
                     "type": "object",
                     "properties": {
@@ -2233,6 +2368,18 @@
                     },
                     "additionalProperties": false
                 },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "command": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "dnsConfig": {
                     "type": "object",
                     "properties": {
@@ -2615,6 +2762,18 @@
                     },
                     "additionalProperties": false
                 },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "command": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "tolerations": {
                     "type": "array"
                 }
@@ -2927,8 +3086,20 @@
                 "annotations": {
                     "type": "array"
                 },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "command": {
-                    "type": "null"
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "env": {
                     "type": "array",
