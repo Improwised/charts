@@ -22,9 +22,10 @@ jobs:
           - 1.27.16
           - 1.28.15
           - 1.29.14
-          - 1.30.10
-          - 1.31.6
-          - 1.32.2
+          - 1.30.13
+          - 1.31.9
+          - 1.32.5
+          - 1.33.2
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,7 +35,7 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4.3.0
         with:
-          version: v3.17.1
+          version: v3.18.4
 
       - name: Adding bitnamirepo
         run: |
