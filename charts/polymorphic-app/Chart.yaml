@@ -4,5 +4,15 @@ description: A Helm chart for deploying any custom applications, specifically po
 maintainers:
   - name: improwised
 type: application
-version: 2.3.4
+version: 2.3.5
 appVersion: 1.0.0
+home: https://github.com/Improwised/charts/tree/main/charts/polymorphic-app
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://github.com/Improwised/charts/tree/main/charts/polymorphic-app
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com
