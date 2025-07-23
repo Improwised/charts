@@ -69,19 +69,14 @@ jobs:
           files: |
             charts/polymorphic-app/**
 
-      - name: Run Artifact Hub Lint
+      - name: Run Artifact Hub Lint for polymorphic-app
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
-          # Install ah CLI
           curl -LO https://github.com/artifacthub/hub/releases/download/v1.21.0/ah_1.21.0_linux_amd64.tar.gz
           tar xzf ah_1.21.0_linux_amd64.tar.gz
           sudo mv ah /usr/local/bin/
-          
-          # Verify installation
-          ah version
-          
-          # Run lint
-          ah lint ./charts/polymorphic-app || exit 1
+          cd ./charts/polymorphic-app
+          ah lint . || exit 1
 
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
