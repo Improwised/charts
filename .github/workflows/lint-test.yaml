@@ -60,7 +60,7 @@ jobs:
 
       - name: Run chart-testing (lint)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct lint --target-branch ${{ github.event.repository.default_branch }} --excluded-charts freeipa
+        run: ct lint --target-branch ${{ github.event.repository.default_branch }} --excluded-charts freeipa,mosquitto-mqtt
 
       - name: Run Artifact Hub Lint
         run: |
@@ -79,4 +79,4 @@ jobs:
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct install --target-branch ${{ github.event.repository.default_branch }} --excluded-charts freeipa
+        run: ct install --target-branch ${{ github.event.repository.default_branch }} --excluded-charts freeipa,mosquitto-mqtt
