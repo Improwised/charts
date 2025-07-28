@@ -12,8 +12,9 @@ annotations:
 apiVersion: v2
 appVersion: 2.0.15
 dependencies:
-- name: common
-  version: 11.1.2
+  - name: common
+    repository: https://library-charts.truecharts.org
+    version: 11.1.2
 description: Eclipse Mosquitto - An open source MQTT broker
 keywords:
 - mosquitto

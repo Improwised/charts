@@ -7,8 +7,6 @@ maintainers:
 type: application
 version: 1.1.2
 appVersion: 2.7.0
-sources:
-  - https://github.com/healthchecks/healthchecks
 dependencies:
   - name: postgresql
     version: 12.1.6
