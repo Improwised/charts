@@ -41,7 +41,7 @@ socketIOPort: "9000"
 mariadb:
   enabled: true
   auth:
-    rootPassword: mariadb # pragma: allowlist secret
+    rootPassword: mariadb  # pragma: allowlist secret
   primary:
     persistence:
       enabled: false
@@ -99,7 +99,7 @@ createSite:
   enabled: false
   siteName: "erp.cluster.local"
   dbRootUser: "root"
-  adminPassword: "admin" # pragma: allowlist secret
+  adminPassword: "admin"  # pragma: allowlist secret
   installApps: "erpnext"
   dropSiteOnUninstall: false
 

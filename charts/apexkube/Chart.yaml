@@ -2,7 +2,23 @@ apiVersion: v2
 appVersion: "1.0.2"
 description: A Helm chart for apexkube
 maintainers:
-- name: improwised
+  - email: rakshit@improwised.com
+    name: improwised
 name: "apexkube"
 type: application
-version: 1.0.2
+version: 1.0.3
+keywords:
+  - apexkube
+  - monitoring
+  - visualization
+  - single-pane-of-glass
+home: https://github.com/Improwised/charts/tree/main/charts/apexkube
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/apexkube
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

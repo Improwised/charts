@@ -3,6 +3,21 @@ name: nifi-registry
 description: A Helm chart for nifi-registry
 type: application
 maintainers:
-  - name: improwised
-version: 1.0.0
+  - email: rakshit@improwised.com
+    name: improwised
+version: 1.0.1
 appVersion: "1.27.0"
+keywords:
+  - nifi-registry
+  - dataflow
+  - version-control
+home: https://github.com/Improwised/charts/tree/main/charts/nifi-registry
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/nifi-registry
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

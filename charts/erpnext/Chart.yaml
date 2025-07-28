@@ -4,11 +4,27 @@ description: Kubernetes Helm Chart for the lastest stable ERPNext branch
 icon: https://raw.githubusercontent.com/frappe/design/master/logos/logo-2018/erpnext-logo-blue.svg
 name: erpnext
 type: application
-version: 3.3.0
+version: 3.3.1
 maintainers:
-  - name: improwised
+  - email: rakshit@improwised.com
+    name: improwised
 dependencies:
   - name: mariadb
     version: 9.3.14
     repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
     condition: mariadb.enabled
+keywords:
+  - erpnext
+  - frappe
+  - business
+  - accounting
+home: https://github.com/Improwised/charts/tree/main/charts/erpnext
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/erpnext
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

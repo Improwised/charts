@@ -3,14 +3,27 @@ name: healthchecks
 description: A Helm chart for Kubernetes
 maintainers:
   - email: rakshit@improwised.com
-    name: rakshit
+    name: improwised
 type: application
-version: 1.1.1
+version: 1.1.2
 appVersion: 2.7.0
-sources:
-  - https://github.com/healthchecks/healthchecks
 dependencies:
   - name: postgresql
     version: 12.1.6
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled,global.postgresql.enabled
+keywords:
+  - healthchecks
+  - monitoring
+  - uptime
+  - alerts
+home: https://github.com/Improwised/charts/tree/main/charts/healthchecks
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/healthchecks
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

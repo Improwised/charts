@@ -13,7 +13,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.0
+version: 0.1.1
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
@@ -24,5 +24,20 @@ annotations:
   cluster.x-k8s.io/v1alpha3: v1alpha3
   cluster.x-k8s.io/v1alpha4: v1alpha4
   cluster.x-k8s.io/v1beta1: v1beta1_v1beta2
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/cluster-api-provider-proxmox
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com
 maintainers:
-  - name: improwised
+  - email: rakshit@improwised.com
+    name: improwised
+keywords:
+  - capmox
+  - cluster-api
+  - proxmox
+  - infrastructure
+home: https://github.com/Improwised/charts/tree/main/charts/cluster-api-provider-proxmox
+sources:
+  - https://github.com/Improwised/charts

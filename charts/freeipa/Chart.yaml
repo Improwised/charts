@@ -2,9 +2,10 @@ apiVersion: v2
 name: freeipa
 description: FreeIPA is an integrated security information management solution combining Linux (Fedora), 389 Directory Server, MIT Kerberos, NTP, DNS, Dogtag (Certificate System).
 maintainers:
-  - name: improwised
+  - email: rakshit@improwised.com
+    name: improwised
 type: application
-version: 0.4.1
+version: 0.4.2
 appVersion: 4.10.1
 dependencies:
   - name: common
@@ -12,3 +13,19 @@ dependencies:
     tags:
       - bitnami-common
     version: 1.x.x
+keywords:
+  - freeipa
+  - ldap
+  - kerberos
+  - identity
+  - sso
+home: https://github.com/Improwised/charts/tree/main/charts/freeipa
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/freeipa
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

@@ -2,6 +2,23 @@ apiVersion: v2
 appVersion: "1.0.0"
 description: A Helm chart for ProxySQL
 name: proxysql
-version: 1.0.0
+version: 1.0.1
 maintainers:
-  - name: improwised
+  - email: rakshit@improwised.com
+    name: improwised
+keywords:
+  - mysql
+  - mariadb
+  - proxysql
+  - database
+  - load-balancer
+home: https://github.com/Improwised/charts/tree/main/charts/proxysql
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/proxysql
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

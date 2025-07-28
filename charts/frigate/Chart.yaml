@@ -2,10 +2,23 @@ apiVersion: v2
 appVersion: "0.13.0"
 description: NVR With Realtime Object Detection for IP Cameras
 name: frigate
-version: 1.1.0
+version: 1.1.1
 keywords:
   - tensorflow
   - coral
   - ml
+  - object-detection
+  - nvr
 maintainers:
-  - name: Improwised
+  - email: rakshit@improwised.com
+    name: improwised
+home: https://github.com/Improwised/charts/tree/main/charts/frigate
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/frigate
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

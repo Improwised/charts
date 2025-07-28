@@ -2,7 +2,22 @@ apiVersion: v2
 appVersion: "1.0.0"
 description: A Helm chart for kube-oidc-proxy
 maintainers:
-- name: improwised
+  - email: rakshit@improwised.com
+    name: improwised
 name: "kube-oidc-proxy"
 type: application
-version: 1.0.0
+version: 1.0.1
+keywords:
+  - oidc
+  - oauth2
+  - authentication
+home: https://github.com/Improwised/charts/tree/main/charts/kube-oidc-proxy
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/kube-oidc-proxy
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com
