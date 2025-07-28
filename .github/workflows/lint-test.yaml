@@ -62,20 +62,13 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         run: ct lint --target-branch ${{ github.event.repository.default_branch }} --excluded-charts freeipa
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v44
-        with:
-          files: |
-            charts/polymorphic-app/**
-
       - name: Run Artifact Hub Lint for polymorphic-app
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           curl -LO https://github.com/artifacthub/hub/releases/download/v1.21.0/ah_1.21.0_linux_amd64.tar.gz
           tar xzf ah_1.21.0_linux_amd64.tar.gz
           sudo mv ah /usr/local/bin/
-          cd ./charts/polymorphic-app
+          cd ./charts/
           ah lint . || exit 1
 
       - name: Create kind cluster
