@@ -1,0 +1,23 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: {{ .Values.cluster.name }}
+  namespace: {{ .Values.cluster.namespace }}
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - {{ .Values.cluster.network.podsCidr }}
+    services:
+      cidrBlocks:
+      - {{ .Values.cluster.network.servicesCidr }}
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    kind: TalosControlPlane
+    name: {{ .Values.cluster.controlPlane.name }}
+    namespace: {{ .Values.cluster.controlPlane.namespace }}
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    kind: ProxmoxCluster
+    name: {{ .Values.cluster.infrastructure.name }}
+    namespace: {{ .Values.cluster.infrastructure.namespace }}
