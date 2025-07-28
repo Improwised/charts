@@ -2,10 +2,29 @@ apiVersion: v2
 name: thunderdome-planning-poker
 description: A Helm chart for thunderdome-planning-poker
 type: application
-version: 1.0.0
+version: 1.0.1
 appVersion: "v2.29.2"
+maintainers:
+  - email: rakshit@improwised.com
+    name: improwised
 dependencies:
   - name: postgresql
     version: "12.2.6"
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled
+keywords:
+  - thunderdome
+  - planning-poker
+  - agile
+  - scrum
+  - estimation
+home: https://github.com/Improwised/charts/tree/main/charts/thunderdome-planning-poker
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/thunderdome-planning-poker
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

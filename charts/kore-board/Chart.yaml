@@ -1,8 +1,24 @@
 apiVersion: v2
 name: kore-board
 type: application
-version: 0.5.8
+version: 0.5.9
 appVersion: v0.5.5
 description: Kubernetes multi-clusters dashboard
 maintainers:
-  - name: improwised
+  - email: rakshit@improwised.com
+    name: improwised
+keywords:
+  - project-management
+  - kanban
+  - scrum
+  - agile
+home: https://github.com/Improwised/charts/tree/main/charts/kore-board
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/kore-board
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

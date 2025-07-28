@@ -2,6 +2,22 @@ apiVersion: v2
 appVersion: 1.0.0
 description: A Helm chart for Pgpool
 name: pgpool
-version: 1.0.1
+version: 1.0.2
 maintainers:
-  - name: improwised
+  - email: rakshit@improwised.com
+    name: improwised
+keywords:
+  - postgresql
+  - pgpool
+  - connection-pooling
+  - load-balancer
+home: https://github.com/Improwised/charts/tree/main/charts/pgpool
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/pgpool
+  artifacthub.io/maintainers: |
+    - name: improwised
+      email: rakshit@improwised.com

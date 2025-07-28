@@ -5,4 +5,19 @@ maintainers:
   - name: Wildcard
     email: support@w6d.io
 appVersion: "1.1.1"
-version: 0.1.0
+version: 0.1.1
+keywords:
+  - postgresql
+  - pgcat
+  - connection-pooling
+  - database
+home: https://github.com/Improwised/charts/tree/main/charts/polymorphic-app
+sources:
+  - https://github.com/Improwised/charts
+annotations:
+  artifacthub.io/links: |
+    - name: GitHub
+      url: https://artifacthub.io/packages/helm/improwised/polymorphic-app
+  artifacthub.io/maintainers: |
+    - name: Wildcard
+      email: support@w6d.io
