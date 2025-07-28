@@ -3,18 +3,11 @@ annotations:
   truecharts.org/catagories: |
     - homeautomation
   truecharts.org/grade: U
-  artifacthub.io/links: |
-    - name: GitHub
-      url: https://artifacthub.io/packages/helm/improwised/mosquitto-mqtt
-  artifacthub.io/maintainers: |
-    - name: improwised
-      email: rakshit@improwised.com
 apiVersion: v2
 appVersion: 2.0.15
 dependencies:
-  - name: common
-    repository: https://library-charts.truecharts.org
-    version: 11.1.2
+- name: common
+  version: 11.1.2
 description: Eclipse Mosquitto - An open source MQTT broker
 keywords:
 - mosquitto
@@ -22,11 +15,10 @@ keywords:
 - eclipse-iot
 kubeVersion: '>=1.16.0-0'
 maintainers:
-  - email: rakshit@improwised.com
-    name: improwised
+  - name: improwised
 name: mosquitto
-type: application
-version: 8.0.13
-home: https://github.com/Improwised/charts/tree/main/charts/mosquitto-mqtt
 sources:
-  - https://github.com/Improwised/charts
+- https://github.com/truecharts/charts/tree/master/charts/stable/mosquitto
+- https://github.com/eclipse/mosquitto
+type: application
+version: 8.0.12
