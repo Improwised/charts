@@ -21,7 +21,7 @@ spec:
     rollingUpdate:
       maxUnavailable: 50%
       maxSurge: 100%
-  replicas: {{ .minReplicaCount  | default $.Values.workerTemplate.minReplicaCount }}
+  replicas: {{ if ne .minReplicaCount nil }}{{ .minReplicaCount }}{{ else }}{{ $.Values.workerTemplate.minReplicaCount }}{{ end }}
   selector:
     matchLabels:
       {{- include "polymorphic-app.selectorLabels" $ | nindent 6 }}

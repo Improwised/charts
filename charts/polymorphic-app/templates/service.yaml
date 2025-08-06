@@ -24,7 +24,7 @@ spec:
       maxUnavailable: 50%
       maxSurge: 100%
   {{- end }}
-  replicas: {{ .minReplicaCount  | default $.Values.serviceTemplate.minReplicaCount }}
+  replicas: {{ if ne .minReplicaCount nil }}{{ .minReplicaCount }}{{ else }}{{ $.Values.serviceTemplate.minReplicaCount }}{{ end }}
   {{ if eq .type "StatefulSet"}}
     {{- if $.Values.prefixWithReleaseName.enabled }}
   serviceName: "{{ $.Release.Name }}-{{ .name | default $.Values.serviceTemplate.name }}-svc"
