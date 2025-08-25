@@ -12,7 +12,7 @@ image:
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
-  
+
 volumeMounts: []
 
 volumes: []
@@ -258,7 +258,8 @@ jobs:
       - configMapRef:
           name: jovvix-api
       - secretRef:
-          name: jovvix-api # To keep the container running
+          # To keep the container running
+          name: jovvix-api
     command: ["/bin/sh", "-c"]
     args:
       - |
@@ -272,7 +273,8 @@ jobs:
       # job is considered part of the release.
       # after completing migration job will disappear
       "helm.sh/hook": post-install,post-upgrade
-      "helm.sh/hook-weight": "-5" # high priority than kratos-migration so that this finishes first
+      # high priority than kratos-migration so that this finishes first
+      "helm.sh/hook-weight": "-5" 
       "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
   # runs kratos migrations
   - name: kratos-migration
@@ -283,7 +285,7 @@ jobs:
       - name: DSN
         valueFrom:
           secretKeyRef:
-            name: jovvix-kratos 
+            name: jovvix-kratos
             key: dsn
     command: ["/bin/sh", "-c"]
     args:
@@ -298,10 +300,11 @@ jobs:
       # job is considered part of the release.
       # after completing migration job will disappear
       "helm.sh/hook": post-install,post-upgrade
-      "helm.sh/hook-weight": "-4" # comes after the jovvix migration
+      # kept it -4 ao that it can comes after the jovvix migration
+      "helm.sh/hook-weight": "-4"
       "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 
-# Used to create configmaps, you can add existing configmaps also, but the name should be the same or you have to make changes accordingly 
+# Used to create configmaps, you can add existing configmaps also, but the name should be the same or you have to make changes accordingly
 configmaps:
   - fullNameOverride: "jovvix-api"
     create: true
@@ -393,7 +396,7 @@ postgresql:
       limits:
         memory: 4Gi
     extendedConfiguration: |
-      max_connections = 1000   
+      max_connections = 1000
   auth:
     username: jovvix
     database: jovvix
@@ -445,8 +448,10 @@ kratos:
           pathType: ImplementationSpecific
           servicePort: http
   secret:
-    enabled: false # do not create secret by default
-    nameOverride: jovvix-kratos # takes existing secret with this name
+    # do not create secret by default
+    enabled: false
+    # takes existing secret with this name
+    nameOverride: jovvix-kratos
   kratos:
     automigration:
       enabled: false
