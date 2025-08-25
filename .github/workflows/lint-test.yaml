@@ -37,10 +37,12 @@ jobs:
         with:
           version: v3.18.4
 
-      - name: Adding bitnamirepo
+      - name: Adding dependency repositories
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add bitnami-full-index https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+          helm repo add ory https://k8s.ory.sh/helm/charts
+
 
       - uses: actions/setup-python@v5
         with:
