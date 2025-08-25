@@ -274,7 +274,7 @@ jobs:
       # after completing migration job will disappear
       "helm.sh/hook": post-install,post-upgrade
       # high priority than kratos-migration so that this finishes first
-      "helm.sh/hook-weight": "-5" 
+      "helm.sh/hook-weight": "-5"
       "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
   # runs kratos migrations
   - name: kratos-migration
