@@ -25,12 +25,12 @@ spec:
     spec:
       template:
         spec:
-          {{- if $.Values.cronJobTemplate.imagePullSecrets }}
+          {{- if .imagePullSecrets }}
           imagePullSecrets:
 {{ toYaml .imagePullSecrets | indent 12 }}
-          {{- else if .imagePullSecrets }}
+          {{- else if $.Values.cronJobTemplate.imagePullSecrets }}
           imagePullSecrets:
-{{ toYaml .imagePullSecrets | indent 12 }}
+{{ toYaml $.Values.cronJobTemplate.imagePullSecrets | indent 12 }}
           {{- else }}
           {{- if $.Values.imagePullSecrets }}
           imagePullSecrets:

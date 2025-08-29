@@ -23,12 +23,12 @@ spec:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
         app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
     spec:
-      {{- if $.Values.jobTemplate.imagePullSecrets }}
+      {{- if .imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .imagePullSecrets | indent 8 }}
-      {{- else if .imagePullSecrets }}
+      {{- else if $.Values.jobTemplate.imagePullSecrets }}
       imagePullSecrets:
-{{ toYaml .imagePullSecrets | indent 8 }}
+{{ toYaml $.Values.jobTemplate.imagePullSecrets | indent 8 }}
       {{- else }}
       {{- if $.Values.imagePullSecrets }}
       imagePullSecrets:

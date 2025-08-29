@@ -46,12 +46,12 @@ spec:
 {{ toYaml .podAnnotations | indent 8 }}
       {{- end }}
     spec:
-      {{- if $.Values.serviceTemplate.imagePullSecrets }}
+      {{- if .imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .imagePullSecrets | indent 8 }}
-      {{- else if .imagePullSecrets }}
+      {{- else if $.Values.serviceTemplate.imagePullSecrets }}
       imagePullSecrets:
-{{ toYaml .imagePullSecrets | indent 8 }}
+{{ toYaml $.Values.serviceTemplate.imagePullSecrets | indent 8 }}
       {{- else }}
       {{- if $.Values.imagePullSecrets }}
       imagePullSecrets:
