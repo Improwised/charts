@@ -46,6 +46,8 @@ spec:
           {{- end }}
             {{- if .image }}
             image: "{{ .image.repository }}:{{ .image.tag }}"
+            {{- else if $.Values.cronJobTemplate.image }}
+            image: "{{ $.Values.cronJobTemplate.image.repository }}:{{ $.Values.cronJobTemplate.image.tag }}"
             {{- else }}
             image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
             {{- end }}

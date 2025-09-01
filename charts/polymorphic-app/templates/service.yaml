@@ -73,6 +73,8 @@ spec:
       {{- end }}
           {{- if .image }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
+          {{- else if $.Values.serviceTemplate.image }}
+          image: "{{ $.Values.serviceTemplate.image.repository }}:{{ $.Values.serviceTemplate.image.tag }}"
           {{- else }}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
           {{- end }}

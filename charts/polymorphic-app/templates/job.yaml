@@ -44,6 +44,8 @@ spec:
       {{- end }}
           {{- if .image }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
+          {{- else if $.Values.jobTemplate.image }}
+          image: "{{ $.Values.jobTemplate.image.repository }}:{{ $.Values.jobTemplate.image.tag }}"
           {{- else }}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
           {{- end }}
