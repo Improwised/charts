@@ -1,62 +1,28 @@
-# Default values for polymorphic-app.
+# Default values for jovvix.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
 
 nameOverride: ""
 fullnameOverride: ""
 prefixWithReleaseName:
   enabled: true
-image:
-  repository:
-  tag:
-  pullPolicy: IfNotPresent
 
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: nginx
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 
-volumeMounts: []
-
-volumes: []
-
-env: []
-envFrom: []
-
-# service template
-serviceTemplate:
-  name: svc
-  image:
-  averageUtilization: 50
-  # initContainers:
-  #   - name: something
-  #     image: alpine
-  #     command: ['command', 'here']
-
-  initContainers: []
-
-  lifecycleHooks: {}
-
-  healthcheck:
-    enabled: false
-    type: httpGet
-    # path: /healthz
-    # port: http
-    # initialDelaySeconds: 30
-    # periodSeconds: 30
-
-  podDisruptionBudget:
-    enabled: false
-    # Set either `minAvailable` OR `maxUnavailable`
-    # minAvailable: 1
-    # maxUnavailable: 1
-  autoscaling: false
-  minReplicaCount: 1
-  maxReplicaCount: 1
-  env: []
-  envFrom: []
-  ports:
-  - name: http
-    containerPort: 80
-    protocol: TCP
-  resources: {}
+# If not resource specified it will take resources from this, remove the brackets and uncomment the below limits and add appropriate resources.
+resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -67,88 +33,27 @@ serviceTemplate:
     # requests:
     #  cpu: 100m
     #  memory: 128Mi
-  securityContext: {}
-    # fsGroup: 1001
-    # runAsGroup: 1001
-    # runAsUser: 1001
-  dnsConfig: {}
-    # nameservers:
-    #   - 192.0.2.1 # this is an example
-    # searches:
-    #   - ns1.svc.cluster-domain.example
-    #   - my.dns.search.suffix
-    # options:
-    #   - name: ndots
-    #     value: "2"
-    #   - name: edns0
-  annotations: {}
-  podAnnotations: {}
-    # my-annotation: "value"
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
-  volumeMounts: []
-  volumes: []
 
-  service:
-    enabled: true
-    # className: nginx
-    type: ClusterIP
-    ports:
-    - name: http
-      port: 80
-      targetPort: http
-      protocol: TCP
-    annotations: {}
+# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
 
-  ingress:
-    enabled: false
-    # className: nginx
-    annotations: {}
-    hosts:
-      - host: app.example.com
-        paths: []
-
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
-
-# Enables Gateway API HTTPRoute as a replacement for traditional Ingress resources
-  httpRoute:
-    enabled: false
-    annotations: {}
-    parentRefs: []
-      # - name: contour #name of the gateway resource
-      #   namespace: projectcontour #name space where gateway resource running
-    hostnames: []
-    # - "app.example.com"
-    matches:
-      path:
-        type: PathPrefix
-        value: "/"
-      timeouts: {}
-        # request: 10s  #Maximum time the Gateway waits to complete the full client request and response cycle.
-        # backendRequest: 10s # Maximum time the Gateway waits for a response from the backend service.
-    filters: []
-    # - type: RequestHeaderModifier
-    #   requestHeaderModifier:
-    #     set:
-    #       - name: X-Forwarded-Proto
-    #         value: https
-
-# Based on serviceTemplate we can create services
+# This section is for adding the deployments, service, ingress. you can define multiple services as done below.
 services:
-  # service for the jovvix-ui
+  # This is for the jovvix-ui pod
   - name: ui
+    replicaCount: 1
     image:
       repository: improwised/jovvix-ui
       tag: main-9acf2cb-1754290699
+      pullPolicy: IfNotPresent
     envFrom:
       - configMapRef:
           name: jovvix-ui
-    healthcheck:
-      enabled: false
     ports:
       - name: http
         containerPort: 5000
@@ -161,41 +66,54 @@ services:
         memory: 600Mi
     service:
       enabled: true
+      name: ui
       type: ClusterIP
       ports:
-        - name: http
-          port: 5000
-          targetPort: http
-          protocol: TCP
+        name: http
+        port: 5000
+        targetPort: http
+        protocol: TCP
+    # Ingress for the ui pod
     ingress:
       enabled: true
+      name: ui
       className: nginx
-      hosts:
-        - host: app.example.com
-          paths:
-            - path: /
-              pathType: Prefix
-              servicePort: http
-  # service for the jovvix-api
+      host: app.example.com
+      path: /
+      pathType: Prefix
+  # This is for the jovvix-api pod
   - name: api
-    # init container is used to wait for the redis pod to be up and running
+    # This init container waits for the redis pod to running, if removed the api pod crashes while redis is not in running state.
     initContainers:
       - name: wait-for-redis
         image: busybox:1.37.0
-        command: ['sh', '-c', 'until timeout 3 nc -z jovvix-redis-master 6379; do echo waiting for redis; sleep 5; done; echo redis found']
+        command:
+          - sh
+          - -c
+          - >
+            until timeout 3 nc -z jovvix-redis-master 6379;
+            do echo waiting for redis; sleep 5; done;
+            echo redis found
+    replicaCount: 1
     image:
       repository: improwised/jovvix-api
       tag: main-82546e9-1753769203
+      pullPolicy: IfNotPresent
     envFrom:
       - configMapRef:
           name: jovvix-api
       - secretRef:
           name: jovvix-api
-    healthcheck:
-      enabled: true
-      type: httpGet
-      path: /api/healthz
-      port: http
+    livenessProbe:
+      httpGet:
+        path: /api/healthz
+        port: http
+      initialDelaySeconds: 6
+      periodSeconds: 6
+    readinessProbe:
+      httpGet:
+        path: /api/healthz
+        port: http
       initialDelaySeconds: 6
       periodSeconds: 6
     resources:
@@ -210,42 +128,27 @@ services:
         protocol: TCP
     service:
       enabled: true
+      name: api
       type: ClusterIP
       ports:
-        - name: http
-          port: 3300
-          targetPort: http
-          protocol: TCP
-    command: ["/bin/sh", "-c"]
-    args: ["./jovvix api"]
+        name: http
+        port: 3300
+        targetPort: http
+        protocol: TCP
+    # Used to start the api server
+    command:
+      - "/bin/sh"
+      - "-c"
+    args:
+      - "./jovvix api"
+    # Ingress for the api pod
     ingress:
       enabled: true
+      name: api
       className: nginx
-      hosts:
-        - host: app.example.com
-          paths:
-            - path: /api
-              pathType: Prefix
-              servicePort: http
-
-# job template
-jobTemplate:
-  name: job
-  image:
-    repository:
-    tag:
-  env: []
-  envFrom: []
-  command:
-  annotations: []
-  volumeMounts: []
-  securityContext: {}
-    # fsGroup: 1001
-    # runAsGroup: 1001
-    # runAsUser: 1001
-  affinity: {}
-  tolerations: []
-  volumes: []
+      host: app.example.com
+      path: /api
+      pathType: Prefix
 
 # Used to add jobs based on job template
 jobs:
@@ -303,83 +206,6 @@ jobs:
       # kept it -4 ao that it can comes after the jovvix migration
       "helm.sh/hook-weight": "-4"
       "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
-
-# Used to create configmaps, you can add existing configmaps also, but the name should be the same or you have to make changes accordingly
-configmaps:
-  - fullNameOverride: "jovvix-api"
-    create: true
-    data:
-      APP_PORT: 0.0.0.0:3300
-      APP_ENV: local
-      IS_DEVELOPMENT: "true"
-      DEBUG: "true"
-      DB_DIALECT: postgres
-      DB_HOST: "jovvix-db-postgresql"
-      DB_PORT: "5432"
-      DB_USERNAME: jovvix
-      DB_NAME: jovvix
-      DB_QUERYSTRING: "sslmode=disable"
-      MIGRATION_DIR: database/migrations
-      WEB_URL: "https://app.example.com"
-      ISSUER: "https://app.example.com"
-      REDIS_HOST: "jovvix-redis-master"
-      REDIS_PORT: "6379"
-      REDIS_DATABASES: "0"
-      MAXIMUM_POINTS_PER_QUESTION: "20"
-      MINIMUM_POINTS_PER_QUESTION: "0"
-      QUESTION_TIME_LIMIT: "15"
-      SCOREBOARD_MAX_DURATION: "10"
-      KRATOS_ENABLED: "true"
-      KRATOS_COOKIE_EXPIRATION_TIME: 2h23m
-      SERVE_PUBLIC_BASE_URL: https://app.example.com
-      SERVE_PUBLIC_PORT: "4433"
-      SERVE_ADMIN_PORT: "4451"
-      SELF_SERVICE_DEFAULT_BROWSER_RETURN_URL: https://app.example.com/api/v1/kratos/auth
-      SELF_SERVICE_FLOWS_REGISTRATION_AFTER_DEFAULT_BROWSER_RETURN_URL: https://app.example.com/api/v1/kratos/auth
-      AWS_REGION: ap-south-1
-      BUCKET_NAME: example-bucket
-      S3_BUCKET_ENDPOINT: https://s3.example.com
-      SMTP_HOST: "smtp.example.com"
-      SMTP_PORT: "587"
-      EMAIL_FROM: "no-reply@example.com"
-  - fullNameOverride: "jovvix-ui"
-    create: true
-    data:
-      APP_ENV: local
-      MODE: development
-      PORT: "4000"
-      HOST: "0.0.0.0"
-      NUXT_PUBLIC_BASE_URL: "https://app.example.com"
-      NUXT_PUBLIC_API_URL: "https://app.example.com/api/v1"
-      NUXT_PUBLIC_API_SOCKET_URL: "wss://app.example.com/api/v1/socket"
-      NUXT_PUBLIC_KRATOS_URL: "https://app.example.com"
-      S3_BUCKET_URL: https://example-bucket.s3.example.com
-
-# Used to create secrets, you can add existing secrets also, but the name should be the same or you have to make changes accordingly
-secrets:
-  - fullNameOverride: "jovvix-api"
-    create: true
-    stringData:
-      DB_PASSWORD: "example-db-password"
-      JWT_SECRET: "example-jwt-secret"
-      REDIS_PASSWORD: "example-redis-password"
-      DSN: postgres://jovvix:example-db-password@jovvix-db-postgresql:5432/jovvix?sslmode=disable
-      SMTP_USERNAME: "example-smtp-user"
-      SMTP_PASSWORD: "example-smtp-pass"
-  - fullNameOverride: "jovvix-db"
-    create: true
-    stringData:
-      postgres-password: "example-postgres-password"
-      password: "example-db-password"
-      redis-password: "example-redis-password"
-  - fullNameOverride: "jovvix-kratos"
-    create: true
-    stringData:
-      dsn: postgres://jovvix:example-db-password@jovvix-db-postgresql:5432/jovvix?sslmode=disable&search_path=kratos
-      secretsCipher: example-32-long-secret-change-me
-      secretsCookie: example-cookie-secret
-      secretsDefault: example-default-secret
-      smtpConnectionURI: smtp://example-smtp-user:example-smtp-pass@smtp.example.com:587/
 
 # postgresql configurations
 postgresql:

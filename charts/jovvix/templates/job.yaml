@@ -3,114 +3,88 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-{{- if $.Values.prefixWithReleaseName.enabled }}
-  name: "{{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}"
-{{- else}}
-  name: "{{ .name | default $.Values.jobTemplate.name }}"
-{{- end }}
+  {{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name }}"
+  {{- else}}
+  name: "{{ .name }}"
+  {{- end }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:
     {{- include "jovvix.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
+  {{- with .annotations }}
   annotations:
-    linkerd.io/inject: disabled
-{{- with .annotations | default $.Values.jobTemplate.annotations }}
     {{- toYaml . | nindent 4 }}
-{{- end }}
+  {{- end }}
 spec:
   template:
     metadata:
       labels:
         {{- include "jovvix.labels" $ | nindent 8 }}
-        app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
+        {{- with .podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
-      {{- if $.Values.jobTemplate.imagePullSecrets }}
+      {{- with $.Values.imagePullSecrets }}
       imagePullSecrets:
-{{ toYaml .imagePullSecrets | indent 8 }}
-      {{- else if .imagePullSecrets }}
-      imagePullSecrets:
-{{ toYaml .imagePullSecrets | indent 8 }}
-      {{- else }}
-      {{- if $.Values.imagePullSecrets }}
-      imagePullSecrets:
-{{ toYaml $.Values.imagePullSecrets | indent 8 }}
-      {{- end }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       restartPolicy: Never
       containers:
-      {{- if $.Values.prefixWithReleaseName.enabled }}
-        - name: "{{ $.Release.Name }}-{{ .name | default $.Values.jobTemplate.name }}"
-      {{- else}}
-        - name: "{{ .name | default $.Values.jobTemplate.name }}"
-      {{- end }}
+        - name: {{ $.Chart.Name }}
           {{- if .image }}
-          image: "{{ .image.repository }}:{{ .image.tag }}"
+          image: "{{ .image.repository }}:{{ .image.tag | default $.Chart.AppVersion }}"
           {{- else }}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
           {{- end }}
-          env:
+          imagePullPolicy: {{ $.Values.image.pullPolicy | default "IfNotPresent" }}
           {{- if .env }}
-{{ toYaml .env | indent 12 }}
+          env:
+            {{- toYaml .env | nindent 12 }}
+          {{- else if $.Values.env }}
+          env:
+            {{- toYaml $.Values.env | nindent 12 }}
           {{- end }}
-          {{- if $.Values.env }}
-{{ toYaml $.Values.env | indent 12 }}
-          {{- end }}
-          {{- if $.Values.jobTemplate.env }}
-{{ toYaml $.Values.jobTemplate.env | indent 12 }}
-          {{- end }}
-          envFrom:
           {{- if .envFrom }}
-{{ toYaml .envFrom | indent 12 }}
+          envFrom:
+            {{- toYaml .envFrom | nindent 12 }}
+          {{- else if $.Values.envFrom }}
+          envFrom:
+            {{- toYaml $.Values.envFrom | nindent 12 }}
           {{- end }}
-          {{- if $.Values.envFrom }}
-{{ toYaml $.Values.envFrom | indent 12 }}
-          {{- end }}
-          {{- if $.Values.jobTemplate.envFrom }}
-{{ toYaml $.Values.jobTemplate.envFrom | indent 12 }}
-          {{- end }}
-          imagePullPolicy: {{ $.Values.image.pullPolicy }}
-        {{- if .command }}
-          {{- with .command | default $.Values.jobTemplate.command }}
+          {{- if .command }}
+          {{- with .command }}
           command:
-{{ toYaml . | indent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
-        {{- end }}
-        {{- if .args }}
-          {{- with .args | default $.Values.jobTemplate.args }}
+          {{- end }}
+          {{- if .args }}
+          {{- with .args }}
           args:
-{{ toYaml . | indent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
-        {{- end }}
+          {{- end }}
           volumeMounts:
           {{- if .volumeMounts }}
-{{ toYaml .volumeMounts | indent 10 }}
+            {{- toYaml .volumeMounts | nindent 12 }}
+          {{- else if $.Values.volumeMounts }}
+            {{- toYaml $.Values.volumeMounts | nindent 12 }}
           {{- end }}
-          {{- if $.Values.volumeMounts }}
-{{ toYaml $.Values.volumeMounts | indent 10 }}
-          {{- end }}
-          {{- if $.Values.jobTemplate.volumeMounts }}
-{{ toYaml $.Values.jobTemplate.volumeMounts | indent 10 }}
-          {{- end }}
-      {{- with .securityContext | default $.Values.jobTemplate.securityContext }}
+      {{- with .securityContext }}
       securityContext:
-{{ toYaml . | indent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .affinity | default $.Values.jobTemplate.affinity }}
+      {{- with .affinity }}
       affinity:
-{{ toYaml . | indent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .tolerations | default $.Values.jobTemplate.tolerations }}
+      {{- with .tolerations }}
       tolerations:
-{{ toYaml . | indent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
       {{- if .volumes }}
-{{ toYaml .volumes | indent 8 }}
-      {{- end }}
-      {{- if $.Values.volumes }}
-{{ toYaml $.Values.volumes | indent 8 }}
-      {{- end }}
-      {{- if $.Values.jobTemplate.volumes }}
-{{ toYaml $.Values.jobTemplate.volumes | indent 8 }}
+        {{- toYaml .volumes | nindent 8 }}
+      {{- else if $.Values.volumes }}
+          {{- toYaml $.Values.volumes | nindent 8 }}
       {{- end }}
 {{- end }}

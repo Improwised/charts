@@ -1,0 +1,205 @@
+{{- range .Values.services }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name }}-svc"
+  {{- else}}
+  name: "{{ .name }}"
+  {{- end }}
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "jovvix.labels" $ | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not $.Values.autoscaling.enabled }}
+  replicas: {{ if ne .replicaCount nil }}{{ .replicaCount }}{{ else }}{{ $.Values.replicaCount }}{{ end }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "jovvix.selectorLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with .podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "jovvix.labels" $ | nindent 8 }}
+        {{- with .podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .initContainers }}
+      {{- with .initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .name }}
+          {{- with .securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .image }}
+          image: "{{ .image.repository }}:{{ .image.tag | default $.Chart.AppVersion }}"
+          {{- else }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .image.pullPolicy | default $.Values.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .env }}
+          env:
+            {{- toYaml .env | nindent 12 }}
+          {{- else if $.Values.env }}
+          env:
+            {{- toYaml $.Values.env | nindent 12 }}
+          {{- end }}
+          {{- if .envFrom }}
+          envFrom:
+            {{- toYaml .envFrom | nindent 12 }}
+          {{- else if $.Values.envFrom }}
+          envFrom:
+            {{- toYaml $.Values.envFrom | nindent 12 }}
+          {{- end }}
+          {{- if .command }}
+          {{- with .command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          {{- if .args }}
+          {{- with .args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          {{- with .ports }}
+          ports:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .resources }}
+          resources:
+            {{- toYaml .resources | nindent 12 }}
+          {{- else if $.Values.resources }}
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          {{- if .volumeMounts }}
+            {{- toYaml .volumeMounts | nindent 12 }}
+          {{- else if $.Values.volumeMounts }}
+            {{- toYaml $.Values.volumeMounts | nindent 12 }}
+          {{- end }}
+      volumes:
+      {{- if .volumes }}
+        {{- toYaml .volumes | nindent 8 }}
+      {{- else if $.Values.volumes }}
+          {{- toYaml $.Values.volumes | nindent 8 }}
+      {{- end }}
+      {{- with .nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- if and .service (.service.enabled) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ $.Release.Name }}-{{ .service.name }}-svc"
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "jovvix.labels" $ | nindent 4 }}
+  {{- with .service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .service.type | default "ClusterIP" }}
+  selector:
+    {{- include "jovvix.selectorLabels" $ | nindent 4 }}
+  ports:
+    - name: {{ .service.ports.name | default "http" }}
+      port: {{ .service.ports.port }}
+      targetPort: {{ .service.ports.targetPort | default 80 }}
+      protocol: {{ .service.ports.protocol | default "TCP" }}
+{{- end }}
+{{- if and .ingress (.ingress.enabled) }}
+{{- $svcName := printf "%s-%s-svc" $.Release.Name .service.name }}
+{{- $svcPortName := .service.ports.name | default "http" }}
+{{- $svcPortNumber := .service.ports.port }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .ingress.name | default (printf "%s-%s" $.Release.Name .name) | quote }}
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "jovvix.labels" $ | nindent 4 }}
+  {{- with .ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- if .ingress.tls }}
+  tls:
+    {{- range .ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    - host: {{ .ingress.host | quote }}
+      http:
+        paths:
+          - path: {{ .ingress.path | default "/" }}
+            pathType: {{ .ingress.pathType | default "Prefix" }}
+            backend:
+              service:
+                name: "{{ $svcName }}"
+                port:
+                  {{- if $svcPortName }}
+                  name: {{ $svcPortName }}
+                  {{- else }}
+                  number: {{ $svcPortNumber }}
+                  {{- end }}
+{{- end }}
+{{- end}}
