@@ -291,7 +291,9 @@ postgresql:
     storageClass: local-path
   primary:
     persistence:
-      size: 1Gi
+      # Change this to true if you want to make it persistence
+      enabled: false
+      size: 100Mi
     resources: {}
       # requests:
       #   cpu: 300m
@@ -317,7 +319,9 @@ redis:
     storageClass: local-path
   master:
     persistence:
-      size: 1Gi
+      # Change this to true if you want to make it persistence
+      enabled: false
+      size: 100Mi
     resources: {}
       # requests:
       #   cpu: 200m
