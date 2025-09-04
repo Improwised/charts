@@ -1,0 +1,18 @@
+{{- range .Values.configmaps }}
+{{- if .create }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  {{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name }}"
+  {{- else}}
+  name: "{{ .name }}"
+  {{- end }}
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "jovvix.labels" $ | nindent 4 }}
+data:
+  {{- toYaml .data | nindent 2 }}
+{{- end }}
+{{- end }}

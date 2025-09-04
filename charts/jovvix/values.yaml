@@ -207,6 +207,83 @@ jobs:
       "helm.sh/hook-weight": "-4"
       "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 
+# Used to create configmaps, you can add existing configmaps also, but the name should be the same or you have to make changes accordingly
+configmaps:
+  - name: "api"
+    create: true
+    data:
+      APP_PORT: 0.0.0.0:3300
+      APP_ENV: local
+      IS_DEVELOPMENT: "true"
+      DEBUG: "true"
+      DB_DIALECT: postgres
+      DB_HOST: "jovvix-db-postgresql"
+      DB_PORT: "5432"
+      DB_USERNAME: jovvix
+      DB_NAME: jovvix
+      DB_QUERYSTRING: "sslmode=disable"
+      MIGRATION_DIR: database/migrations
+      WEB_URL: "https://app.example.com"
+      ISSUER: "https://app.example.com"
+      REDIS_HOST: "jovvix-redis-master"
+      REDIS_PORT: "6379"
+      REDIS_DATABASES: "0"
+      MAXIMUM_POINTS_PER_QUESTION: "20"
+      MINIMUM_POINTS_PER_QUESTION: "0"
+      QUESTION_TIME_LIMIT: "15"
+      SCOREBOARD_MAX_DURATION: "10"
+      KRATOS_ENABLED: "true"
+      KRATOS_COOKIE_EXPIRATION_TIME: 2h23m
+      SERVE_PUBLIC_BASE_URL: https://app.example.com
+      SERVE_PUBLIC_PORT: "4433"
+      SERVE_ADMIN_PORT: "4451"
+      SELF_SERVICE_DEFAULT_BROWSER_RETURN_URL: https://app.example.com/api/v1/kratos/auth
+      SELF_SERVICE_FLOWS_REGISTRATION_AFTER_DEFAULT_BROWSER_RETURN_URL: https://app.example.com/api/v1/kratos/auth
+      AWS_REGION: ap-south-1
+      BUCKET_NAME: example-bucket
+      S3_BUCKET_ENDPOINT: https://s3.example.com
+      SMTP_HOST: "smtp.example.com"
+      SMTP_PORT: "587"
+      EMAIL_FROM: "no-reply@example.com"
+  - name: "ui"
+    create: true
+    data:
+      APP_ENV: local
+      MODE: development
+      PORT: "4000"
+      HOST: "0.0.0.0"
+      NUXT_PUBLIC_BASE_URL: "https://app.example.com"
+      NUXT_PUBLIC_API_URL: "https://app.example.com/api/v1"
+      NUXT_PUBLIC_API_SOCKET_URL: "wss://app.example.com/api/v1/socket"
+      NUXT_PUBLIC_KRATOS_URL: "https://app.example.com"
+      S3_BUCKET_URL: https://example-bucket.s3.example.com
+
+# Used to create secrets, you can add existing secrets also, but the name should be the same or you have to make changes accordingly
+secrets:
+  - name: "api"
+    create: true
+    stringData:
+      DB_PASSWORD: "example-db-password"
+      JWT_SECRET: "example-jwt-secret"
+      REDIS_PASSWORD: "example-redis-password"
+      DSN: postgres://jovvix:example-db-password@jovvix-db-postgresql:5432/jovvix?sslmode=disable
+      SMTP_USERNAME: "example-smtp-user"
+      SMTP_PASSWORD: "example-smtp-pass"
+  - name: "db"
+    create: true
+    stringData:
+      postgres-password: "example-postgres-password"
+      password: "example-db-password"
+      redis-password: "example-redis-password"
+  - name: "kratos"
+    create: true
+    stringData:
+      dsn: postgres://jovvix:example-db-password@jovvix-db-postgresql:5432/jovvix?sslmode=disable&search_path=kratos
+      secretsCipher: example-32-long-secret-change-me
+      secretsCookie: example-cookie-secret
+      secretsDefault: example-default-secret
+      smtpConnectionURI: smtp://example-smtp-user:example-smtp-pass@smtp.example.com:587/
+
 # postgresql configurations
 postgresql:
   nameOverride: "db-postgresql"

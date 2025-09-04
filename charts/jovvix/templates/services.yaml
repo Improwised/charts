@@ -138,7 +138,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  {{- if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .service.name }}-svc"
+  {{- else}}
+  name: "{{ .service.name }}"
+  {{- end }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:
     {{- include "jovvix.labels" $ | nindent 4 }}
@@ -164,7 +168,11 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .ingress.name | default (printf "%s-%s" $.Release.Name .name) | quote }}
+  {{- if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name }}"
+  {{- else}}
+  name: "{{ .name }}"
+  {{- end }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:
     {{- include "jovvix.labels" $ | nindent 4 }}
