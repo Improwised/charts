@@ -58,12 +58,12 @@ services:
       - name: http
         containerPort: 5000
         protocol: TCP
-    resources:
-      limits:
-        memory: 600Mi
-      requests:
-        cpu: 100m
-        memory: 600Mi
+    resources: {}
+      # limits:
+      #   memory: 600Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 600Mi
     service:
       enabled: true
       name: ui
@@ -116,12 +116,12 @@ services:
         port: http
       initialDelaySeconds: 6
       periodSeconds: 6
-    resources:
-      limits:
-        memory: 4Gi
-      requests:
-        cpu: 500m
-        memory: 4Gi
+    resources: {}
+      # limits:
+      #   memory: 4Gi
+      # requests:
+      #   cpu: 500m
+      #   memory: 4Gi
     ports:
       - name: http
         containerPort: 3300
@@ -292,12 +292,12 @@ postgresql:
   primary:
     persistence:
       size: 1Gi
-    resources:
-      requests:
-        cpu: 300m
-        memory: 4Gi
-      limits:
-        memory: 4Gi
+    resources: {}
+      # requests:
+      #   cpu: 300m
+      #   memory: 4Gi
+      # limits:
+      #   memory: 4Gi
     extendedConfiguration: |
       max_connections = 1000
   auth:
@@ -318,12 +318,12 @@ redis:
   master:
     persistence:
       size: 1Gi
-    resources:
-      requests:
-        cpu: 200m
-        memory: 1024Mi
-      limits:
-        memory: 1024Mi
+    resources: {}
+      # requests:
+      #   cpu: 200m
+      #   memory: 1024Mi
+      # limits:
+      #   memory: 1024Mi
 
 # kratos configurations
 kratos:
