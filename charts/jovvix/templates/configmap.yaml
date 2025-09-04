@@ -4,11 +4,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  {{- if $.Values.prefixWithReleaseName.enabled }}
-  name: "{{ $.Release.Name }}-{{ .name }}"
-  {{- else}}
-  name: "{{ .name }}"
-  {{- end }}
+  name: {{ .name | default (printf "%s-%s" $.Release.Name .name) }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:
     {{- include "jovvix.labels" $ | nindent 4 }}

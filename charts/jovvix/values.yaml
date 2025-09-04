@@ -209,7 +209,7 @@ jobs:
 
 # Used to create configmaps, you can add existing configmaps also, but the name should be the same or you have to make changes accordingly
 configmaps:
-  - name: "api"
+  - name: "jovvix-api"
     create: true
     data:
       APP_PORT: 0.0.0.0:3300
@@ -245,7 +245,7 @@ configmaps:
       SMTP_HOST: "smtp.example.com"
       SMTP_PORT: "587"
       EMAIL_FROM: "no-reply@example.com"
-  - name: "ui"
+  - name: "jovvix-ui"
     create: true
     data:
       APP_ENV: local
@@ -260,7 +260,7 @@ configmaps:
 
 # Used to create secrets, you can add existing secrets also, but the name should be the same or you have to make changes accordingly
 secrets:
-  - name: "api"
+  - name: "jovvix-api"
     create: true
     stringData:
       DB_PASSWORD: "example-db-password"
@@ -269,13 +269,13 @@ secrets:
       DSN: postgres://jovvix:example-db-password@jovvix-db-postgresql:5432/jovvix?sslmode=disable
       SMTP_USERNAME: "example-smtp-user"
       SMTP_PASSWORD: "example-smtp-pass"
-  - name: "db"
+  - name: "jovvix-db"
     create: true
     stringData:
       postgres-password: "example-postgres-password"
       password: "example-db-password"
       redis-password: "example-redis-password"
-  - name: "kratos"
+  - name: "jovvix-kratos"
     create: true
     stringData:
       dsn: postgres://jovvix:example-db-password@jovvix-db-postgresql:5432/jovvix?sslmode=disable&search_path=kratos
