@@ -1,0 +1,148 @@
+services:
+  - fullnameOverride: "jovvix-ui"
+    name: ui
+    replicaCount: 1
+    image:
+      repository: improwised/jovvix-ui
+      tag: main-9acf2cb-1754290699
+      pullPolicy: IfNotPresent
+    envFrom:
+      - configMapRef:
+          name: jovvix-ui
+    service:
+      enabled: true
+      fullnameOverride: "jovvix-ui"
+      type: ClusterIP
+      ports:
+        name: http
+        port: 4000
+        targetPort: http
+    ingress:
+      enabled: true
+      fullnameOverride: "jovvix-ui"
+      host: app.example.com
+      path: /
+      pathType: Prefix
+  - fullnameOverride: "jovvix-api"
+    name: api
+    replicaCount: 1
+    image:
+      repository: improwised/jovvix-api
+      tag: main-82546e9-1753769203
+      pullPolicy: IfNotPresent
+    command: ["/bin/sh", "-c"]
+    args: ["./jovvix api || sleep 3600"]
+    service:
+      enabled: true
+      fullnameOverride: "jovvix-api"
+      type: ClusterIP
+      ports:
+        name: http
+        port: 3300
+        targetPort: http
+    ingress:
+      enabled: true
+      fullnameOverride: "jovvix-api"
+      host: app.example.com
+      path: /api
+      pathType: Prefix
+    envFrom:
+      - configMapRef:
+          name: jovvix-api
+      - secretRef:
+          name: jovvix-api
+
+jobs:
+  - name: migration
+    image:
+      repository: improwised/jovvix-api
+      tag: main-82546e9-1753769203
+    envFrom:
+      - configMapRef:
+          name: jovvix-api
+      - secretRef:
+          # To keep the container running
+          name: jovvix-api
+    command: ["/bin/sh", "-c"]
+    args:
+      - |
+        until timeout 5 ./jovvix migrate up; do
+          echo "Waiting for Postgres to be ready for migrations..."
+          sleep 3
+        done
+        echo "Migrations successful"
+    annotations:
+      # This is what defines this resource as a hook. Without this line, the
+      # job is considered part of the release.
+      # after completing migration job will disappear
+      "helm.sh/hook": post-install,post-upgrade
+      # high priority than kratos-migration so that this finishes first
+      "helm.sh/hook-weight": "-5"
+      "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+  - name: kratos-migration
+    image:
+      repository: oryd/kratos
+      tag: v1.3.1
+    env:
+      - name: DSN
+        valueFrom:
+          secretKeyRef:
+            name: jovvix-kratos
+            key: dsn
+    command: ["/bin/sh", "-c"]
+    args:
+      - |
+        until timeout 5 kratos migrate sql -e --yes; do
+          echo "Waiting for Postgres to be ready for kratos migrations..."
+          sleep 3
+        done
+        echo "kratos migrations successful"
+    annotations:
+      # This is what defines this resource as a hook. Without this line, the
+      # job is considered part of the release.
+      # after completing migration job will disappear
+      "helm.sh/hook": post-install,post-upgrade
+      # kept it -4 ao that it can comes after the jovvix migration
+      "helm.sh/hook-weight": "-4"
+      "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+
+postgresql:
+  fullnameOverride: "jovvix-db-postgresql"
+  primary:
+    persistence:
+      enabled: false
+  auth:
+    username: jovvix
+    password: password
+    database: jovvix
+
+redis:
+  fullnameOverride: "jovvix-redis"
+  master:
+    persistence:
+      enabled: false
+  auth:
+    password: password
+
+kratos:
+  fullnameOverride: "jovvix-kratos"
+  enabled: true
+  ingress:
+    admin:
+      enabled: false
+    public:
+      enabled: false
+  kratos:
+    automigration:
+      enabled: false
+    config:
+      serve:
+        public:
+          base_url: http://jovvix-kratos
+          port: 4433
+        admin:
+          base_url: http://jovvix-kratos
+          port: 4434
+      selfservice:
+        allowed_return_urls:
+        - http://localhost

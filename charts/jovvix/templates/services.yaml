@@ -3,7 +3,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  {{- if $.Values.prefixWithReleaseName.enabled }}
+  {{- if .fullnameOverride }}
+  name: "{{ .fullnameOverride }}"
+  {{- else if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .name }}-svc"
   {{- else}}
   name: "{{ .name }}"
@@ -138,7 +140,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  {{- if $.Values.prefixWithReleaseName.enabled }}
+  {{- if .fullnameOverride }}
+  name: "{{ .fullnameOverride }}"
+  {{- else if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .service.name }}-svc"
   {{- else}}
   name: "{{ .service.name }}"
@@ -161,17 +165,19 @@ spec:
       protocol: {{ .service.ports.protocol | default "TCP" }}
 {{- end }}
 {{- if and .ingress (.ingress.enabled) }}
-{{- $svcName := printf "%s-%s-svc" $.Release.Name .service.name }}
+{{- $svcName := ternary .ingress.fullnameOverride (printf "%s-%s-svc" $.Release.Name .service.name) (ne .ingress.fullnameOverride "") }}
 {{- $svcPortName := .service.ports.name | default "http" }}
 {{- $svcPortNumber := .service.ports.port }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  {{- if $.Values.prefixWithReleaseName.enabled }}
-  name: "{{ $.Release.Name }}-{{ .name }}"
+  {{- if .fullnameOverride }}
+  name: "{{ .fullnameOverride }}"
+  {{- else if $.Values.prefixWithReleaseName.enabled }}
+  name: "{{ $.Release.Name }}-{{ .name }}-svc"
   {{- else}}
-  name: "{{ .name }}"
+  name: "{{ .ingress.name }}"
   {{- end }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:

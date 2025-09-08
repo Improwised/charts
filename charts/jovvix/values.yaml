@@ -46,6 +46,7 @@ autoscaling:
 services:
   # This is for the jovvix-ui pod
   - name: ui
+    fullnameOverride: "jovvix-ui"
     replicaCount: 1
     image:
       repository: improwised/jovvix-ui
@@ -66,7 +67,7 @@ services:
       #   memory: 600Mi
     service:
       enabled: true
-      name: ui
+      fullnameOverride: "jovvix-ui"
       type: ClusterIP
       ports:
         name: http
@@ -76,13 +77,14 @@ services:
     # Ingress for the ui pod
     ingress:
       enabled: true
-      name: ui
+      fullnameOverride: "jovvix-ui"
       className: nginx
       host: app.example.com
       path: /
       pathType: Prefix
   # This is for the jovvix-api pod
   - name: api
+    fullnameOverride: "jovvix-api"
     # This init container waits for the redis pod to running, if removed the api pod crashes while redis is not in running state.
     initContainers:
       - name: wait-for-redis
@@ -128,7 +130,7 @@ services:
         protocol: TCP
     service:
       enabled: true
-      name: api
+      fullnameOverride: "jovvix-api"
       type: ClusterIP
       ports:
         name: http
@@ -144,7 +146,7 @@ services:
     # Ingress for the api pod
     ingress:
       enabled: true
-      name: api
+      fullnameOverride: "jovvix-api"
       className: nginx
       host: app.example.com
       path: /api
@@ -286,13 +288,12 @@ secrets:
 
 # postgresql configurations
 postgresql:
-  nameOverride: "db-postgresql"
+  fullnameOverride: "jovvix-db-postgresql"
   global:
     storageClass: local-path
   primary:
     persistence:
-      # Change this to true if you want to make it persistence
-      enabled: false
+      enabled: true
       size: 100Mi
     resources: {}
       # requests:
@@ -311,7 +312,7 @@ postgresql:
 
 # redis configurations
 redis:
-  nameOverride: "redis"
+  fullnameOverride: "jovvix-redis"
   architecture: standalone
   auth:
     existingSecret: jovvix-db
@@ -319,8 +320,7 @@ redis:
     storageClass: local-path
   master:
     persistence:
-      # Change this to true if you want to make it persistence
-      enabled: false
+      enabled: true
       size: 100Mi
     resources: {}
       # requests:
@@ -331,7 +331,7 @@ redis:
 
 # kratos configurations
 kratos:
-  nameOverride: "kratos"
+  fullnameOverride: "jovvix-kratos"
   ingress:
     admin:
       enabled: true
