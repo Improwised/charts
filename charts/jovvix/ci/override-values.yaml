@@ -126,12 +126,13 @@ redis:
 
 kratos:
   fullnameOverride: "jovvix-kratos"
-  enabled: true
   ingress:
     admin:
       enabled: false
     public:
       enabled: false
+  secrets:
+    enabled: true
   kratos:
     automigration:
       enabled: false
