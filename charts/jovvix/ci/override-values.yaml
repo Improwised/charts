@@ -122,6 +122,9 @@ kratos:
     automigration:
       enabled: false
     config:
+      courier:
+        smtp:
+          connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
       serve:
         public:
           base_url: http://jovvix-kratos
