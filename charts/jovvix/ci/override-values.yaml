@@ -71,14 +71,6 @@ jobs:
           sleep 3
         done
         echo "Migrations successful"
-    annotations:
-      # This is what defines this resource as a hook. Without this line, the
-      # job is considered part of the release.
-      # after completing migration job will disappear
-      "helm.sh/hook": post-install,post-upgrade
-      # high priority than kratos-migration so that this finishes first
-      "helm.sh/hook-weight": "-5"
-      "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
   - name: kratos-migration
     image:
       repository: oryd/kratos
@@ -97,14 +89,6 @@ jobs:
           sleep 3
         done
         echo "kratos migrations successful"
-    annotations:
-      # This is what defines this resource as a hook. Without this line, the
-      # job is considered part of the release.
-      # after completing migration job will disappear
-      "helm.sh/hook": post-install,post-upgrade
-      # kept it -4 ao that it can comes after the jovvix migration
-      "helm.sh/hook-weight": "-4"
-      "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 
 postgresql:
   fullnameOverride: "jovvix-db-postgresql"
@@ -113,8 +97,8 @@ postgresql:
       enabled: false
   auth:
     username: jovvix
-    password: password
     database: jovvix
+    existingSecret: jovvix-db
 
 redis:
   fullnameOverride: "jovvix-redis"
@@ -122,7 +106,7 @@ redis:
     persistence:
       enabled: false
   auth:
-    password: password
+    existingSecret: jovvix-db
 
 kratos:
   fullnameOverride: "jovvix-kratos"
@@ -132,7 +116,8 @@ kratos:
     public:
       enabled: false
   secrets:
-    enabled: true
+    enabled: false
+    nameOverride: jovvix-kratos
   kratos:
     automigration:
       enabled: false
