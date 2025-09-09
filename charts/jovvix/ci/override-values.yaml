@@ -95,6 +95,11 @@ postgresql:
   primary:
     persistence:
       enabled: false
+    initdb:
+      scripts:
+        init-kratos-schema.sql: |
+          CREATE SCHEMA IF NOT EXISTS kratos;
+          GRANT ALL ON SCHEMA kratos TO kratos;
   auth:
     username: jovvix
     database: jovvix
@@ -134,4 +139,4 @@ kratos:
           port: 4434
       selfservice:
         allowed_return_urls:
-        - http://localhost
+          - http://localhost
