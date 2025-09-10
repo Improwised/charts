@@ -95,6 +95,10 @@ spec:
           resources:
 {{ toYaml . | indent 12 }}
         {{- end }}
+        {{- with .containerSecurityContext | default $.Values.workerTemplate.containerSecurityContext }}
+          securityContext:
+{{ toYaml . | indent 12 }}
+        {{- end }}
         {{- with .lifecycleHooks | default $.Values.workerTemplate.lifecycleHooks }}
           lifecycle:
 {{ toYaml . | indent 12 }}

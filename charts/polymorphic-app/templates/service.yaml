@@ -119,6 +119,10 @@ spec:
           resources:
 {{ toYaml . | indent 12 }}
         {{- end }}
+        {{- with .containerSecurityContext | default $.Values.serviceTemplate.containerSecurityContext }}
+          securityContext:
+{{ toYaml . | indent 12 }}
+        {{- end }}
         {{- if or ($.Values.serviceTemplate.lifecycleHooks) (.lifecycleHooks) }}
           {{- with .lifecycleHooks | default $.Values.serviceTemplate.lifecycleHooks }}
           lifecycle:
