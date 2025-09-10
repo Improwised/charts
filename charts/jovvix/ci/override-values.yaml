@@ -95,6 +95,7 @@ jobs:
       "helm.sh/hook": post-install,post-upgrade
       # high priority than kratos-migration so that this finishes first
       "helm.sh/hook-weight": "-5"
+      "helm.sh/hook-delete-policy": before-hook-creation
   - fullnameOverride: jovvix-kratos-migration
     image:
       repository: oryd/kratos
@@ -120,6 +121,7 @@ jobs:
       "helm.sh/hook": post-install,post-upgrade
       # kept it -4 ao that it can comes after the jovvix migration
       "helm.sh/hook-weight": "-4"
+      "helm.sh/hook-delete-policy": before-hook-creation
 
 postgresql:
   fullnameOverride: "jovvix-db-postgresql"
