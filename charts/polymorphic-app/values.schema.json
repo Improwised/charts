@@ -792,6 +792,108 @@
                     },
                     "additionalProperties": false
                 },
+                "containerSecurityContext": {
+                    "type": "object",
+                    "properties": {
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "privileged": {
+                            "type": "boolean"
+                        },
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        }, 
+                        "capabilities": {
+                            "type": "object",
+                            "properties": {
+                                "add": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "drop": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "procMount": {
+                            "type": "string",
+                            "enum": ["Default", "Unmasked"]
+                        },
+                        "seLinuxOptions": {
+                            "type": "object",
+                            "properties": {
+                                "user": {
+                                    "type": "string"
+                                },
+                                "role": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "level": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "seccompProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Unconfined",
+                                        "RuntimeDefault",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "windowsOptions": {
+                            "type": "object",
+                            "properties": {
+                                "gmsaCredentialSpecName": {
+                                    "type": "string"
+                                },
+                                "gmsaCredentialSpec": {
+                                    "type": "string"
+                                },
+                                "runAsUserName": {
+                                    "type": "string"
+                                },
+                                "hostProcess": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "dnsConfig": {
                     "type": "object",
                     "properties": {
@@ -1247,6 +1349,108 @@
                                         "type": "string"
                                     }
                                 },
+                                "additionalProperties": false
+                            },
+                            "windowsOptions": {
+                                "type": "object",
+                                "properties": {
+                                    "gmsaCredentialSpecName": {
+                                        "type": "string"
+                                    },
+                                    "gmsaCredentialSpec": {
+                                        "type": "string"
+                                    },
+                                    "runAsUserName": {
+                                        "type": "string"
+                                    },
+                                    "hostProcess": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "containerSecurityContext": {
+                        "type": "object",
+                        "properties": {
+                            "runAsUser": {
+                                "type": "integer"
+                            },
+                            "runAsGroup": {
+                                "type": "integer"
+                            },
+                            "runAsNonRoot": {
+                                "type": "boolean"
+                            },
+                            "privileged": {
+                                "type": "boolean"
+                            },
+                            "allowPrivilegeEscalation": {
+                                "type": "boolean"
+                            },
+                            "readOnlyRootFilesystem": {
+                                "type": "boolean"
+                            }, 
+                            "capabilities": {
+                                "type": "object",
+                                "properties": {
+                                    "add": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "drop": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "procMount": {
+                                "type": "string",
+                                "enum": ["Default", "Unmasked"]
+                            },
+                            "seLinuxOptions": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "level": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "seccompProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Unconfined",
+                                            "RuntimeDefault",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "windowsOptions": {
@@ -1967,6 +2171,108 @@
                     },
                     "additionalProperties": false
                 },
+                "containerSecurityContext": {
+                    "type": "object",
+                    "properties": {
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "privileged": {
+                            "type": "boolean"
+                        },
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        }, 
+                        "capabilities": {
+                            "type": "object",
+                            "properties": {
+                                "add": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "drop": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "procMount": {
+                            "type": "string",
+                            "enum": ["Default", "Unmasked"]
+                        },
+                        "seLinuxOptions": {
+                            "type": "object",
+                            "properties": {
+                                "user": {
+                                    "type": "string"
+                                },
+                                "role": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "level": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "seccompProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Unconfined",
+                                        "RuntimeDefault",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "windowsOptions": {
+                            "type": "object",
+                            "properties": {
+                                "gmsaCredentialSpecName": {
+                                    "type": "string"
+                                },
+                                "gmsaCredentialSpec": {
+                                    "type": "string"
+                                },
+                                "runAsUserName": {
+                                    "type": "string"
+                                },
+                                "hostProcess": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "args": {
                     "type": "array",
                     "items": {
@@ -2353,6 +2659,108 @@
                                         "type": "string"
                                     }
                                 },
+                                "additionalProperties": false
+                            },
+                            "windowsOptions": {
+                                "type": "object",
+                                "properties": {
+                                    "gmsaCredentialSpecName": {
+                                        "type": "string"
+                                    },
+                                    "gmsaCredentialSpec": {
+                                        "type": "string"
+                                    },
+                                    "runAsUserName": {
+                                        "type": "string"
+                                    },
+                                    "hostProcess": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "containerSecurityContext": {
+                        "type": "object",
+                        "properties": {
+                            "runAsUser": {
+                                "type": "integer"
+                            },
+                            "runAsGroup": {
+                                "type": "integer"
+                            },
+                            "runAsNonRoot": {
+                                "type": "boolean"
+                            },
+                            "privileged": {
+                                "type": "boolean"
+                            },
+                            "allowPrivilegeEscalation": {
+                                "type": "boolean"
+                            },
+                            "readOnlyRootFilesystem": {
+                                "type": "boolean"
+                            }, 
+                            "capabilities": {
+                                "type": "object",
+                                "properties": {
+                                    "add": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "drop": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "procMount": {
+                                "type": "string",
+                                "enum": ["Default", "Unmasked"]
+                            },
+                            "seLinuxOptions": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "level": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "seccompProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Unconfined",
+                                            "RuntimeDefault",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "windowsOptions": {
@@ -2771,6 +3179,108 @@
                     },
                     "additionalProperties": false
                 },
+                "containerSecurityContext": {
+                    "type": "object",
+                    "properties": {
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "privileged": {
+                            "type": "boolean"
+                        },
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        }, 
+                        "capabilities": {
+                            "type": "object",
+                            "properties": {
+                                "add": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "drop": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "procMount": {
+                            "type": "string",
+                            "enum": ["Default", "Unmasked"]
+                        },
+                        "seLinuxOptions": {
+                            "type": "object",
+                            "properties": {
+                                "user": {
+                                    "type": "string"
+                                },
+                                "role": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "level": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "seccompProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Unconfined",
+                                        "RuntimeDefault",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "windowsOptions": {
+                            "type": "object",
+                            "properties": {
+                                "gmsaCredentialSpecName": {
+                                    "type": "string"
+                                },
+                                "gmsaCredentialSpec": {
+                                    "type": "string"
+                                },
+                                "runAsUserName": {
+                                    "type": "string"
+                                },
+                                "hostProcess": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "args": {
                     "type": "array",
                     "items": {
@@ -3054,6 +3564,108 @@
                                         "type": "string"
                                     }
                                 },
+                                "additionalProperties": false
+                            },
+                            "windowsOptions": {
+                                "type": "object",
+                                "properties": {
+                                    "gmsaCredentialSpecName": {
+                                        "type": "string"
+                                    },
+                                    "gmsaCredentialSpec": {
+                                        "type": "string"
+                                    },
+                                    "runAsUserName": {
+                                        "type": "string"
+                                    },
+                                    "hostProcess": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "containerSecurityContext": {
+                        "type": "object",
+                        "properties": {
+                            "runAsUser": {
+                                "type": "integer"
+                            },
+                            "runAsGroup": {
+                                "type": "integer"
+                            },
+                            "runAsNonRoot": {
+                                "type": "boolean"
+                            },
+                            "privileged": {
+                                "type": "boolean"
+                            },
+                            "allowPrivilegeEscalation": {
+                                "type": "boolean"
+                            },
+                            "readOnlyRootFilesystem": {
+                                "type": "boolean"
+                            }, 
+                            "capabilities": {
+                                "type": "object",
+                                "properties": {
+                                    "add": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "drop": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "procMount": {
+                                "type": "string",
+                                "enum": ["Default", "Unmasked"]
+                            },
+                            "seLinuxOptions": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "level": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "seccompProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Unconfined",
+                                            "RuntimeDefault",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "windowsOptions": {
@@ -3378,6 +3990,108 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                "containerSecurityContext": {
+                    "type": "object",
+                    "properties": {
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "privileged": {
+                            "type": "boolean"
+                        },
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        }, 
+                        "capabilities": {
+                            "type": "object",
+                            "properties": {
+                                "add": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "drop": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "procMount": {
+                            "type": "string",
+                            "enum": ["Default", "Unmasked"]
+                        },
+                        "seLinuxOptions": {
+                            "type": "object",
+                            "properties": {
+                                "user": {
+                                    "type": "string"
+                                },
+                                "role": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "level": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "seccompProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Unconfined",
+                                        "RuntimeDefault",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "windowsOptions": {
+                            "type": "object",
+                            "properties": {
+                                "gmsaCredentialSpecName": {
+                                    "type": "string"
+                                },
+                                "gmsaCredentialSpec": {
+                                    "type": "string"
+                                },
+                                "runAsUserName": {
+                                    "type": "string"
+                                },
+                                "hostProcess": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
                 }
             }
         },
@@ -3627,6 +4341,108 @@
                                         "type": "string"
                                     }
                                 },
+                                "additionalProperties": false
+                            },
+                            "windowsOptions": {
+                                "type": "object",
+                                "properties": {
+                                    "gmsaCredentialSpecName": {
+                                        "type": "string"
+                                    },
+                                    "gmsaCredentialSpec": {
+                                        "type": "string"
+                                    },
+                                    "runAsUserName": {
+                                        "type": "string"
+                                    },
+                                    "hostProcess": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "containerSecurityContext": {
+                        "type": "object",
+                        "properties": {
+                            "runAsUser": {
+                                "type": "integer"
+                            },
+                            "runAsGroup": {
+                                "type": "integer"
+                            },
+                            "runAsNonRoot": {
+                                "type": "boolean"
+                            },
+                            "privileged": {
+                                "type": "boolean"
+                            },
+                            "allowPrivilegeEscalation": {
+                                "type": "boolean"
+                            },
+                            "readOnlyRootFilesystem": {
+                                "type": "boolean"
+                            }, 
+                            "capabilities": {
+                                "type": "object",
+                                "properties": {
+                                    "add": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "drop": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "procMount": {
+                                "type": "string",
+                                "enum": ["Default", "Unmasked"]
+                            },
+                            "seLinuxOptions": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "level": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "seccompProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Unconfined",
+                                            "RuntimeDefault",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "windowsOptions": {

@@ -70,6 +70,10 @@ spec:
 {{ toYaml $.Values.jobTemplate.envFrom | indent 12 }}
           {{- end }}
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          {{- with .containerSecurityContext | default $.Values.jobTemplate.containerSecurityContext }}
+          securityContext:
+{{ toYaml . | indent 12 }}
+          {{- end }}
         {{- if .command }}
           {{- with .command | default $.Values.jobTemplate.command }}
           command:
