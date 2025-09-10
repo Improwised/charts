@@ -1,5 +1,5 @@
 services:
-  - fullnameOverride: "jovvix-ui"
+  - fullnameOverride: "jovvix-ui-svc"
     name: ui
     replicaCount: 1
     image:
@@ -11,7 +11,7 @@ services:
           name: jovvix-ui
     service:
       enabled: true
-      fullnameOverride: "jovvix-ui"
+      fullnameOverride: "jovvix-ui-svc"
       type: ClusterIP
       ports:
         name: http
@@ -19,12 +19,22 @@ services:
         targetPort: http
     ingress:
       enabled: true
-      fullnameOverride: "jovvix-ui"
+      fullnameOverride: "jovvix-ui-svc"
       host: app.example.com
       path: /
       pathType: Prefix
-  - fullnameOverride: "jovvix-api"
+  - fullnameOverride: "jovvix-api-svc"
     name: api
+    initContainers:
+      - name: wait-for-redis
+        image: busybox:1.37.0
+        command:
+          - sh
+          - -c
+          - >
+            until timeout 3 nc -z jovvix-redis-master 6379;
+            do echo waiting for redis; sleep 5; done;
+            echo redis found
     replicaCount: 1
     image:
       repository: improwised/jovvix-api
@@ -34,7 +44,7 @@ services:
     args: ["./jovvix api || sleep 3600"]
     service:
       enabled: true
-      fullnameOverride: "jovvix-api"
+      fullnameOverride: "jovvix-api-svc"
       type: ClusterIP
       ports:
         name: http
@@ -42,7 +52,7 @@ services:
         targetPort: http
     ingress:
       enabled: true
-      fullnameOverride: "jovvix-api"
+      fullnameOverride: "jovvix-api-svc"
       host: app.example.com
       path: /api
       pathType: Prefix
@@ -53,7 +63,7 @@ services:
           name: jovvix-api
 
 jobs:
-  - name: migration
+  - fullnameOverride: jovvix-migration
     image:
       repository: improwised/jovvix-api
       tag: main-82546e9-1753769203
@@ -66,12 +76,26 @@ jobs:
     command: ["/bin/sh", "-c"]
     args:
       - |
+        echo "Waiting for Postgres to be ready..."
+        until nc -z jovvix-db-postgresql 5432; do
+          echo "Postgres not up yet, retrying in 3s..."
+          sleep 3
+        done
+
+        echo "Postgres is ready, running migrations..."
         until timeout 5 ./jovvix migrate up; do
-          echo "Waiting for Postgres to be ready for migrations..."
+          echo "Postgres is up but there is some other issue, retrying in 3s..."
           sleep 3
         done
         echo "Migrations successful"
-  - name: kratos-migration
+    annotations:
+      # This is what defines this resource as a hook. Without this line, the
+      # job is considered part of the release.
+      # after completing migration job will disappear
+      "helm.sh/hook": post-install,post-upgrade
+      # high priority than kratos-migration so that this finishes first
+      "helm.sh/hook-weight": "-5"
+  - fullnameOverride: jovvix-kratos-migration
     image:
       repository: oryd/kratos
       tag: v1.3.1
@@ -89,17 +113,19 @@ jobs:
           sleep 3
         done
         echo "kratos migrations successful"
+    annotations:
+      # This is what defines this resource as a hook. Without this line, the
+      # job is considered part of the release.
+      # after completing migration job will disappear
+      "helm.sh/hook": post-install,post-upgrade
+      # kept it -4 ao that it can comes after the jovvix migration
+      "helm.sh/hook-weight": "-4"
 
 postgresql:
   fullnameOverride: "jovvix-db-postgresql"
   primary:
     persistence:
       enabled: false
-    initdb:
-      scripts:
-        init-kratos-schema.sql: |
-          CREATE SCHEMA IF NOT EXISTS kratos;
-          GRANT ALL ON SCHEMA kratos TO kratos;
   auth:
     username: jovvix
     database: jovvix

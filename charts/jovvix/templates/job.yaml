@@ -3,7 +3,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  {{- if $.Values.prefixWithReleaseName.enabled }}
+  {{- if .fullnameOverride }}
+  name: "{{ .fullnameOverride }}"
+  {{- else if $.Values.prefixWithReleaseName.enabled }}
   name: "{{ $.Release.Name }}-{{ .name }}"
   {{- else}}
   name: "{{ .name }}"

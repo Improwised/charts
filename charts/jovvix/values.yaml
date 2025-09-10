@@ -46,7 +46,7 @@ autoscaling:
 services:
   # This is for the jovvix-ui pod
   - name: ui
-    fullnameOverride: "jovvix-ui"
+    fullnameOverride: "jovvix-ui-svc"
     replicaCount: 1
     image:
       repository: improwised/jovvix-ui
@@ -67,7 +67,7 @@ services:
       #   memory: 600Mi
     service:
       enabled: true
-      fullnameOverride: "jovvix-ui"
+      fullnameOverride: "jovvix-ui-svc"
       type: ClusterIP
       ports:
         name: http
@@ -77,14 +77,14 @@ services:
     # Ingress for the ui pod
     ingress:
       enabled: true
-      fullnameOverride: "jovvix-ui"
+      fullnameOverride: "jovvix-ui-svc"
       className: nginx
       host: app.example.com
       path: /
       pathType: Prefix
   # This is for the jovvix-api pod
   - name: api
-    fullnameOverride: "jovvix-api"
+    fullnameOverride: "jovvix-api-svc"
     # This init container waits for the redis pod to running, if removed the api pod crashes while redis is not in running state.
     initContainers:
       - name: wait-for-redis
@@ -130,7 +130,7 @@ services:
         protocol: TCP
     service:
       enabled: true
-      fullnameOverride: "jovvix-api"
+      fullnameOverride: "jovvix-api-svc"
       type: ClusterIP
       ports:
         name: http
@@ -146,7 +146,7 @@ services:
     # Ingress for the api pod
     ingress:
       enabled: true
-      fullnameOverride: "jovvix-api"
+      fullnameOverride: "jovvix-api-svc"
       className: nginx
       host: app.example.com
       path: /api
@@ -155,7 +155,7 @@ services:
 # Used to add jobs based on job template
 jobs:
   # runs migraion for the jovvix
-  - name: migration
+  - fullnameOverride: jovvix-migration
     image:
       repository: improwised/jovvix-api
       tag: main-82546e9-1753769203
@@ -182,7 +182,7 @@ jobs:
       "helm.sh/hook-weight": "-5"
       "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
   # runs kratos migrations
-  - name: kratos-migration
+  - fullnameOverride: jovvix-kratos-migration
     image:
       repository: oryd/kratos
       tag: v1.3.1
@@ -332,6 +332,16 @@ redis:
 # kratos configurations
 kratos:
   fullnameOverride: "jovvix-kratos"
+  job:
+    extraInitContainers: |
+      - name: wait-for-jovvix-api-svc
+        image: curlimages/curl:8.15.0
+        command:
+          [
+            "sh",
+            "-c",
+            "until curl -sf --connect-timeout 3 http://jovvix-api-svc:3300/api/healthz; do echo 'Waiting for jovvix-api-svc health endpoint...'; sleep 5; done; echo 'jovvix-api-svc is healthy, proceeding...';"
+          ]
   ingress:
     admin:
       enabled: true
