@@ -71,6 +71,11 @@ serviceTemplate:
     # fsGroup: 1001
     # runAsGroup: 1001
     # runAsUser: 1001
+  containerSecurityContext: {}
+    # readOnlyRootFilesystem: true
+    # capabilities:
+    #   drop: []
+    #   add: []
   dnsConfig: {}
     # nameservers:
     #   - 192.0.2.1 # this is an example
@@ -170,6 +175,11 @@ workerTemplate:
     # fsGroup: 1001
     # runAsGroup: 1001
     # runAsUser: 1001
+  containerSecurityContext: {}
+    # readOnlyRootFilesystem: true
+    # capabilities:
+    #   drop: []
+    #   add: []
   dnsConfig: {}
     # nameservers:
     #   - 192.0.2.1 # this is an example
@@ -267,6 +277,11 @@ cronJobTemplate:
     # runAsUser: 1001
   # successfulJobsHistoryLimit: 1
   # failedJobsHistoryLimit: 1
+  containerSecurityContext: {}
+    # readOnlyRootFilesystem: true
+    # capabilities:
+    #   drop: []
+    #   add: []
 
 cronJobs:
 #   - name: update-status
@@ -313,6 +328,11 @@ jobTemplate:
     # fsGroup: 1001
     # runAsGroup: 1001
     # runAsUser: 1001
+  containerSecurityContext: {}
+    # readOnlyRootFilesystem: true
+    # capabilities:
+    #   drop: []
+    #   add: []
   affinity: {}
   tolerations: []
   volumes: []
