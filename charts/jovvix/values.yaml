@@ -291,6 +291,12 @@ postgresql:
   fullnameOverride: "jovvix-db-postgresql"
   global:
     storageClass: local-path
+    security:
+      allowInsecureImages: true
+    imageRegistry: public.ecr.aws
+  image:
+    repository: bitnami/postgresql
+    tag: 17.5.0-debian-12-r20
   primary:
     persistence:
       enabled: true
@@ -318,6 +324,12 @@ redis:
     existingSecret: jovvix-db
   global:
     storageClass: local-path
+    security:
+      allowInsecureImages: true
+    imageRegistry: public.ecr.aws
+  image:
+    repository: bitnami/redis
+    tag: 8.0.3-debian-12-r1
   master:
     persistence:
       enabled: true
