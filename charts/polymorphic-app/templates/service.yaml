@@ -168,6 +168,21 @@ spec:
               port: {{ .healthcheck.port }}
             initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
             periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
+          {{- else if and (eq $healthType "httpGet") (.healthcheck.probes) }}
+          livenessProbe:
+            httpGet:
+              path: {{ .healthcheck.probes.liveness.path }}
+              port: {{ default .healthcheck.probes.liveness.port .healthcheck.port }}
+            timeoutSeconds: {{ .healthcheck.probes.liveness.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ .healthcheck.probes.liveness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.probes.liveness.periodSeconds | default "20" }}
+          readinessProbe:
+            httpGet:
+              path: {{ .healthcheck.probes.readiness.path }}
+              port: {{ default .healthcheck.probes.readiness.port .healthcheck.port }}
+            timeoutSeconds: {{ .healthcheck.probes.readiness.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ .healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.probes.readiness.periodSeconds | default "20" }}
           {{- end }}
 {{- else }}
 {{- $healthType := $.Values.serviceTemplate.healthcheck.type -}}
@@ -197,6 +212,21 @@ spec:
               port: {{ $.Values.serviceTemplate.healthcheck.port }}
             initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
             periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+          {{- else if and (eq $healthType "httpGet") ($.Values.serviceTemplate.healthcheck.probes) }}
+          livenessProbe:
+            httpGet:
+              path: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.path }}
+              port: {{ default $.Values.serviceTemplate.healthcheck.probes.liveness.port $.Values.serviceTemplate.healthcheck.port }}
+            timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.periodSeconds | default "20" }}
+          readinessProbe:
+            httpGet:
+              path: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.path }}
+              port: {{ default $.Values.serviceTemplate.healthcheck.probes.readiness.port $.Values.serviceTemplate.healthcheck.port }}
+            timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.periodSeconds | default "20" }}
           {{- end }}
 {{- end }}
         {{- end }}
