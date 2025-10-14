@@ -332,6 +332,9 @@
                                                 "integer"
                                             ]
                                         },
+                                        "timeoutSeconds": {
+                                            "type": "integer"
+                                        },
                                         "initialDelaySeconds": {
                                             "type": "integer"
                                         },
@@ -351,6 +354,9 @@
                                                 "string",
                                                 "integer"
                                             ]
+                                        },
+                                        "timeoutSeconds": {
+                                            "type": "integer"
                                         },
                                         "initialDelaySeconds": {
                                             "type": "integer"
@@ -372,6 +378,9 @@
                             ]
                         },
                         "initialDelaySeconds": {
+                            "type": "integer"
+                        },
+                        "timeoutSeconds": {
                             "type": "integer"
                         },
                         "periodSeconds": {
@@ -1240,6 +1249,9 @@
                                                     "integer"
                                                 ]
                                             },
+                                            "timeoutSeconds": {
+                                                "type": "integer"
+                                            },
                                             "initialDelaySeconds": {
                                                 "type": "integer"
                                             },
@@ -1259,6 +1271,9 @@
                                                     "string",
                                                     "integer"
                                                 ]
+                                            },
+                                            "timeoutSeconds": {
+                                                "type": "integer"
                                             },
                                             "initialDelaySeconds": {
                                                 "type": "integer"
@@ -1280,6 +1295,9 @@
                                 ]
                             },
                             "initialDelaySeconds": {
+                                "type": "integer"
+                            },
+                            "timeoutSeconds": {
                                 "type": "integer"
                             },
                             "periodSeconds": {

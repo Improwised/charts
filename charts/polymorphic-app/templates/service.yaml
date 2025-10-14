@@ -147,14 +147,14 @@ spec:
             httpGet:
               path: {{ .healthcheck.path }}
               port: {{ .healthcheck.port }}
-            timeoutSeconds: 7
+            timeoutSeconds: {{ .healthcheck.timeoutSeconds | default "7" }}
             initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
             periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
           readinessProbe:
             httpGet:
               path: {{ .healthcheck.path }}
               port: {{ .healthcheck.port }}
-            timeoutSeconds: 7
+            timeoutSeconds: {{ .healthcheck.timeoutSeconds | default "7" }}
             initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
             periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
           {{- else if and (eq $healthType "tcpSocket") ( .healthcheck.port ) }}
@@ -202,14 +202,14 @@ spec:
             httpGet:
               path: {{ $.Values.serviceTemplate.healthcheck.path }}
               port: {{ $.Values.serviceTemplate.healthcheck.port }}
-            timeoutSeconds: 7
+            timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.timeoutSeconds | default "7" }}
             initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
             periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           readinessProbe:
             httpGet:
               path: {{ $.Values.serviceTemplate.healthcheck.path }}
               port: {{ $.Values.serviceTemplate.healthcheck.port }}
-            timeoutSeconds: 7
+            timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.timeoutSeconds | default "7" }}
             initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
             periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
           {{- else if and (eq $healthType "tcpSocket") ($.Values.serviceTemplate.healthcheck.port) }}
