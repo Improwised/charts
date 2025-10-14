@@ -36,7 +36,8 @@ serviceTemplate:
 
   healthcheck:
     enabled: false
-    type: httpGet # type is common for seperate probe or same probe
+    # type is common for seperate probe or same probe
+    type: httpGet 
     # probes:
     #   liveness:
     #     path: /liveness
