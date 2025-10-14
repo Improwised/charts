@@ -183,6 +183,17 @@ spec:
             timeoutSeconds: {{ .healthcheck.probes.readiness.timeoutSeconds | default "7" }}
             initialDelaySeconds: {{ .healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
             periodSeconds: {{ .healthcheck.probes.readiness.periodSeconds | default "20" }}
+          {{- else if and (eq $healthType "tcpSocket") ( .healthcheck.probes ) }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ default .healthcheck.probes.liveness.port .healthcheck.port  }}
+            initialDelaySeconds: {{ .healthcheck.probes.liveness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.probes.liveness.periodSeconds | default "20" }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ default .healthcheck.probes.readiness.port .healthcheck.port  }}
+            initialDelaySeconds: {{ .healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.probes.readiness.periodSeconds | default "20" }}
           {{- end }}
 {{- else }}
 {{- $healthType := $.Values.serviceTemplate.healthcheck.type -}}
@@ -225,6 +236,17 @@ spec:
               path: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.path }}
               port: {{ default $.Values.serviceTemplate.healthcheck.probes.readiness.port $.Values.serviceTemplate.healthcheck.port }}
             timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.periodSeconds | default "20" }}
+          {{- else if and (eq $healthType "tcpSocket") ($.Values.serviceTemplate.healthcheck.probes) }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ default $.Values.serviceTemplate.healthcheck.probes.liveness.port $.Values.serviceTemplate.healthcheck.port }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.periodSeconds | default "20" }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ default $.Values.serviceTemplate.healthcheck.probes.readiness.port $.Values.serviceTemplate.healthcheck.port }}
             initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
             periodSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.periodSeconds | default "20" }}
           {{- end }}
