@@ -23,12 +23,12 @@ spec:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
         app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
     spec:
-      {{- if $.Values.jobTemplate.imagePullSecrets }}
+      {{- if .imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .imagePullSecrets | indent 8 }}
-      {{- else if .imagePullSecrets }}
+      {{- else if $.Values.jobTemplate.imagePullSecrets }}
       imagePullSecrets:
-{{ toYaml .imagePullSecrets | indent 8 }}
+{{ toYaml $.Values.jobTemplate.imagePullSecrets | indent 8 }}
       {{- else }}
       {{- if $.Values.imagePullSecrets }}
       imagePullSecrets:
@@ -44,6 +44,8 @@ spec:
       {{- end }}
           {{- if .image }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
+          {{- else if $.Values.jobTemplate.image }}
+          image: "{{ $.Values.jobTemplate.image.repository }}:{{ $.Values.jobTemplate.image.tag }}"
           {{- else }}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
           {{- end }}
@@ -68,6 +70,10 @@ spec:
 {{ toYaml $.Values.jobTemplate.envFrom | indent 12 }}
           {{- end }}
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          {{- with .containerSecurityContext | default $.Values.jobTemplate.containerSecurityContext }}
+          securityContext:
+{{ toYaml . | indent 12 }}
+          {{- end }}
         {{- if .command }}
           {{- with .command | default $.Values.jobTemplate.command }}
           command:
