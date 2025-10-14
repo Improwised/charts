@@ -36,11 +36,27 @@ serviceTemplate:
 
   healthcheck:
     enabled: false
+    # type is common for seperate probe or same probe
     type: httpGet
+    # probes:
+    #   liveness:
+    #     path: /liveness
+    #     port: http
+    #     timeoutSeconds: 30
+    #     initialDelaySeconds: 30
+    #     periodSeconds: 30
+    #   readiness:
+    #     path: /readiness
+    #     port: http
+    #     timeoutSeconds: 30
+    #     initialDelaySeconds: 30
+    #     periodSeconds: 30
     # path: /healthz
     # port: http
     # initialDelaySeconds: 30
     # periodSeconds: 30
+    # timeoutSeconds: 7
+
 
   podDisruptionBudget:
     enabled: false
