@@ -25,12 +25,12 @@ spec:
     spec:
       template:
         spec:
-          {{- if $.Values.cronJobTemplate.imagePullSecrets }}
+          {{- if .imagePullSecrets }}
           imagePullSecrets:
 {{ toYaml .imagePullSecrets | indent 12 }}
-          {{- else if .imagePullSecrets }}
+          {{- else if $.Values.cronJobTemplate.imagePullSecrets }}
           imagePullSecrets:
-{{ toYaml .imagePullSecrets | indent 12 }}
+{{ toYaml $.Values.cronJobTemplate.imagePullSecrets | indent 12 }}
           {{- else }}
           {{- if $.Values.imagePullSecrets }}
           imagePullSecrets:
@@ -46,6 +46,8 @@ spec:
           {{- end }}
             {{- if .image }}
             image: "{{ .image.repository }}:{{ .image.tag }}"
+            {{- else if $.Values.cronJobTemplate.image }}
+            image: "{{ $.Values.cronJobTemplate.image.repository }}:{{ $.Values.cronJobTemplate.image.tag }}"
             {{- else }}
             image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
             {{- end }}
@@ -70,6 +72,10 @@ spec:
 {{ toYaml $.Values.cronJobTemplate.envFrom | indent 14 }}
             {{- end }}
             imagePullPolicy: {{ $.Values.image.pullPolicy }}
+            {{- with .containerSecurityContext | default $.Values.CronJobTemplate.containerSecurityContext }}
+            securityContext:
+{{ toYaml . | indent 14 }}
+            {{- end }}
             {{- if .command }}
               {{- with .command | default $.Values.cronJobTemplate.command }}
             command:
