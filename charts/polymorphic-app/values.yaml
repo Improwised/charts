@@ -282,8 +282,6 @@ workers:
 cronJobTemplate:
   name: cronjob
   image:
-    tag:
-    repository:
   suspend: true
   env: []
   envFrom: []
