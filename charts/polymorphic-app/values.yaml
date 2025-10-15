@@ -45,17 +45,20 @@ serviceTemplate:
     #     timeoutSeconds: 30
     #     initialDelaySeconds: 30
     #     periodSeconds: 30
+    #     failureThreshold: 3
     #   readiness:
     #     path: /readiness
     #     port: http
     #     timeoutSeconds: 30
     #     initialDelaySeconds: 30
     #     periodSeconds: 30
+    #     failureThreshold: 3
     # path: /healthz
     # port: http
     # initialDelaySeconds: 30
     # periodSeconds: 30
     # timeoutSeconds: 7
+    # failureThreshold: 3
 
 
   podDisruptionBudget:

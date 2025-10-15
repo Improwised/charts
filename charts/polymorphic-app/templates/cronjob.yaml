@@ -72,7 +72,7 @@ spec:
 {{ toYaml $.Values.cronJobTemplate.envFrom | indent 14 }}
             {{- end }}
             imagePullPolicy: {{ $.Values.image.pullPolicy }}
-            {{- with .containerSecurityContext | default $.Values.CronJobTemplate.containerSecurityContext }}
+            {{- with .containerSecurityContext | default $.Values.cronJobTemplate.containerSecurityContext }}
             securityContext:
 {{ toYaml . | indent 14 }}
             {{- end }}
