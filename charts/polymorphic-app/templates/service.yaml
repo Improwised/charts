@@ -174,6 +174,23 @@ spec:
             initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
             periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
             failureThreshold: {{ .healthcheck.failureThreshold | default "3" }}
+          {{- else if and (eq $healthType "exec") ( .healthcheck.command ) }}
+          livenessProbe:
+            exec:
+              command:
+{{ toYaml .healthcheck.command | indent 14 }}
+            timeoutSeconds: {{ .healthcheck.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
+            failureThreshold: {{ .healthcheck.failureThreshold | default "3" }}
+          readinessProbe:
+            exec:
+              command:
+{{ toYaml .healthcheck.command | indent 14 }}
+            timeoutSeconds: {{ .healthcheck.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ .healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.periodSeconds | default "20" }}
+            failureThreshold: {{ .healthcheck.failureThreshold | default "3" }}
           {{- else if and (eq $healthType "httpGet") (.healthcheck.probes) }}
           livenessProbe:
             httpGet:
@@ -202,6 +219,23 @@ spec:
           readinessProbe:
             tcpSocket:
               port: {{ default .healthcheck.probes.readiness.port .healthcheck.port  }}
+            timeoutSeconds: {{ .healthcheck.probes.readiness.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ .healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.probes.readiness.periodSeconds | default "20" }}
+            failureThreshold: {{ .healthcheck.probes.readiness.failureThreshold | default "3" }}
+          {{- else if and (eq $healthType "exec") ( .healthcheck.probes ) }}
+          livenessProbe:
+            exec:
+              command:
+{{ toYaml .healthcheck.probes.liveness.command | indent 14 }}
+            timeoutSeconds: {{ .healthcheck.probes.liveness.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ .healthcheck.probes.liveness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ .healthcheck.probes.liveness.periodSeconds | default "20" }}
+            failureThreshold: {{ .healthcheck.probes.liveness.failureThreshold | default "3" }}
+          readinessProbe:
+            exec:
+              command:
+{{ toYaml .healthcheck.probes.readiness.command | indent 14 }}
             timeoutSeconds: {{ .healthcheck.probes.readiness.timeoutSeconds | default "7" }}
             initialDelaySeconds: {{ .healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
             periodSeconds: {{ .healthcheck.probes.readiness.periodSeconds | default "20" }}
@@ -241,6 +275,23 @@ spec:
             initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
             periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
             failureThreshold: {{ $.Values.serviceTemplate.healthcheck.failureThreshold | default "3" }}
+          {{- else if and (eq $healthType "exec") ($.Values.serviceTemplate.healthcheck.command) }}
+          livenessProbe:
+            exec:
+              command:
+{{ toYaml $.Values.serviceTemplate.healthcheck.command | indent 14 }}
+            timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+            failureThreshold: {{ $.Values.serviceTemplate.healthcheck.failureThreshold | default "3" }}
+          readinessProbe:
+            exec:
+              command:
+{{ toYaml $.Values.serviceTemplate.healthcheck.command | indent 14 }}
+            timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.periodSeconds | default "20" }}
+            failureThreshold: {{ $.Values.serviceTemplate.healthcheck.failureThreshold | default "3" }}
           {{- else if and (eq $healthType "httpGet") ($.Values.serviceTemplate.healthcheck.probes) }}
           livenessProbe:
             httpGet:
@@ -269,6 +320,23 @@ spec:
           readinessProbe:
             tcpSocket:
               port: {{ default $.Values.serviceTemplate.healthcheck.probes.readiness.port $.Values.serviceTemplate.healthcheck.port }}
+            timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.periodSeconds | default "20" }}
+            failureThreshold: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.failureThreshold | default "3" }}
+          {{- else if and (eq $healthType "exec") ($.Values.serviceTemplate.healthcheck.probes) }}
+          livenessProbe:
+            exec:
+              command:
+{{ toYaml $.Values.serviceTemplate.healthcheck.probes.liveness.command | indent 14 }}
+            timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.timeoutSeconds | default "7" }}
+            initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.initialDelaySeconds | default "20" }}
+            periodSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.periodSeconds | default "20" }}
+            failureThreshold: {{ $.Values.serviceTemplate.healthcheck.probes.liveness.failureThreshold | default "3" }}
+          readinessProbe:
+            exec:
+              command:
+{{ toYaml $.Values.serviceTemplate.healthcheck.probes.readiness.command | indent 14 }}
             timeoutSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.timeoutSeconds | default "7" }}
             initialDelaySeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.initialDelaySeconds | default "20" }}
             periodSeconds: {{ $.Values.serviceTemplate.healthcheck.probes.readiness.periodSeconds | default "20" }}

@@ -36,12 +36,37 @@ serviceTemplate:
 
   healthcheck:
     enabled: false
-    # type is common for seperate probe or same probe
+    ## type is common for SHARED PROBE (OPTION 1) or SEPARATE PROBES (OPTION 2)
+    ## For type you can give httpGet, tcpSocket, exec
     type: httpGet
+    # # --- OPTION 1: SHARED PROBE (Same logic for Liveness & Readiness) ---
+
+    #  # FOR httpGet
+    # path: /healthz
+    # port: http
+
+    #  # FOR TCP:
+    # port: 5432
+
+    #  # FOR EXEC:
+    # command:
+    #   - /bin/sh
+    #   - -c
+    #   - cat /tmp/healthy
+
+    # # Common timings for Shared Probe
+    # initialDelaySeconds: 30
+    # periodSeconds: 30
+    # timeoutSeconds: 7
+    # failureThreshold: 3
+
+    ##--- OPTION 2: SEPARATE PROBES (Distinct logic) ---
     # probes:
     #   liveness:
+    #     # Select keys based on type (path & port for http, only port for tcpSocket, only command for exec)
     #     path: /liveness
     #     port: http
+    #     # command: ["/bin/cat", "/tmp/live"]
     #     timeoutSeconds: 30
     #     initialDelaySeconds: 30
     #     periodSeconds: 30
@@ -49,17 +74,11 @@ serviceTemplate:
     #   readiness:
     #     path: /readiness
     #     port: http
+    #     # command: ["/bin/cat", "/tmp/ready"]
     #     timeoutSeconds: 30
     #     initialDelaySeconds: 30
     #     periodSeconds: 30
     #     failureThreshold: 3
-    # path: /healthz
-    # port: http
-    # initialDelaySeconds: 30
-    # periodSeconds: 30
-    # timeoutSeconds: 7
-    # failureThreshold: 3
-
 
   podDisruptionBudget:
     enabled: false
@@ -72,9 +91,9 @@ serviceTemplate:
   env: []
   envFrom: []
   ports:
-  - name: http
-    containerPort: 80
-    protocol: TCP
+    - name: http
+      containerPort: 80
+      protocol: TCP
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -119,10 +138,10 @@ serviceTemplate:
     # className: nginx
     type: ClusterIP
     ports:
-    - name: http
-      port: 80
-      targetPort: http
-      protocol: TCP
+      - name: http
+        port: 80
+        targetPort: http
+        protocol: TCP
     annotations: {}
 
   ingress:
@@ -138,7 +157,7 @@ serviceTemplate:
     #    hosts:
     #      - chart-example.local
 
-# Enables Gateway API HTTPRoute as a replacement for traditional Ingress resources
+  # Enables Gateway API HTTPRoute as a replacement for traditional Ingress resources
   httpRoute:
     enabled: false
     annotations: {}
@@ -221,63 +240,63 @@ workers:
 #######################################
 # pulsar-billing-service
 #######################################
-  # - name: pulsar-billing-service
-  #   image:
-  #     repository:
-  #     tag:
-  # #   args: ["-template", "/var/www/.env.staging:/var/www/.env", "-poll", "php", "artisan", "queue:work"]
-  #   env: []
-  #   envFrom: []
-  #     # - name: zxcv
-  #     #   value: uiop
-  #   # certificates & keys will be mounted as a volume from secret
-  #   autoscaling: false
-  #   minReplicaCount: 1
-  #   maxReplicaCount: 0
-  #   # envSecrets:
-  #   #   name: uiop
-  #   #   name: zxcv
-  #   #   name: hjkl
-  #   volumeMounts: []
-  #   # - name: vol1
-  #   #   mountPath: /etc/vol1
-  #   # - name: vol2
-  #   #   mountPath: /etc/vol2
-  #   # - name: vol3
-  #   #   mountPath: /etc/vol3
+# - name: pulsar-billing-service
+#   image:
+#     repository:
+#     tag:
+# #   args: ["-template", "/var/www/.env.staging:/var/www/.env", "-poll", "php", "artisan", "queue:work"]
+#   env: []
+#   envFrom: []
+#     # - name: zxcv
+#     #   value: uiop
+#   # certificates & keys will be mounted as a volume from secret
+#   autoscaling: false
+#   minReplicaCount: 1
+#   maxReplicaCount: 0
+#   # envSecrets:
+#   #   name: uiop
+#   #   name: zxcv
+#   #   name: hjkl
+#   volumeMounts: []
+#   # - name: vol1
+#   #   mountPath: /etc/vol1
+#   # - name: vol2
+#   #   mountPath: /etc/vol2
+#   # - name: vol3
+#   #   mountPath: /etc/vol3
 
-  #   volumes: []
-  #     # - name: vol1
-  #     #   secret:
-  #     #     secretName: secret1
-  #     # - name: vol2
-  #     #   secret:
-  #     #     secretName: secret2
-  #     # - name: vol3
-  #     #   secret:
-  #     #     secretName: secret3
+#   volumes: []
+#     # - name: vol1
+#     #   secret:
+#     #     secretName: secret1
+#     # - name: vol2
+#     #   secret:
+#     #     secretName: secret2
+#     # - name: vol3
+#     #   secret:
+#     #     secretName: secret3
 
-    # probe: []
-      # aliveCommand: ["/app/worker", "alive"]
-      # timeoutSeconds: 10
+# probe: []
+# aliveCommand: ["/app/worker", "alive"]
+# timeoutSeconds: 10
 
-  #   resources:
-  # #     # We usually recommend not to specify default resources and to leave this as a conscious
-  # #     # choice for the user. This also increases chances charts run on environments with little
-  # #     # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # #     # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  #     limits:
-  #       cpu: 100m
-  #       memory: 128Mi
-  #     requests:
-  #       cpu: 100m
-  #       memory: 128Mi
+#   resources:
+# #     # We usually recommend not to specify default resources and to leave this as a conscious
+# #     # choice for the user. This also increases chances charts run on environments with little
+# #     # resources, such as Minikube. If you do want to specify resources, uncomment the following
+# #     # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+#     limits:
+#       cpu: 100m
+#       memory: 128Mi
+#     requests:
+#       cpu: 100m
+#       memory: 128Mi
 
-  # #   nodeSelector: {}
+# #   nodeSelector: {}
 
-  # #   tolerations: []
+# #   tolerations: []
 
-  # #   affinity: {}
+# #   affinity: {}
 
 cronJobTemplate:
   name: cronjob
@@ -362,5 +381,5 @@ jobs:
   #   # To keep the container running
   #   command: [ "/bin/sh", "-c", "--" ]
   #   args: [ "while true; do sleep 30; done;" ]
-    # command: ["migrate"]
-    # args: ["migrate", "-database", "${MIGRATION_URL}", "-path", "/app/db_migrations", "up"]
+  # command: ["migrate"]
+  # args: ["migrate", "-database", "${MIGRATION_URL}", "-path", "/app/db_migrations", "up"]
