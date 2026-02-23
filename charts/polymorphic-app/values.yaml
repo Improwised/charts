@@ -60,7 +60,7 @@ serviceTemplate:
     # timeoutSeconds: 7
     # failureThreshold: 3
 
-    ##--- OPTION 2: SEPARATE PROBES (Distinct logic) ---
+    ## --- OPTION 2: SEPARATE PROBES (Distinct logic) ---
     # probes:
     #   liveness:
     #     # Select keys based on type (path & port for http, only port for tcpSocket, only command for exec)
