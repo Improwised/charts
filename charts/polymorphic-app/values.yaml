@@ -45,10 +45,10 @@ serviceTemplate:
     # path: /healthz
     # port: http
 
-    #  # FOR TCP:
+    #  # FOR tcp:
     # port: 5432
 
-    #  # FOR EXEC:
+    #  # FOR exec:
     # command:
     #   - /bin/sh
     #   - -c
@@ -134,7 +134,7 @@ serviceTemplate:
   volumes: []
 
   service:
-    enabled: true
+    enabled: false
     # className: nginx
     type: ClusterIP
     ports:
