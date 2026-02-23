@@ -134,7 +134,7 @@ serviceTemplate:
   volumes: []
 
   service:
-    enabled: false
+    enabled: true
     # className: nginx
     type: ClusterIP
     ports:
