@@ -66,15 +66,16 @@ serviceTemplate:
     #     # Select keys based on type (path & port for http, only port for tcpSocket, only command for exec)
     #     path: /liveness
     #     port: http
-    #     # command: ["/bin/cat", "/tmp/live"]
+    #     command: ["/bin/cat", "/tmp/live"]
     #     timeoutSeconds: 30
     #     initialDelaySeconds: 30
     #     periodSeconds: 30
     #     failureThreshold: 3
     #   readiness:
+    #     # Select keys based on type (path & port for http, only port for tcpSocket, only command for exec)
     #     path: /readiness
     #     port: http
-    #     # command: ["/bin/cat", "/tmp/ready"]
+    #     command: ["/bin/cat", "/tmp/ready"]
     #     timeoutSeconds: 30
     #     initialDelaySeconds: 30
     #     periodSeconds: 30
