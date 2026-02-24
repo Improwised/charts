@@ -314,7 +314,8 @@
                             "type": "string",
                             "enum": [
                                 "httpGet",
-                                "tcpSocket"
+                                "tcpSocket",
+                                "exec"
                             ]
                         },
                         "probes": {
@@ -324,7 +325,7 @@
                                     "type": "object",
                                     "properties": {
                                         "path": {
-                                        "type": "string"
+                                            "type": "string"
                                         },
                                         "port": {
                                             "type": [
@@ -350,7 +351,7 @@
                                     "type": "object",
                                     "properties": {
                                         "path": {
-                                        "type": "string"
+                                            "type": "string"
                                         },
                                         "port": {
                                             "type": [
@@ -875,7 +876,7 @@
                         },
                         "readOnlyRootFilesystem": {
                             "type": "boolean"
-                        }, 
+                        },
                         "capabilities": {
                             "type": "object",
                             "properties": {
@@ -896,7 +897,10 @@
                         },
                         "procMount": {
                             "type": "string",
-                            "enum": ["Default", "Unmasked"]
+                            "enum": [
+                                "Default",
+                                "Unmasked"
+                            ]
                         },
                         "seLinuxOptions": {
                             "type": "object",
@@ -1240,7 +1244,8 @@
                                 "type": "string",
                                 "enum": [
                                     "httpGet",
-                                    "tcpSocket"
+                                    "tcpSocket",
+                                    "exec"
                                 ]
                             },
                             "probes": {
@@ -1250,7 +1255,7 @@
                                         "type": "object",
                                         "properties": {
                                             "path": {
-                                            "type": "string"
+                                                "type": "string"
                                             },
                                             "port": {
                                                 "type": [
@@ -1276,7 +1281,7 @@
                                         "type": "object",
                                         "properties": {
                                             "path": {
-                                            "type": "string"
+                                                "type": "string"
                                             },
                                             "port": {
                                                 "type": [
@@ -1518,7 +1523,7 @@
                             },
                             "readOnlyRootFilesystem": {
                                 "type": "boolean"
-                            }, 
+                            },
                             "capabilities": {
                                 "type": "object",
                                 "properties": {
@@ -1539,7 +1544,10 @@
                             },
                             "procMount": {
                                 "type": "string",
-                                "enum": ["Default", "Unmasked"]
+                                "enum": [
+                                    "Default",
+                                    "Unmasked"
+                                ]
                             },
                             "seLinuxOptions": {
                                 "type": "object",
@@ -2317,7 +2325,7 @@
                         },
                         "readOnlyRootFilesystem": {
                             "type": "boolean"
-                        }, 
+                        },
                         "capabilities": {
                             "type": "object",
                             "properties": {
@@ -2338,7 +2346,10 @@
                         },
                         "procMount": {
                             "type": "string",
-                            "enum": ["Default", "Unmasked"]
+                            "enum": [
+                                "Default",
+                                "Unmasked"
+                            ]
                         },
                         "seLinuxOptions": {
                             "type": "object",
@@ -2828,7 +2839,7 @@
                             },
                             "readOnlyRootFilesystem": {
                                 "type": "boolean"
-                            }, 
+                            },
                             "capabilities": {
                                 "type": "object",
                                 "properties": {
@@ -2849,7 +2860,10 @@
                             },
                             "procMount": {
                                 "type": "string",
-                                "enum": ["Default", "Unmasked"]
+                                "enum": [
+                                    "Default",
+                                    "Unmasked"
+                                ]
                             },
                             "seLinuxOptions": {
                                 "type": "object",
@@ -3325,7 +3339,7 @@
                         },
                         "readOnlyRootFilesystem": {
                             "type": "boolean"
-                        }, 
+                        },
                         "capabilities": {
                             "type": "object",
                             "properties": {
@@ -3346,7 +3360,10 @@
                         },
                         "procMount": {
                             "type": "string",
-                            "enum": ["Default", "Unmasked"]
+                            "enum": [
+                                "Default",
+                                "Unmasked"
+                            ]
                         },
                         "seLinuxOptions": {
                             "type": "object",
@@ -3733,7 +3750,7 @@
                             },
                             "readOnlyRootFilesystem": {
                                 "type": "boolean"
-                            }, 
+                            },
                             "capabilities": {
                                 "type": "object",
                                 "properties": {
@@ -3754,7 +3771,10 @@
                             },
                             "procMount": {
                                 "type": "string",
-                                "enum": ["Default", "Unmasked"]
+                                "enum": [
+                                    "Default",
+                                    "Unmasked"
+                                ]
                             },
                             "seLinuxOptions": {
                                 "type": "object",
@@ -4137,7 +4157,7 @@
                         },
                         "readOnlyRootFilesystem": {
                             "type": "boolean"
-                        }, 
+                        },
                         "capabilities": {
                             "type": "object",
                             "properties": {
@@ -4158,7 +4178,10 @@
                         },
                         "procMount": {
                             "type": "string",
-                            "enum": ["Default", "Unmasked"]
+                            "enum": [
+                                "Default",
+                                "Unmasked"
+                            ]
                         },
                         "seLinuxOptions": {
                             "type": "object",
@@ -4510,7 +4533,7 @@
                             },
                             "readOnlyRootFilesystem": {
                                 "type": "boolean"
-                            }, 
+                            },
                             "capabilities": {
                                 "type": "object",
                                 "properties": {
@@ -4531,7 +4554,10 @@
                             },
                             "procMount": {
                                 "type": "string",
-                                "enum": ["Default", "Unmasked"]
+                                "enum": [
+                                    "Default",
+                                    "Unmasked"
+                                ]
                             },
                             "seLinuxOptions": {
                                 "type": "object",

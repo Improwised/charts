@@ -2,7 +2,7 @@ apiVersion: v2
 name: polymorphic-app
 description: A Helm chart for deploying any custom applications, specifically polymorphic applications.
 maintainers:
-- name: improwised
+  - name: improwised
 type: application
-version: 2.5.2
+version: 2.6.0
 appVersion: 1.0.0
