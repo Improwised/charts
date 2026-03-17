@@ -354,8 +354,8 @@ cronJobs:
 jobTemplate:
   name: job
   image:
-    repository:
-    tag:
+    # repository:
+    # tag:
   env: []
   envFrom: []
   command:
