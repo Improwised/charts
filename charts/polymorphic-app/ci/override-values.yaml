@@ -1,25 +1,54 @@
-services:
-- name: demo
-  image:
-    repository: nginx
-    tag: latest
+serviceTemplate:
   healthcheck:
-    enabled: false
-  volumeMounts:
-    - name: data
-      mountPath: /data
-  type: StatefulSet
-  args: []
-  env: []
-  envFrom: []
-  nodeSelector: {}
-  tolerations: []
-  volumeClaimTemplates:
-  - metadata:
-      name: data
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      # storageClassName: ""
-      resources:
-        requests:
-          storage: 1Gi
+    enabled: true
+    type: httpGet
+    port: 80
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 5
+services:
+  - name: demo-1
+    image:
+      repository: nginx
+      tag: "latest"
+    ports:
+      - name: http
+        containerPort: 80
+    service:
+      ports:
+        - name: http
+          port: 80
+          targetPort: http
+  - name: demo-2
+    type: StatefulSet
+    image:
+      repository: nginx
+      tag: latest
+    healthcheck:
+      enabled: true
+      type: tcpSocket
+      port: 80
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 5
+    volumeMounts:
+      - name: data
+        mountPath: /data
+    volumeClaimTemplates:
+      - metadata:
+          name: data
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 1Gi
+  - name: demo-3
+    image:
+      repository: nginx
+      tag: latest
+    healthcheck:
+      enabled: true
+      type: exec
+      command:
+        - cat
+        - /usr/share/nginx/html/index.html

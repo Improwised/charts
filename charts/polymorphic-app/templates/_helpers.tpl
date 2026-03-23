@@ -188,7 +188,7 @@ Core probe configuration
 {{- $health := .health -}}
 {{- $probe := .probe -}}
 {{- $healthType := $health.type -}}
-{{- if eq $healthType " " -}}
+{{- if eq $healthType "httpGet" -}}
 httpGet:
   path: {{ if $probe }}{{ $probe.path }}{{ else }}{{ $health.path }}{{ end }}
   port: {{ if $probe }}{{ default $probe.port $health.port }}{{ else }}{{ $health.port }}{{ end }}
