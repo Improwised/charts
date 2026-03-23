@@ -43,20 +43,6 @@ services:
           resources:
             requests:
               storage: 1Gi
-  - name: demo-6
-    image:
-      repository: nginx
-      tag: "latest"
-    ports:
-      - name: http
-        containerPort: 80
-    healthcheck:
-      enabled: true
-      type: tcpSocket
-      liveness:
-        port: 80
-      rediness:
-        port: 80
   - name: demo-3
     image:
       repository: nginx
@@ -83,12 +69,12 @@ services:
           - /usr/share/nginx/html/index.html
         initialDelaySeconds: 5
         periodSeconds: 5
-      rediness:
+      readiness:
         command:
           - cat
           - /usr/share/nginx/html/50x.html
 
-  - name: demo-7
+  - name: demo-5
     image:
       repository: nginx
       tag: "latest"
@@ -98,21 +84,21 @@ services:
     healthcheck:
       enabled: true
       type: httpGet
+      path: /
+      port: 80
       liveness:
-        path: /healthz
-        port: 8080
+        port: 80
         initialDelaySeconds: 5
         periodSeconds: 5
         failureThreshold: 5
         timeoutSeconds: 5
-      rediness:
-        path: /ready
-        port: 8080
+        path: /live
+      readiness:
         initialDelaySeconds: 10
         periodSeconds: 10
         failureThreshold: 10
         timeoutSeconds: 10
-  - name: demo-8
+  - name: demo-6
     image:
       repository: nginx
       tag: "latest"
@@ -121,3 +107,13 @@ services:
       type: httpGet
       path: /
       port: 80
+  - name: demo-7
+    image:
+      repository: nginx
+      tag: "latest"
+    healthcheck:
+      enabled: true
+      type: httpGet
+      liveness:
+        path: /live
+        port: 80

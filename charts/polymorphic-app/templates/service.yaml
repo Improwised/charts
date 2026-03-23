@@ -139,8 +139,9 @@ spec:
           {{- if $.Values.serviceTemplate.volumeMounts }}
 {{ toYaml $.Values.serviceTemplate.volumeMounts | indent 10 }}
           {{- end }}
-        {{- if or ($.Values.serviceTemplate.healthcheck.enabled) (.healthcheck.enabled) }}
-          {{- include "polymorphic-app.healthchecks" (.healthcheck | default $.Values.serviceTemplate.healthcheck) | nindent 10 }}
+        {{- $health := .healthcheck | default $.Values.serviceTemplate.healthcheck -}}
+        {{- if and $health (ne $health.enabled false) }}
+          {{- include "polymorphic-app.healthchecks" $health | nindent 10 }}
         {{- end }}
       {{- with .dnsConfig | default $.Values.workerTemplate.dnsConfig }}
       dnsConfig:

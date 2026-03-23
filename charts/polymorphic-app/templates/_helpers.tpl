@@ -192,11 +192,11 @@ Core probe configuration
   {{- $type := $health.type | default "httpGet" -}}
   {{- if eq $type "httpGet" -}}
 httpGet:
-  path: {{ $cfg.path | default $health.path | default "/" }}
-  port: {{ $cfg.port | default $health.port | default 80 }}
+  path: {{ $cfg.path | default $health.path }}
+  port: {{ $cfg.port | default $health.port }}
   {{- else if eq $type "tcpSocket" -}}
 tcpSocket:
-  port: {{ $cfg.port | default $health.port | default 80 }}
+  port: {{ $cfg.port | default $health.port }}
   {{- else if eq $type "exec" -}}
 exec:
   command: {{ toYaml ($cfg.command | default $health.command) | nindent 4 }}
@@ -213,19 +213,24 @@ Liveness and readiness probes
 */}}
 {{- define "polymorphic-app.healthchecks" -}}
 {{- $health := . -}}
-{{- if and $health $health.enabled -}}
-  {{- $liveness := $health.liveness | default (index ($health.probes | default dict) "liveness") -}}
-  {{- $readiness := $health.readiness | default $health.rediness | default (index ($health.probes | default dict) "readiness") -}}
+{{- if $health -}}
+  {{- $p := $health.probes | default dict -}}
+  {{- $liveness := $health.liveness | default $p.liveness -}}
+  {{- $readiness := $health.readiness | default $p.readiness -}}
   {{- if or $liveness $readiness -}}
+    {{- if $liveness }}
 livenessProbe:
-{{ include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $liveness) | nindent 2 }}
+{{- include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $liveness) | nindent 2 }}
+    {{- end }}
+    {{- if $readiness }}
 readinessProbe:
-{{ include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $readiness) | nindent 2 }}
+{{- include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $readiness) | nindent 2 }}
+    {{- end }}
   {{- else if or $health.path $health.port $health.command -}}
-livenessProbe:
-{{ include "polymorphic-app.probe-core" (dict "healthcheck" $health) | nindent 2 }}
-readinessProbe:
-{{ include "polymorphic-app.probe-core" (dict "healthcheck" $health) | nindent 2 }}
+    {{- range $type := list "liveness" "readiness" }}
+{{ $type }}Probe:
+{{- include "polymorphic-app.probe-core" (dict "healthcheck" $health) | nindent 2 }}
+    {{- end }}
   {{- end -}}
 {{- end -}}
 {{- end -}}
