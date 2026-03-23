@@ -180,3 +180,51 @@ Return the appropriate apiVersion for cronjob.
 {{- print "batch/v1" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Core probe configuration
+*/}}
+{{- define "polymorphic-app.probe-core" -}}
+{{- $health := .health -}}
+{{- $probe := .probe -}}
+{{- $healthType := $health.type -}}
+{{- if eq $healthType " " -}}
+httpGet:
+  path: {{ if $probe }}{{ $probe.path }}{{ else }}{{ $health.path }}{{ end }}
+  port: {{ if $probe }}{{ default $probe.port $health.port }}{{ else }}{{ $health.port }}{{ end }}
+{{- else if eq $healthType "tcpSocket" -}}
+tcpSocket:
+  port: {{ if $probe }}{{ default $probe.port $health.port }}{{ else }}{{ $health.port }}{{ end }}
+{{- else if eq $healthType "exec" -}}
+exec:
+  command:
+{{- if $probe }}
+{{ toYaml $probe.command | indent 4 }}
+{{- else }}
+{{ toYaml $health.command | indent 4 }}
+{{- end }}
+{{- end }}
+timeoutSeconds: {{ if $probe }}{{ $probe.timeoutSeconds | default "7" }}{{ else }}{{ $health.timeoutSeconds | default "7" }}{{ end }}
+initialDelaySeconds: {{ if $probe }}{{ $probe.initialDelaySeconds | default "20" }}{{ else }}{{ $health.initialDelaySeconds | default "20" }}{{ end }}
+periodSeconds: {{ if $probe }}{{ $probe.periodSeconds | default "20" }}{{ else }}{{ $health.periodSeconds | default "20" }}{{ end }}
+failureThreshold: {{ if $probe }}{{ $probe.failureThreshold | default "3" }}{{ else }}{{ $health.failureThreshold | default "3" }}{{ end }}
+{{- end -}}
+
+{{/*
+Liveness and readiness probes
+*/}}
+{{- define "polymorphic-app.healthchecks" -}}
+{{- $health := . -}}
+{{- $healthType := $health.type -}}
+{{- if or (and (eq $healthType "httpGet") ($health.path)) (and (eq $healthType "tcpSocket") ($health.port)) (and (eq $healthType "exec") ($health.command)) -}}
+livenessProbe:
+{{- include "polymorphic-app.probe-core" (dict "health" $health) | nindent 2 }}
+readinessProbe:
+{{- include "polymorphic-app.probe-core" (dict "health" $health) | nindent 2 }}
+{{- else if $health.probes -}}
+livenessProbe:
+{{- include "polymorphic-app.probe-core" (dict "health" $health "probe" $health.probes.liveness) | nindent 2 }}
+readinessProbe:
+{{- include "polymorphic-app.probe-core" (dict "health" $health "probe" $health.probes.readiness) | nindent 2 }}
+{{- end }}
+{{- end -}}
