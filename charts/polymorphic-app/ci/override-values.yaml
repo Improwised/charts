@@ -31,6 +31,7 @@ services:
       initialDelaySeconds: 10
       periodSeconds: 5
       timeoutSeconds: 5
+      failureThreshold: 3
     volumeMounts:
       - name: data
         mountPath: /data
@@ -42,6 +43,20 @@ services:
           resources:
             requests:
               storage: 1Gi
+  - name: demo-6
+    image:
+      repository: nginx
+      tag: "latest"
+    ports:
+      - name: http
+        containerPort: 80
+    healthcheck:
+      enabled: true
+      type: tcpSocket
+      liveness:
+        port: 80
+      rediness:
+        port: 80
   - name: demo-3
     image:
       repository: nginx
@@ -52,3 +67,57 @@ services:
       command:
         - cat
         - /usr/share/nginx/html/index.html
+  - name: demo-4
+    image:
+      repository: nginx
+      tag: "latest"
+    ports:
+      - name: http
+        containerPort: 80
+    healthcheck:
+      enabled: true
+      type: exec
+      liveness:
+        command:
+          - cat
+          - /usr/share/nginx/html/index.html
+        initialDelaySeconds: 5
+        periodSeconds: 5
+      rediness:
+        command:
+          - cat
+          - /usr/share/nginx/html/50x.html
+
+  - name: demo-7
+    image:
+      repository: nginx
+      tag: "latest"
+    ports:
+      - name: http
+        containerPort: 80
+    healthcheck:
+      enabled: true
+      type: httpGet
+      liveness:
+        path: /healthz
+        port: 8080
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        failureThreshold: 5
+        timeoutSeconds: 5
+      rediness:
+        path: /ready
+        port: 8080
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        failureThreshold: 10
+        timeoutSeconds: 10
+  - name: demo-8
+    image:
+      repository: nginx
+      tag: "latest"
+    healthcheck:
+      enabled: false
+      type: httpGet
+      path: /
+      port: 80

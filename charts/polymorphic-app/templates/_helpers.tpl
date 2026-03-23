@@ -185,29 +185,27 @@ Return the appropriate apiVersion for cronjob.
 Core probe configuration
 */}}
 {{- define "polymorphic-app.probe-core" -}}
-{{- $health := .health -}}
+{{- $health := .healthcheck -}}
 {{- $probe := .probe -}}
-{{- $healthType := $health.type -}}
-{{- if eq $healthType "httpGet" -}}
+{{- if $health -}}
+  {{- $cfg := $probe | default $health -}}
+  {{- $type := $health.type | default "httpGet" -}}
+  {{- if eq $type "httpGet" -}}
 httpGet:
-  path: {{ if $probe }}{{ $probe.path }}{{ else }}{{ $health.path }}{{ end }}
-  port: {{ if $probe }}{{ default $probe.port $health.port }}{{ else }}{{ $health.port }}{{ end }}
-{{- else if eq $healthType "tcpSocket" -}}
+  path: {{ $cfg.path | default $health.path | default "/" }}
+  port: {{ $cfg.port | default $health.port | default 80 }}
+  {{- else if eq $type "tcpSocket" -}}
 tcpSocket:
-  port: {{ if $probe }}{{ default $probe.port $health.port }}{{ else }}{{ $health.port }}{{ end }}
-{{- else if eq $healthType "exec" -}}
+  port: {{ $cfg.port | default $health.port | default 80 }}
+  {{- else if eq $type "exec" -}}
 exec:
-  command:
-{{- if $probe }}
-{{ toYaml $probe.command | indent 4 }}
-{{- else }}
-{{ toYaml $health.command | indent 4 }}
-{{- end }}
-{{- end }}
-timeoutSeconds: {{ if $probe }}{{ $probe.timeoutSeconds | default "7" }}{{ else }}{{ $health.timeoutSeconds | default "7" }}{{ end }}
-initialDelaySeconds: {{ if $probe }}{{ $probe.initialDelaySeconds | default "20" }}{{ else }}{{ $health.initialDelaySeconds | default "20" }}{{ end }}
-periodSeconds: {{ if $probe }}{{ $probe.periodSeconds | default "20" }}{{ else }}{{ $health.periodSeconds | default "20" }}{{ end }}
-failureThreshold: {{ if $probe }}{{ $probe.failureThreshold | default "3" }}{{ else }}{{ $health.failureThreshold | default "3" }}{{ end }}
+  command: {{ toYaml ($cfg.command | default $health.command) | nindent 4 }}
+  {{- end }}
+timeoutSeconds: {{ $cfg.timeoutSeconds | default $health.timeoutSeconds | default 7 }}
+initialDelaySeconds: {{ $cfg.initialDelaySeconds | default $health.initialDelaySeconds | default 20 }}
+periodSeconds: {{ $cfg.periodSeconds | default $health.periodSeconds | default 20 }}
+failureThreshold: {{ $cfg.failureThreshold | default $health.failureThreshold | default 3 }}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -215,16 +213,19 @@ Liveness and readiness probes
 */}}
 {{- define "polymorphic-app.healthchecks" -}}
 {{- $health := . -}}
-{{- $healthType := $health.type -}}
-{{- if or (and (eq $healthType "httpGet") ($health.path)) (and (eq $healthType "tcpSocket") ($health.port)) (and (eq $healthType "exec") ($health.command)) -}}
+{{- if and $health $health.enabled -}}
+  {{- $liveness := $health.liveness | default (index ($health.probes | default dict) "liveness") -}}
+  {{- $readiness := $health.readiness | default $health.rediness | default (index ($health.probes | default dict) "readiness") -}}
+  {{- if or $liveness $readiness -}}
 livenessProbe:
-{{- include "polymorphic-app.probe-core" (dict "health" $health) | nindent 2 }}
+{{ include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $liveness) | nindent 2 }}
 readinessProbe:
-{{- include "polymorphic-app.probe-core" (dict "health" $health) | nindent 2 }}
-{{- else if $health.probes -}}
+{{ include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $readiness) | nindent 2 }}
+  {{- else if or $health.path $health.port $health.command -}}
 livenessProbe:
-{{- include "polymorphic-app.probe-core" (dict "health" $health "probe" $health.probes.liveness) | nindent 2 }}
+{{ include "polymorphic-app.probe-core" (dict "healthcheck" $health) | nindent 2 }}
 readinessProbe:
-{{- include "polymorphic-app.probe-core" (dict "health" $health "probe" $health.probes.readiness) | nindent 2 }}
-{{- end }}
+{{ include "polymorphic-app.probe-core" (dict "healthcheck" $health) | nindent 2 }}
+  {{- end -}}
+{{- end -}}
 {{- end -}}
