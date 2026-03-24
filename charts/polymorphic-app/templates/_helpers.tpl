@@ -180,3 +180,57 @@ Return the appropriate apiVersion for cronjob.
 {{- print "batch/v1" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Core probe configuration
+*/}}
+{{- define "polymorphic-app.probe-core" -}}
+{{- $health := .healthcheck -}}
+{{- $probe := .probe -}}
+{{- if $health -}}
+  {{- $cfg := $probe | default $health -}}
+  {{- $type := $health.type | default "httpGet" -}}
+  {{- if eq $type "httpGet" -}}
+httpGet:
+  path: {{ $cfg.path | default $health.path }}
+  port: {{ $cfg.port | default $health.port }}
+  {{- else if eq $type "tcpSocket" -}}
+tcpSocket:
+  port: {{ $cfg.port | default $health.port }}
+  {{- else if eq $type "exec" -}}
+exec:
+  command: {{ toYaml ($cfg.command | default $health.command) | nindent 4 }}
+  {{- end }}
+timeoutSeconds: {{ $cfg.timeoutSeconds | default $health.timeoutSeconds | default 7 }}
+initialDelaySeconds: {{ $cfg.initialDelaySeconds | default $health.initialDelaySeconds | default 20 }}
+periodSeconds: {{ $cfg.periodSeconds | default $health.periodSeconds | default 20 }}
+failureThreshold: {{ $cfg.failureThreshold | default $health.failureThreshold | default 3 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Liveness and readiness probes
+*/}}
+{{- define "polymorphic-app.healthchecks" -}}
+{{- $health := . -}}
+{{- if $health -}}
+  {{- $p := $health.probes | default dict -}}
+  {{- $liveness := $health.liveness | default $p.liveness -}}
+  {{- $readiness := $health.readiness | default $p.readiness -}}
+  {{- if or $liveness $readiness -}}
+    {{- if $liveness }}
+livenessProbe:
+{{- include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $liveness) | nindent 2 }}
+    {{- end }}
+    {{- if $readiness }}
+readinessProbe:
+{{- include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $readiness) | nindent 2 }}
+    {{- end }}
+  {{- else if or $health.path $health.port $health.command -}}
+    {{- range $type := list "liveness" "readiness" }}
+{{ $type }}Probe:
+{{- include "polymorphic-app.probe-core" (dict "healthcheck" $health) | nindent 2 }}
+    {{- end }}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
