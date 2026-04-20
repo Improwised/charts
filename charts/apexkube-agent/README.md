@@ -37,22 +37,6 @@ helm install apexkube-agent ./charts/apexkube-agent \
 
 ## Configuration
 
-### Key Parameters
-
-| Parameter                     | Description              | Default | Required                |
-| ----------------------------- | ------------------------ | ------- | ----------------------- |
-| `namespace.create`            | Create namespace         | `false` | No                      |
-| `namespace.name`              | Namespace name           | `""`    | If create=true          |
-| `wireguard.existingConfigMap` | Existing ConfigMap name  | `""`    | No                      |
-| `wireguard.existingSecret`    | Existing Secret name     | `""`    | No                      |
-| `wireguard.config.address`    | WireGuard IP address     | `""`    | If no existingConfigMap |
-| `wireguard.config.privateKey` | WireGuard private key    | `""`    | If no existingSecret    |
-| `wireguard.config.peer.*`     | Peer configuration       | -       | If no existingConfigMap |
-| `envoy.config.jwt.publicKey`  | JWT public key (JWKS)    | `""`    | Yes                     |
-| `tls.existingSecret`          | Existing TLS secret      | `""`    | No                      |
-| `tls.certData.tls.crt`        | TLS certificate (base64) | `""`    | If no existingSecret    |
-| `tls.certData.tls.key`        | TLS private key (base64) | `""`    | If no existingSecret    |
-
 ### WireGuard Configuration
 
 #### Option 1: Inline Configuration (Development)
@@ -157,58 +141,3 @@ helm lint ./charts/apexkube-agent
 ```bash
 helm uninstall apexkube-agent
 ```
-
-## Architecture
-
-```
-┌─────────────────────────────────────────┐
-│          Pod: apexkube-agent            │
-│                                         │
-│  ┌──────────────┐   ┌────────────────┐ │
-│  │    Envoy     │   │   WireGuard    │ │
-│  │  (Proxy)     │   │   (VPN Client) │ │
-│  │  Port: 10000 │   │   Port: 51820  │ │
-│  └──────────────┘   └────────────────┘ │
-│         │                    │          │
-│         └────────────────────┘          │
-│                  │                      │
-└──────────────────┼──────────────────────┘
-                   │
-                   ▼
-         WireGuard Tunnel
-                   │
-                   ▼
-           Remote Server
-```
-
-## Resources Created
-
-- Deployment with 2 containers (Envoy + WireGuard)
-- ConfigMap for Envoy configuration
-- ConfigMap for WireGuard non-sensitive config
-- Secret for WireGuard private key
-- Secret for TLS certificates
-- ServiceAccount, ClusterRole, ClusterRoleBinding
-- Service (if configured)
-
-## Troubleshooting
-
-### Check Pod Status
-
-```bash
-kubectl get pods -n apexkube-agent
-kubectl logs -n apexkube-agent deployment/apexkube-agent -c envoy
-kubectl logs -n apexkube-agent deployment/apexkube-agent -c wireguard
-```
-
-### Common Issues
-
-1. **Envoy crash**: Check TLS certificates are valid
-2. **WireGuard not connecting**: Verify peer endpoint and keys
-3. **Permission errors**: Ensure WireGuard has `privileged: true` and `NET_ADMIN` capability
-
-## Requirements
-
-- Kubernetes 1.19+
-- Helm 3.0+
-- WireGuard kernel module loaded on nodes
