@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "apexkube-agent.fullname" . }}
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "apexkube-agent.labels" . | nindent 4 }}
 spec:

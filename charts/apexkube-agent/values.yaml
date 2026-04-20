@@ -1,13 +1,4 @@
 # Default values for apexkube-agent.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-# Namespace configuration
-namespace:
-  # Set to true to create a new namespace
-  create: false
-  # Name of the namespace (required if create is true, or use existing namespace)
-  name: "apexkube-agent"
 
 # ServiceAccount configuration
 serviceAccount:

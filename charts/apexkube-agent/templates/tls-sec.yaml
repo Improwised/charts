@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ include "apexkube-agent.fullname" . }}-tls
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ .Release.Namespace | quote }}
 type: kubernetes.io/tls
 stringData:
   tls.crt: {{ index .Values.tls.certData "tls.crt" | quote }}
