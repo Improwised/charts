@@ -7,7 +7,7 @@ namespace:
   # Set to true to create a new namespace
   create: false
   # Name of the namespace (required if create is true, or use existing namespace)
-  name: ""
+  name: "apexkube-agent"
 
 # ServiceAccount configuration
 serviceAccount:
@@ -44,7 +44,7 @@ envoy:
       # Format: JSON Web Key Set (JWKS) as inline JSON string
       # Example: "{\"keys\":[{\"alg\":\"EdDSA\",\"crv\":\"Ed25519\",\"iss\":\"apexkube\
       #   \",\"kty\":\"OKP\",\"x\":\"<base64-encoded-public-key>\"}]}"
-      publicKey: ""
+      publicKey: "<public-key>"
 
   # Number of Envoy replicas
   replicas: 1
@@ -105,7 +105,7 @@ wireguard:
     peer:
       # Public key of the WireGuard peer - MUST be provided if not using existingConfigMap
       # Obtain from the server side configuration
-      publicKey: ""
+      publicKey: "wireguard-peer-public-key"
       # Endpoint address of the WireGuard peer - MUST be provided if not using existingConfigMap
       # Format: "DNS/IP:PORT" (e.g., "wireguard.example.com")
       endpoint: ""
@@ -119,7 +119,7 @@ wireguard:
     # WireGuard private key (base64 encoded) - MUST be provided if not using existingSecret
     # Generate using: wg genkey
     # WARNING: This is sensitive data. Consider using existingSecret for production
-    privateKey: ""
+    privateKey: "<wireguard-private-key>"
 
   # Resource limits and requests for WireGuard container
   resources:
