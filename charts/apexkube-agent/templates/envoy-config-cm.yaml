@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "apexkube-agent.fullname" . }}-envoy-config
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  envoy.yaml: |
+    static_resources:
+          listeners:
+            - name: listener_0
+              address:
+                socket_address:
+                  address: 0.0.0.0
+                  port_value: 443
+              filter_chains:
+              - transport_socket:
+                  name: envoy.transport_sockets.tls
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+                    common_tls_context:
+                      tls_certificates:
+                        - certificate_chain:
+                            filename: /etc/ssl/certs/tls.crt
+                          private_key:
+                            filename: /etc/ssl/certs/tls.key
+                filters:
+                  - name: envoy.filters.network.http_connection_manager
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                      stat_prefix: ingress_http
+                      http_filters:
+                        - name: envoy.filters.http.jwt_authn
+                          typed_config:
+                            "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+                            providers:
+                              "jwt_provider":
+                                issuer: {{ .Values.envoy.config.jwt.issuer | quote }}
+                                audiences:
+                                - {{ .Values.envoy.config.jwt.audience | quote }}
+                                from_headers:
+                                  - name: "Authorization"
+                                    value_prefix: "Bearer "
+                                local_jwks:
+                                  inline_string: |
+                                    {{ .Values.envoy.config.jwt.publicKey }}
+                            rules:
+                              - match: { path: "/healthz" }
+                              - match: { path: "/readyz" }
+                              - match:  { prefix: "/" }
+                                requires:
+                                  provider_name: "jwt_provider"
+                        - name: envoy.filters.http.lua
+                          typed_config:
+                            "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                            inline_code: |
+                              -- Caches the service account token in memory
+                              local cached_token = nil
+                              function envoy_on_request(request_handle)
+                                if not cached_token then
+                                  -- Read token from the projected service account token file
+                                  local file = io.open("/var/run/secrets/kubernetes.io/serviceaccount/token", "r")
+                                  if file then
+                                    cached_token = file:read("*a")
+                                    file:close()
+                                    -- Trim whitespace
+                                    cached_token = cached_token:match("^%s*(.-)%s*$")
+                                  end
+                                end
+
+                                if cached_token then
+                                  request_handle:headers():add("Authorization", "Bearer " .. cached_token)
+                                end
+                              end
+                        - name: envoy.filters.http.router
+                          typed_config:
+                            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                      route_config:
+                        name: local_route
+                        virtual_hosts:
+                          - name: backend_service
+                            domains: ["*"]
+                            routes:
+                              - match: { prefix: "/" }
+                                route: { cluster: service_backend }
+
+          clusters:
+            - name: service_backend
+              connect_timeout: 0.25s
+              type: STRICT_DNS
+              lb_policy: ROUND_ROBIN
+              load_assignment:
+                cluster_name: service_backend
+                endpoints:
+                  - lb_endpoints:
+                      - endpoint:
+                          address:
+                            socket_address:
+                              address: kubernetes.default.svc
+                              port_value: 443
+              transport_socket:
+                name: envoy.transport_sockets.tls
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+                  sni: kubernetes.default.svc
+                  common_tls_context:
+                    validation_context:
+                      trusted_ca:
+                        filename: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt

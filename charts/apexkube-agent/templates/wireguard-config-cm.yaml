@@ -1,0 +1,19 @@
+{{- if not .Values.wireguard.existingConfigMap -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "apexkube-agent.fullname" . }}-wireguard-config
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "apexkube-agent.labels" . | nindent 4 }}
+data:
+  wg0.conf: |
+    [Interface]
+    Address = {{ .Values.wireguard.config.address }}
+
+    [Peer]
+    PublicKey = {{ .Values.wireguard.config.peer.publicKey }}
+    Endpoint = {{ .Values.wireguard.config.peer.endpoint }}
+    AllowedIPs = {{ .Values.wireguard.config.peer.allowedIPs }}
+    PersistentKeepalive = {{ .Values.wireguard.config.peer.persistentKeepalive }}
+{{- end -}}
