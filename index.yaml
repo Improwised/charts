@@ -49,6 +49,19 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/apexkube-1.0.0/apexkube-1.0.0.tgz
     version: 1.0.0
+  apexkube-agent:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-04-20T11:19:53.3960811Z"
+    description: A Helm chart for deploying the ApexKube agent with Envoy and WireGuard
+    digest: 7f0af4a39c1842aaae819c55862c92bd4cae3fce1ddbe1d2d8177bfb54e7d421
+    maintainers:
+    - name: improwised
+    name: apexkube-agent
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/apexkube-agent-1.0.0/apexkube-agent-1.0.0.tgz
+    version: 1.0.0
   cluster-api-provider-proxmox:
   - annotations:
       cluster.x-k8s.io/provider: proxmox
@@ -1006,4 +1019,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2026-03-24T07:22:52.098200851Z"
+generated: "2026-04-20T11:19:53.396164335Z"
