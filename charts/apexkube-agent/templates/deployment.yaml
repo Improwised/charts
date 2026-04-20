@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "apexkube-agent.fullname" . }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexkube-agent.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.envoy.replicas }}
+  selector:
+    matchLabels:
+      {{- include "apexkube-agent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "apexkube-agent.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: envoy
+          image: "{{ .Values.envoy.image.repository }}:{{ .Values.envoy.image.tag }}"
+          imagePullPolicy: {{ .Values.envoy.image.pullPolicy }}
+          ports:
+            - name: https
+              containerPort: {{ .Values.envoy.containerPort }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.envoy.resources | nindent 12 }}
+          volumeMounts:
+            - name: envoy-config-volume
+              mountPath: /etc/envoy/envoy.yaml
+              subPath: envoy.yaml
+            - name: tls-secret-volume
+              mountPath: /etc/ssl/certs
+              readOnly: true
+
+        # WireGuard sidecar container
+        - name: wireguard
+          image: "{{ .Values.wireguard.image.repository }}:{{ .Values.wireguard.image.tag }}"
+          imagePullPolicy: {{ .Values.wireguard.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              # Wait a moment for network to be ready
+              sleep 2
+              echo "WireGuard public key: '$(wg pubkey < /etc/wireguard/privatekey)'"
+              /entrypoint.sh
+          ports:
+            - containerPort: 51820
+              protocol: UDP
+              name: wireguard
+            - containerPort: {{ .Values.wireguard.healthcheck.port }}
+              protocol: TCP
+              name: healthcheck
+          {{- if .Values.wireguard.healthcheck.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: healthcheck
+          readinessProbe:
+            httpGet:
+              path: /
+              port: healthcheck
+          {{- end }}
+          env:
+            - name: LOG_LEVEL
+              value: info
+            - name: ENABLE_HEALTHCHECK
+              value: "{{ .Values.wireguard.healthcheck.enabled }}"
+          securityContext:
+            {{- toYaml .Values.wireguard.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.wireguard.resources | nindent 12 }}
+          volumeMounts:
+            - name: wireguard-config-volume
+              mountPath: /etc/wireguard/wg0.conf
+              subPath: wg0.conf
+            - name: wireguard-privatekey-volume
+              mountPath: /etc/wireguard/privatekey
+              subPath: privatekey
+          # Lifecycle hook to ensure WireGuard starts before envoy is fully ready
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    # Wait for WireGuard interface to be up
+                    sleep 5
+                    echo "WireGuard interface should be up now"
+      volumes:
+        - name: envoy-config-volume
+          configMap:
+            name: {{ include "apexkube-agent.fullname" . }}-envoy-config
+        - name: wireguard-config-volume
+          configMap:
+            name: {{ include "apexkube-agent.wireguard.configMapName" . }}
+        - name: wireguard-privatekey-volume
+          secret:
+            secretName: {{ include "apexkube-agent.wireguard.secretName" . }}
+        - name: tls-secret-volume
+          secret:
+            secretName: {{ default (printf "%s-tls" (include "apexkube-agent.fullname" . )) .Values.tls.existingSecret }}

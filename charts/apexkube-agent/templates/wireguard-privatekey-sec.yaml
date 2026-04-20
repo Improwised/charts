@@ -1,0 +1,12 @@
+{{- if not .Values.wireguard.existingSecret -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "apexkube-agent.fullname" . }}-wireguard-privatekey
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "apexkube-agent.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  privatekey: {{ .Values.wireguard.config.privateKey | required "wireguard.config.privateKey is required when not using existingSecret" }}
+{{- end -}}

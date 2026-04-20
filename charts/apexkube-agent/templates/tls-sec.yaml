@@ -1,0 +1,11 @@
+{{- if not .Values.tls.existingSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "apexkube-agent.fullname" . }}-tls
+  namespace: {{ .Values.namespace.name }}
+type: kubernetes.io/tls
+stringData:
+  tls.crt: {{ index .Values.tls.certData "tls.crt" | quote }}
+  tls.key: {{ index .Values.tls.certData "tls.key" | quote }}
+{{- end }}

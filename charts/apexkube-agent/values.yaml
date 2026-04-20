@@ -1,0 +1,179 @@
+# Default values for apexkube-agent.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Namespace configuration
+namespace:
+  # Set to true to create a new namespace
+  create: false
+  # Name of the namespace (required if create is true, or use existing namespace)
+  name: ""
+
+# ServiceAccount configuration
+serviceAccount:
+  # Name of the service account to create/use
+  name: apexkube-agent
+
+# ClusterRole configuration
+clusterRole:
+  # Name of the ClusterRole to create
+  name: apexkube-agent
+
+# ClusterRoleBinding configuration
+clusterRoleBinding:
+  # Name of the ClusterRoleBinding to create
+  name: apexkube-agent
+
+# Envoy proxy configuration
+envoy:
+  image:
+    # Envoy image repository
+    repository: envoyproxy/envoy
+    # Envoy image tag
+    tag: v1.31.0
+    # Image pull policy
+    pullPolicy: IfNotPresent
+
+  config:
+    jwt:
+      # JWT issuer identifier
+      issuer: "apexkube"
+      # JWT audience identifier
+      audience: "apexkube-agent"
+      # Public key for JWT verification (Ed25519) - MUST be provided
+      # Format: JSON Web Key Set (JWKS) as inline JSON string
+      # Example: "{\"keys\":[{\"alg\":\"EdDSA\",\"crv\":\"Ed25519\",\"iss\":\"apexkube\
+      #   \",\"kty\":\"OKP\",\"x\":\"<base64-encoded-public-key>\"}]}"
+      publicKey: ""
+
+  # Number of Envoy replicas
+  replicas: 1
+
+  # Resource limits and requests for Envoy container
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+
+  # Container port for Envoy
+  containerPort: 10000
+
+  # Service configuration for Envoy
+  service:
+    # Service type (ClusterIP, NodePort, LoadBalancer)
+    type: ClusterIP
+    # Service port
+    port: 10000
+    # Target port on the container
+    targetPort: 10000
+    # NodePort (only applicable when type is NodePort)
+    # If not specified, Kubernetes will allocate one automatically
+    nodePort: ""
+
+# WireGuard VPN configuration
+wireguard:
+  image:
+    # WireGuard image repository
+    repository: masipcat/wireguard-go
+    # WireGuard image tag
+    tag: 0.0.20230223
+    # Image pull policy
+    pullPolicy: IfNotPresent
+
+  # Use an existing ConfigMap for WireGuard configuration (non-sensitive data)
+  # The ConfigMap must have a key named 'wg0.conf' containing the WireGuard config
+  # If specified, it will override the inline configuration below
+  # Example: existingConfigMap: "wireguard-config"
+  existingConfigMap: ""
+
+  # Use an existing Secret for WireGuard private key (sensitive data)
+  # The Secret must have a key named 'privatekey' containing the private key
+  # If specified, it will override the privateKey in inline configuration
+  # Example: existingSecret: "wireguard-privatekey"
+  # RECOMMENDED for production: Use existingSecret to avoid storing keys in values files
+  existingSecret: ""
+
+  # Inline configuration (used when existingConfigMap/existingSecret are not specified)
+  # Non-sensitive configuration parameters
+  config:
+    # WireGuard interface IP address - MUST be provided if not using existingConfigMap
+    # Example: "192.168.10.2"
+    address: ""
+    peer:
+      # Public key of the WireGuard peer - MUST be provided if not using existingConfigMap
+      # Obtain from the server side configuration
+      publicKey: ""
+      # Endpoint address of the WireGuard peer - MUST be provided if not using existingConfigMap
+      # Format: "DNS/IP:PORT" (e.g., "wireguard.example.com")
+      endpoint: ""
+      # Allowed IPs for the WireGuard tunnel - MUST be provided if not using existingConfigMap
+      # Example: "192.168.10.1" or "192.168.10.0/24"
+      allowedIPs: ""
+      # Persistent keepalive interval in seconds
+      # Recommended to set this if behind NAT
+      persistentKeepalive: 5
+
+    # WireGuard private key (base64 encoded) - MUST be provided if not using existingSecret
+    # Generate using: wg genkey
+    # WARNING: This is sensitive data. Consider using existingSecret for production
+    privateKey: ""
+
+  # Resource limits and requests for WireGuard container
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+
+  # Security context for WireGuard container
+  # WireGuard requires elevated privileges to create network interfaces
+  securityContext:
+    privileged: true
+    capabilities:
+      add: ["NET_ADMIN"]
+
+  # Health check configuration for WireGuard
+  healthcheck:
+    # Enable health check endpoint
+    enabled: false
+    # Port for health check endpoint
+    port: 8080
+
+# TLS configuration for Envoy's HTTPS listener
+tls:
+  # Option 1: Use an existing Kubernetes secret containing TLS certificate and key
+  # The secret must have keys: tls.crt and tls.key
+  # If specified, certData will be ignored
+  existingSecret: ""
+  # Option 2: Provide base64-encoded certificate and key
+  # These will be used to create a new Kubernetes secret
+  # REQUIRED if existingSecret is not specified
+  certData:
+    # Create certificate and keypair for apexkube-agent
+    tls.crt: ""
+    tls.key: ""
+
+# Additional configuration options
+
+# Image pull secrets for private registries
+# imagePullSecrets: []
+
+# Node selector for pod scheduling
+# nodeSelector: {}
+
+# Tolerations for pod scheduling
+# tolerations: []
+
+# Affinity rules for pod scheduling
+# affinity: {}
+
+# Pod annotations
+# podAnnotations: {}
+
+# Pod labels
+# podLabels: {}
