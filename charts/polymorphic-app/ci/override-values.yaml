@@ -1,3 +1,6 @@
+# Comprehensive test values for polymorphic-app chart
+# This file contains all test cases including services and workers with multi-container support
+
 serviceTemplate:
   healthcheck:
     enabled: true
@@ -6,35 +9,60 @@ serviceTemplate:
     path: /
     initialDelaySeconds: 5
     periodSeconds: 5
+
+# Services with various configurations
 services:
-  - name: demo-1
-    image:
-      repository: nginx
-      tag: "latest"
-    ports:
-      - name: http
-        containerPort: 80
+  # ========================================
+  # Single Container Services
+  # ========================================
+
+  - name: single-container
+    containers:
+      - name: single-container
+        image:
+          repository: nginx
+          tag: "1.20"
+        env:
+          - name: ENV_VAR
+            value: "test"
+        ports:
+          - name: http
+            containerPort: 80
+        healthcheck:
+          enabled: true
+          type: httpGet
+          path: /health
+          port: 80
     service:
+      enabled: true
+      type: ClusterIP
       ports:
         - name: http
           port: 80
           targetPort: http
-  - name: demo-2
+
+  # ========================================
+  # StatefulSet with Single Container
+  # ========================================
+
+  - name: statefulset-single
     type: StatefulSet
-    image:
-      repository: nginx
-      tag: latest
-    healthcheck:
-      enabled: true
-      type: tcpSocket
-      port: 80
-      initialDelaySeconds: 10
-      periodSeconds: 5
-      timeoutSeconds: 5
-      failureThreshold: 3
-    volumeMounts:
-      - name: data
-        mountPath: /data
+    containers:
+      - name: statefulset-single
+        image:
+          repository: nginx
+          tag: latest
+        healthcheck:
+          enabled: true
+          type: tcpSocket
+          port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+          - name: data
+            mountPath: /data
     volumeClaimTemplates:
       - metadata:
           name: data
@@ -43,77 +71,464 @@ services:
           resources:
             requests:
               storage: 1Gi
-  - name: demo-3
-    image:
-      repository: nginx
-      tag: latest
-    healthcheck:
-      enabled: true
-      type: exec
-      command:
-        - cat
-        - /usr/share/nginx/html/index.html
-  - name: demo-4
-    image:
-      repository: nginx
-      tag: "latest"
-    ports:
-      - name: http
-        containerPort: 80
-    healthcheck:
-      enabled: true
-      type: exec
-      liveness:
-        command:
-          - cat
-          - /usr/share/nginx/html/index.html
-        initialDelaySeconds: 5
-        periodSeconds: 5
-      readiness:
-        command:
-          - cat
-          - /usr/share/nginx/html/50x.html
 
-  - name: demo-5
-    image:
-      repository: nginx
-      tag: "latest"
-    ports:
-      - name: http
-        containerPort: 80
-    healthcheck:
+  # ========================================
+  # Service with Autoscaling
+  # ========================================
+
+  - name: autoscaling-test
+    containers:
+      - name: autoscaling-test
+        image:
+          repository: nginx
+          tag: latest
+        ports:
+          - name: http
+            containerPort: 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+    autoscaling: true
+    minReplicaCount: 2
+    maxReplicaCount: 5
+    averageUtilization: 70
+    service:
       enabled: true
-      type: httpGet
-      path: /
-      port: 80
-      liveness:
-        port: 80
-        initialDelaySeconds: 5
-        periodSeconds: 5
-        failureThreshold: 5
-        timeoutSeconds: 5
-        path: /live
-      readiness:
-        initialDelaySeconds: 10
-        periodSeconds: 10
-        failureThreshold: 10
-        timeoutSeconds: 10
-  - name: demo-6
-    image:
-      repository: nginx
-      tag: "latest"
-    healthcheck:
-      enabled: false
-      type: httpGet
-      path: /
-      port: 80
-  - name: demo-7
-    image:
-      repository: nginx
-      tag: "latest"
-    healthcheck:
+      ports:
+        - port: 80
+          targetPort: http
+
+  # ========================================
+  # Health Check Types
+  # ========================================
+
+  - name: http-healthcheck
+    containers:
+      - name: http-healthcheck
+        image:
+          repository: nginx
+          tag: latest
+        ports:
+          - name: http
+            containerPort: 80
+        healthcheck:
+          enabled: true
+          type: httpGet
+          path: /
+          port: 80
+    service:
       enabled: true
-      type: httpGet
-      liveness:
-        path: /live
-        port: 80
+      ports:
+        - port: 80
+          targetPort: http
+
+  - name: exec-healthcheck
+    containers:
+      - name: exec-healthcheck
+        image:
+          repository: nginx
+          tag: latest
+        healthcheck:
+          enabled: true
+          type: exec
+          command:
+            - cat
+            - /usr/share/nginx/html/index.html
+
+  - name: separate-probes
+    containers:
+      - name: separate-probes
+        image:
+          repository: nginx
+          tag: latest
+        ports:
+          - name: http
+            containerPort: 80
+        healthcheck:
+          enabled: true
+          type: exec
+          liveness:
+            command:
+              - cat
+              - /usr/share/nginx/html/index.html
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          readiness:
+            command:
+              - cat
+              - /usr/share/nginx/html/50x.html
+
+  # ========================================
+  # Multi-Container Services
+  # ========================================
+
+  - name: multi-container-app
+    containers:
+      - name: main-app
+        image:
+          repository: nginx
+          tag: "latest"
+        ports:
+          - name: http
+            containerPort: 80
+            protocol: TCP
+        healthcheck:
+          enabled: true
+          type: httpGet
+          path: /
+          port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      - name: sidecar
+        image:
+          repository: busybox
+          tag: "latest"
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do sleep 30; done"]
+        resources:
+          limits:
+            cpu: 50m
+            memory: 64Mi
+          requests:
+            cpu: 25m
+            memory: 32Mi
+    service:
+      enabled: true
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 80
+          targetPort: http
+          protocol: TCP
+
+  - name: multi-container-statefulset
+    type: StatefulSet
+    containers:
+      - name: database
+        image:
+          repository: postgres
+          tag: "15"
+        ports:
+          - name: postgres
+            containerPort: 5432
+            protocol: TCP
+        env:
+          - name: POSTGRES_DB
+            value: testdb
+          - name: POSTGRES_USER
+            value: testuser
+        healthcheck:
+          enabled: true
+          type: tcpSocket
+          port: 5432
+        volumeMounts:
+          - name: data
+            mountPath: /var/lib/postgresql/data
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+      - name: backup-agent
+        image:
+          repository: busybox
+          tag: "latest"
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do sleep 300; done"]
+        volumeMounts:
+          - name: data
+            mountPath: /backup
+            readOnly: true
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+    volumeClaimTemplates:
+      - metadata:
+          name: data
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+
+  # ========================================
+  # Edge Cases
+  # ========================================
+
+  - name: minimal-container
+    containers:
+      - name: minimal
+        image:
+          repository: nginx
+          tag: latest
+
+  - name: mixed-health-checks
+    containers:
+      - name: http-health
+        image:
+          repository: nginx
+          tag: latest
+        ports:
+          - name: http
+            containerPort: 80
+        healthcheck:
+          enabled: true
+          type: httpGet
+          path: /
+          port: 80
+      - name: tcp-health
+        image:
+          repository: redis
+          tag: alpine
+        ports:
+          - name: redis
+            containerPort: 6379
+        healthcheck:
+          enabled: true
+          type: tcpSocket
+          port: 6379
+      - name: exec-health
+        image:
+          repository: busybox
+          tag: latest
+        command: ["/bin/sh", "-c", "sleep 3600"]
+        healthcheck:
+          enabled: true
+          type: exec
+          command:
+            - /bin/true
+
+  - name: mixed-env
+    containers:
+      - name: app
+        image:
+          repository: nginx
+          tag: latest
+        env:
+          - name: APP_SPECIFIC
+            value: app-value
+        ports:
+          - name: http
+            containerPort: 80
+      - name: sidecar
+        image:
+          repository: busybox
+          tag: latest
+        env:
+          - name: SIDECAR_SPECIFIC
+            value: sidecar-value
+        command: ["/bin/sh", "-c", "sleep 3600"]
+    env:
+      - name: SHARED_ENV
+        value: shared-value
+
+  - name: complex-volumes
+    containers:
+      - name: writer
+        image:
+          repository: busybox
+          tag: latest
+        command:
+          [
+            "/bin/sh",
+            "-c",
+            "while true; do echo 'data' > /shared/data.txt; sleep 10; done",
+          ]
+        volumeMounts:
+          - name: shared-data
+            mountPath: /shared
+          - name: writer-only
+            mountPath: /writer-data
+      - name: reader
+        image:
+          repository: busybox
+          tag: latest
+        command:
+          [
+            "/bin/sh",
+            "-c",
+            "while true; do cat /shared/data.txt; sleep 10; done",
+          ]
+        volumeMounts:
+          - name: shared-data
+            mountPath: /shared
+            readOnly: true
+          - name: reader-only
+            mountPath: /reader-data
+    volumes:
+      - name: shared-data
+        emptyDir: {}
+      - name: writer-only
+        emptyDir: {}
+      - name: reader-only
+        emptyDir: {}
+
+  - name: lifecycle-hooks
+    containers:
+      - name: app
+        image:
+          repository: nginx
+          tag: latest
+        lifecycleHooks:
+          postStart:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - echo "Container started"
+          preStop:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - echo "Container stopping"
+        ports:
+          - name: http
+            containerPort: 80
+
+  - name: init-and-multi
+    initContainers:
+      - name: init-1
+        image: busybox
+        command: ["sh", "-c", 'echo "Init 1"']
+      - name: init-2
+        image: busybox
+        command: ["sh", "-c", 'echo "Init 2"']
+    containers:
+      - name: main
+        image:
+          repository: nginx
+          tag: latest
+        ports:
+          - name: http
+            containerPort: 80
+      - name: helper
+        image:
+          repository: busybox
+          tag: latest
+        command: ["/bin/sh", "-c", "sleep 3600"]
+
+# Workers with multi-container support
+workers:
+  # ========================================
+  # Single Container Workers
+  # ========================================
+
+  - name: single-worker
+    containers:
+      - name: worker
+        image:
+          repository: busybox
+          tag: latest
+        command: ["/bin/sh", "-c"]
+        args: ["while true; do echo 'working'; sleep 30; done"]
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+
+  # ========================================
+  # Multi-Container Workers
+  # ========================================
+
+  - name: multi-container-worker
+    containers:
+      - name: main-worker
+        image:
+          repository: busybox
+          tag: latest
+        command: ["/bin/sh", "-c"]
+        args: ["while true; do echo 'data' > /shared/work.log; sleep 10; done"]
+        volumeMounts:
+          - name: shared-data
+            mountPath: /shared
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      - name: log-collector
+        image:
+          repository: busybox
+          tag: latest
+        command: ["/bin/sh", "-c"]
+        args: ["while true; do cat /logs/work.log; sleep 15; done"]
+        volumeMounts:
+          - name: shared-data
+            mountPath: /logs
+            readOnly: true
+    volumes:
+      - name: shared-data
+        emptyDir: {}
+
+  # ========================================
+  # Worker with Health Check
+  # ========================================
+
+  - name: worker-with-healthcheck
+    containers:
+      - name: worker
+        image:
+          repository: busybox
+          tag: latest
+        command: ["/bin/sh", "-c"]
+        args: ["touch /tmp/healthy && while true; do sleep 30; done"]
+        healthcheck:
+          enabled: true
+          type: exec
+          command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+  # ========================================
+  # Worker with Autoscaling
+  # ========================================
+
+  - name: autoscaling-worker
+    containers:
+      - name: worker
+        image:
+          repository: busybox
+          tag: latest
+        command: ["/bin/sh", "-c"]
+        args: ["while true; do sleep 30; done"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+    autoscaling: true
+    minReplicaCount: 2
+    maxReplicaCount: 5
+    averageUtilization: 70
+
+  # ========================================
+  # Worker with Init Container
+  # ========================================
+
+  - name: worker-with-init
+    initContainers:
+      - name: init-setup
+        image: busybox
+        command: ["sh", "-c", "echo 'Initializing...' && sleep 2"]
+    containers:
+      - name: worker
+        image:
+          repository: busybox
+          tag: latest
+        command: ["/bin/sh", "-c"]
+        args: ["while true; do sleep 30; done"]

@@ -134,6 +134,62 @@ serviceTemplate:
   volumeMounts: []
   volumes: []
 
+  # Container definitions (required)
+  # Each service must define a containers array with at least one container
+  # Each container supports the following fields:
+  # - name (required): Container name
+  # - image: Image repository and tag
+  # - env: Container-specific environment variables
+  # - envFrom: Environment variables from ConfigMaps/Secrets
+  # - command: Container command
+  # - args: Container arguments
+  # - ports: Container ports
+  # - resources: CPU and memory resources
+  # - containerSecurityContext: Security context for the container
+  # - lifecycleHooks: Lifecycle hooks (postStart, preStop)
+  # - volumeMounts: Container-specific volume mounts
+  # - healthcheck: Container-specific health check configuration
+  containers: []
+    # Example: Single container
+    # - name: main-app
+    #   image:
+    #     repository: nginx
+    #     tag: latest
+    #   ports:
+    #     - name: http
+    #       containerPort: 80
+    #       protocol: TCP
+    #   healthcheck:
+    #     enabled: true
+    #     type: httpGet
+    #     path: /healthz
+    #     port: 80
+
+    # Example: Multiple containers
+    # - name: main-app
+    #   image:
+    #     repository: nginx
+    #     tag: latest
+    #   ports:
+    #     - name: http
+    #       containerPort: 80
+    #       protocol: TCP
+    #   healthcheck:
+    #     enabled: true
+    #     type: httpGet
+    #     path: /healthz
+    #     port: 80
+    # - name: sidecar
+    #   image:
+    #     repository: busybox
+    #     tag: latest
+    #   command: ["/bin/sh"]
+    #   args: ["-c", "while true; do sleep 30; done"]
+    #   resources:
+    #     limits:
+    #       cpu: 50m
+    #       memory: 64Mi
+
   service:
     enabled: true
     # className: nginx
@@ -236,6 +292,54 @@ workerTemplate:
   affinity: {}
 
   annotations: {}
+
+  # Container definitions (required)
+  # Each worker must define a containers array with at least one container
+  # Each container supports the following fields:
+  # - name (required): Container name
+  # - image: Image repository and tag
+  # - env: Container-specific environment variables
+  # - envFrom: Environment variables from ConfigMaps/Secrets
+  # - command: Container command
+  # - args: Container arguments
+  # - ports: Container ports (optional for workers)
+  # - resources: CPU and memory resources
+  # - containerSecurityContext: Security context for the container
+  # - lifecycleHooks: Lifecycle hooks (postStart, preStop)
+  # - volumeMounts: Container-specific volume mounts
+  # - healthcheck: Container-specific health check configuration
+  containers: []
+    # Example: Single container worker
+    # - name: worker
+    #   image:
+    #     repository: my-worker
+    #     tag: latest
+    #   command: ["/app/worker"]
+    #   args: ["--queue", "default"]
+    #   healthcheck:
+    #     enabled: true
+    #     type: exec
+    #     command:
+    #       - /app/health-check
+
+    # Example: Multi-container worker with sidecar
+    # - name: worker
+    #   image:
+    #     repository: my-worker
+    #     tag: latest
+    #   command: ["/app/worker"]
+    #   resources:
+    #     limits:
+    #       cpu: 500m
+    #       memory: 512Mi
+    # - name: log-collector
+    #   image:
+    #     repository: busybox
+    #     tag: latest
+    #   command: ["/bin/sh", "-c", "tail -f /var/log/worker.log"]
+    #   volumeMounts:
+    #     - name: logs
+    #       mountPath: /var/log
 
 workers:
 #######################################
