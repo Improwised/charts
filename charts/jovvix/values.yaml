@@ -1,0 +1,559 @@
+# Default values for jovvix.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+prefixWithReleaseName:
+  enabled: true
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: nginx
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+
+# If not resource specified it will take resources from this, remove the brackets and uncomment the below limits and add appropriate resources.
+resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+
+# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# This section is for adding the deployments, service, ingress. you can define multiple services as done below.
+services:
+  # This is for the jovvix-ui pod
+  - name: ui
+    fullnameOverride: "jovvix-ui-svc"
+    replicaCount: 1
+    image:
+      repository: improwised/jovvix-ui
+      tag: main-9acf2cb-1754290699
+      pullPolicy: IfNotPresent
+    envFrom:
+      - configMapRef:
+          name: jovvix-ui
+    ports:
+      - name: http
+        containerPort: 5000
+        protocol: TCP
+    resources: {}
+      # limits:
+      #   memory: 600Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 600Mi
+    service:
+      enabled: true
+      fullnameOverride: "jovvix-ui-svc"
+      type: ClusterIP
+      ports:
+        name: http
+        port: 5000
+        targetPort: http
+        protocol: TCP
+    # Ingress for the ui pod
+    ingress:
+      enabled: true
+      fullnameOverride: "jovvix-ui-svc"
+      className: nginx
+      host: app.example.com
+      path: /
+      pathType: Prefix
+  # This is for the jovvix-api pod
+  - name: api
+    fullnameOverride: "jovvix-api-svc"
+    # This init container waits for the redis pod to running, if removed the api pod crashes while redis is not in running state.
+    initContainers:
+      - name: wait-for-redis
+        image: busybox:1.37.0
+        command:
+          - sh
+          - -c
+          - >
+            until timeout 3 nc -z jovvix-redis-master 6379;
+            do echo waiting for redis; sleep 5; done;
+            echo redis found
+    replicaCount: 1
+    image:
+      repository: improwised/jovvix-api
+      tag: main-82546e9-1753769203
+      pullPolicy: IfNotPresent
+    envFrom:
+      - configMapRef:
+          name: jovvix-api
+      - secretRef:
+          name: jovvix-api
+    livenessProbe:
+      httpGet:
+        path: /api/healthz
+        port: http
+      initialDelaySeconds: 6
+      periodSeconds: 6
+    readinessProbe:
+      httpGet:
+        path: /api/healthz
+        port: http
+      initialDelaySeconds: 6
+      periodSeconds: 6
+    resources: {}
+      # limits:
+      #   memory: 4Gi
+      # requests:
+      #   cpu: 500m
+      #   memory: 4Gi
+    ports:
+      - name: http
+        containerPort: 3300
+        protocol: TCP
+    service:
+      enabled: true
+      fullnameOverride: "jovvix-api-svc"
+      type: ClusterIP
+      ports:
+        name: http
+        port: 3300
+        targetPort: http
+        protocol: TCP
+    # Used to start the api server
+    command:
+      - "/bin/sh"
+      - "-c"
+    args:
+      - "./jovvix api"
+    # Ingress for the api pod
+    ingress:
+      enabled: true
+      fullnameOverride: "jovvix-api-svc"
+      className: nginx
+      host: app.example.com
+      path: /api
+      pathType: Prefix
+
+# Used to add jobs based on job template
+jobs:
+  # runs migraion for the jovvix
+  - fullnameOverride: jovvix-migration
+    image:
+      repository: improwised/jovvix-api
+      tag: main-82546e9-1753769203
+    envFrom:
+      - configMapRef:
+          name: jovvix-api
+      - secretRef:
+          # To keep the container running
+          name: jovvix-api
+    command: ["/bin/sh", "-c"]
+    args:
+      - |
+        until timeout 5 ./jovvix migrate up; do
+          echo "Waiting for Postgres to be ready for migrations..."
+          sleep 3
+        done
+        echo "Migrations successful"
+    annotations:
+      # This is what defines this resource as a hook. Without this line, the
+      # job is considered part of the release.
+      # after completing migration job will disappear
+      "helm.sh/hook": post-install,post-upgrade
+      # high priority than kratos-migration so that this finishes first
+      "helm.sh/hook-weight": "-5"
+      "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+  # runs kratos migrations
+  - fullnameOverride: jovvix-kratos-migration
+    image:
+      repository: oryd/kratos
+      tag: v1.3.1
+    env:
+      - name: DSN
+        valueFrom:
+          secretKeyRef:
+            name: jovvix-kratos
+            key: dsn
+    command: ["/bin/sh", "-c"]
+    args:
+      - |
+        until timeout 5 kratos migrate sql -e --yes; do
+          echo "Waiting for Postgres to be ready for kratos migrations..."
+          sleep 3
+        done
+        echo "kratos migrations successful"
+    annotations:
+      # This is what defines this resource as a hook. Without this line, the
+      # job is considered part of the release.
+      # after completing migration job will disappear
+      "helm.sh/hook": post-install,post-upgrade
+      # kept it -4 ao that it can comes after the jovvix migration
+      "helm.sh/hook-weight": "-4"
+      "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+
+# Used to create configmaps, you can add existing configmaps also, but the name should be the same or you have to make changes accordingly
+configmaps:
+  - name: "jovvix-api"
+    create: true
+    data:
+      APP_PORT: 0.0.0.0:3300
+      APP_ENV: local
+      IS_DEVELOPMENT: "true"
+      DEBUG: "true"
+      DB_DIALECT: postgres
+      DB_HOST: "jovvix-db-postgresql"
+      DB_PORT: "5432"
+      DB_USERNAME: jovvix
+      DB_NAME: jovvix
+      DB_QUERYSTRING: "sslmode=disable"
+      MIGRATION_DIR: database/migrations
+      WEB_URL: "https://app.example.com"
+      ISSUER: "https://app.example.com"
+      REDIS_HOST: "jovvix-redis-master"
+      REDIS_PORT: "6379"
+      REDIS_DATABASES: "0"
+      MAXIMUM_POINTS_PER_QUESTION: "20"
+      MINIMUM_POINTS_PER_QUESTION: "0"
+      QUESTION_TIME_LIMIT: "15"
+      SCOREBOARD_MAX_DURATION: "10"
+      KRATOS_ENABLED: "true"
+      KRATOS_COOKIE_EXPIRATION_TIME: 2h23m
+      SERVE_PUBLIC_BASE_URL: https://app.example.com
+      SERVE_PUBLIC_PORT: "4433"
+      SERVE_ADMIN_PORT: "4451"
+      SELF_SERVICE_DEFAULT_BROWSER_RETURN_URL: https://app.example.com/api/v1/kratos/auth
+      SELF_SERVICE_FLOWS_REGISTRATION_AFTER_DEFAULT_BROWSER_RETURN_URL: https://app.example.com/api/v1/kratos/auth
+      AWS_REGION: ap-south-1
+      BUCKET_NAME: example-bucket
+      S3_BUCKET_ENDPOINT: https://s3.example.com
+      SMTP_HOST: "smtp.example.com"
+      SMTP_PORT: "587"
+      EMAIL_FROM: "no-reply@example.com"
+  - name: "jovvix-ui"
+    create: true
+    data:
+      APP_ENV: local
+      MODE: development
+      PORT: "4000"
+      HOST: "0.0.0.0"
+      NUXT_PUBLIC_BASE_URL: "https://app.example.com"
+      NUXT_PUBLIC_API_URL: "https://app.example.com/api/v1"
+      NUXT_PUBLIC_API_SOCKET_URL: "wss://app.example.com/api/v1/socket"
+      NUXT_PUBLIC_KRATOS_URL: "https://app.example.com"
+      S3_BUCKET_URL: https://example-bucket.s3.example.com
+
+# Used to create secrets, you can add existing secrets also, but the name should be the same or you have to make changes accordingly
+secrets:
+  - name: "jovvix-api"
+    create: true
+    stringData:
+      DB_PASSWORD: "example-db-password"
+      JWT_SECRET: "example-jwt-secret"
+      REDIS_PASSWORD: "example-redis-password"
+      DSN: postgres://jovvix:example-db-password@jovvix-db-postgresql:5432/jovvix?sslmode=disable
+      SMTP_USERNAME: "example-smtp-user"
+      SMTP_PASSWORD: "example-smtp-pass"
+  - name: "jovvix-db"
+    create: true
+    stringData:
+      postgres-password: "example-postgres-password"
+      password: "example-db-password"
+      redis-password: "example-redis-password"
+  - name: "jovvix-kratos"
+    create: true
+    stringData:
+      dsn: postgres://jovvix:example-db-password@jovvix-db-postgresql:5432/jovvix?sslmode=disable&search_path=kratos
+      secretsCipher: example-32-long-secret-change-me
+      secretsCookie: example-cookie-secret
+      secretsDefault: example-default-secret
+      smtpConnectionURI: smtp://example-smtp-user:example-smtp-pass@smtp.example.com:587/
+
+# postgresql configurations
+postgresql:
+  fullnameOverride: "jovvix-db-postgresql"
+  global:
+    storageClass: local-path
+    security:
+      allowInsecureImages: true
+    imageRegistry: public.ecr.aws
+  image:
+    repository: bitnami/postgresql
+    tag: 17.5.0-debian-12-r20
+  primary:
+    persistence:
+      enabled: true
+      size: 100Mi
+    resources: {}
+      # requests:
+      #   cpu: 300m
+      #   memory: 4Gi
+      # limits:
+      #   memory: 4Gi
+    extendedConfiguration: |
+      max_connections = 1000
+  auth:
+    username: jovvix
+    database: jovvix
+    existingSecret: jovvix-db
+  postgresql:
+    maxConnections: 4000
+
+# redis configurations
+redis:
+  fullnameOverride: "jovvix-redis"
+  architecture: standalone
+  auth:
+    existingSecret: jovvix-db
+  global:
+    storageClass: local-path
+    security:
+      allowInsecureImages: true
+    imageRegistry: public.ecr.aws
+  image:
+    repository: bitnami/redis
+    tag: 8.0.3-debian-12-r1
+  master:
+    persistence:
+      enabled: true
+      size: 100Mi
+    resources: {}
+      # requests:
+      #   cpu: 200m
+      #   memory: 1024Mi
+      # limits:
+      #   memory: 1024Mi
+
+# kratos configurations
+kratos:
+  fullnameOverride: "jovvix-kratos"
+  job:
+    extraInitContainers: |
+      - name: wait-for-jovvix-api-svc
+        image: curlimages/curl:8.15.0
+        command:
+          [
+            "sh",
+            "-c",
+            "until curl -sf --connect-timeout 3 http://jovvix-api-svc:3300/api/healthz; do echo 'Waiting for jovvix-api-svc health endpoint...'; sleep 5; done; echo 'jovvix-api-svc is healthy, proceeding...';"
+          ]
+  ingress:
+    admin:
+      enabled: true
+      className: "nginx"
+      hosts:
+      - host: app.example.com
+        paths:
+        - path: /admin/identities
+          pathType: ImplementationSpecific
+          servicePort: http
+    public:
+      enabled: true
+      className: "nginx"
+      hosts:
+      - host: app.example.com
+        paths:
+        - path: /self-service
+          pathType: ImplementationSpecific
+          servicePort: http
+        - path: /sessions
+          pathType: ImplementationSpecific
+          servicePort: http
+  secret:
+    # do not create secret by default
+    enabled: false
+    # takes existing secret with this name
+    nameOverride: jovvix-kratos
+  kratos:
+    automigration:
+      enabled: false
+    config:
+      courier:
+        smtp:
+          connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
+          from_address: no-reply@example.com
+      serve:
+        public:
+          base_url: https://app.example.com
+          port: 4433
+          cors:
+            enabled: true
+            allowed_origins:
+            - https://app.example.com
+            allowed_methods:
+            - POST
+            - GET
+            - PUT
+            - PATCH
+            - DELETE
+            allowed_headers:
+            - Authorization
+            - Cookie
+            - Content-Type
+            exposed_headers:
+            - Content-Type
+            - Set-Cookie
+            allow_credentials: true
+        admin:
+          base_url: https://app.example.com
+          port: 4434
+      selfservice:
+        allowed_return_urls:
+        - https://app.example.com
+        default_browser_return_url: https://app.example.com
+        flows:
+          error:
+            ui_url: https://app.example.com/error
+          login:
+            after:
+              default_browser_return_url: https://app.example.com/api/v1/kratos/auth
+              hooks:
+              - hook: require_verified_address
+            lifespan: 10m
+            ui_url: https://app.example.com/account/login
+          logout:
+            after:
+              default_browser_return_url: https://app.example.com/login
+          recovery:
+            enabled: true
+            ui_url: https://app.example.com/recovery
+            use: code
+          registration:
+            after:
+              default_browser_return_url: https://app.example.com/api/v1/kratos/auth
+              oidc:
+                hooks:
+                - hook: session
+              password:
+                hooks:
+                - hook: session
+                - hook: show_verification_ui
+            lifespan: 10m
+            ui_url: https://app.example.com/account/register
+          settings:
+            privileged_session_max_age: 15m
+            required_aal: highest_available
+            ui_url: https://app.example.com/settings
+          verification:
+            after:
+              default_browser_return_url: https://app.example.com/api/v1/kratos/auth
+            enabled: true
+            ui_url: https://app.example.com/verification
+            use: code
+        methods:
+          code:
+            enabled: true
+          link:
+            enabled: true
+          lookup_secret:
+            enabled: true
+          oidc:
+            config:
+              base_redirect_uri: https://app.example.com
+              providers:
+              - auth_url: https://accounts.google.com/o/oauth2/v2/auth
+                client_id: <GOOGLE_CLIENT_ID>
+                client_secret: <GOOGLE_CLIENT_SECRET>
+                id: google
+                issuer_url: https://accounts.google.com
+                mapper_url: base64://<BASE64-JASONNATE_SCHEMA>
+                provider: google
+                scope:
+                - openid
+                - email
+                - profile
+                token_url: https://www.googleapis.com/oauth2/v4/token
+            enabled: true
+          password:
+            enabled: true
+          totp:
+            config:
+              issuer: Kratos
+            enabled: true
+      ciphers:
+        algorithm: xchacha20-poly1305
+      cookies:
+        domain: app.example.com
+        path: /
+        same_site: Lax
+      hashers:
+        algorithm: bcrypt
+        bcrypt:
+          cost: 8
+      identity:
+        default_schema_id: default
+        schemas:
+        - id: default
+          url: file:///etc/config/identity.schema.json
+      log:
+        format: json
+        leak_sensitive_values: true
+        level: warning
+    identitySchemas:
+      identity.schema.json: |
+        {
+          "$id": "https://schemas.ory.sh/presets/kratos/quickstart/email-password/identity.schema.json",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "Person",
+          "type": "object",
+          "properties": {
+          "traits": {
+              "type": "object",
+              "properties": {
+                  "email": {
+                      "type": "string",
+                      "format": "email",
+                      "title": "E-Mail",
+                      "minLength": 3,
+                      "ory.sh/kratos": {
+                          "credentials": {
+                              "password": {
+                                  "identifier": true
+                              }
+                          },
+                          "verification": {
+                              "via": "email"
+                          },
+                          "recovery": {
+                              "via": "email"
+                          }
+                      }
+                  },
+                  "name": {
+                      "type": "object",
+                      "properties": {
+                          "first": {
+                              "title": "First Name",
+                              "type": "string"
+                          },
+                          "last": {
+                              "title": "Last Name",
+                              "type": "string"
+                          }
+                      }
+                  }
+              },
+              "required": [
+                  "email"
+              ],
+              "additionalProperties": false
+            }
+          }
+        }
