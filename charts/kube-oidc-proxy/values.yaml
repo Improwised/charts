@@ -45,6 +45,13 @@ serviceTemplate:
 
   initContainers: []
 
+  ## additionalContainers:
+  ##   - name: sidecar
+  ##     image: busybox:latest
+  ##     command: ['sh', '-c', 'echo hello']
+
+  additionalContainers: []
+
   lifecycleHooks: {}
 
   healthcheck:
@@ -66,9 +73,9 @@ serviceTemplate:
   env: []
   envFrom: []
   ports:
-  - name: http
-    containerPort: 80
-    protocol: TCP
+    - name: http
+      containerPort: 80
+      protocol: TCP
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -108,10 +115,10 @@ serviceTemplate:
     # className: nginx
     type: ClusterIP
     ports:
-    - name: http
-      port: 80
-      targetPort: http
-      protocol: TCP
+      - name: http
+        port: 80
+        targetPort: http
+        protocol: TCP
     annotations: {}
 
   ingress:
@@ -127,7 +134,7 @@ serviceTemplate:
     #    hosts:
     #      - chart-example.local
 
-# Enables Gateway API HTTPRoute as a replacement for traditional Ingress resources
+  # Enables Gateway API HTTPRoute as a replacement for traditional Ingress resources
   httpRoute:
     enabled: false
     annotations: {}

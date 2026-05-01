@@ -133,7 +133,7 @@ spec:
           {{- if $.Values.serviceTemplate.volumeMounts }}
 {{ toYaml $.Values.serviceTemplate.volumeMounts | indent 10 }}
           {{- end }}
-        {{- if or ($.Values.serviceTemplate.healthcheck.enabled) (.healthcheck.enabled) }}
+        {{- if or ($.Values.serviceTemplate.healthcheck.enabled) (and .healthcheck .healthcheck.enabled) }}
         {{- if .healthcheck }}
 {{- $healthType := .healthcheck.type -}}
           {{- if and (eq $healthType "httpGet") (.healthcheck.path ) }}
@@ -194,6 +194,16 @@ spec:
           {{- end }}
 {{- end }}
         {{- end }}
+      {{- if or ($.Values.serviceTemplate.additionalContainers) (.additionalContainers) }}
+        {{- if .additionalContainers }}
+        {{- if $.Values.serviceTemplate.additionalContainers }}
+{{ toYaml $.Values.serviceTemplate.additionalContainers | indent 8 }}
+        {{- end }}
+{{ toYaml .additionalContainers | indent 8 }}
+        {{- else }}
+{{ toYaml $.Values.serviceTemplate.additionalContainers | indent 8 }}
+        {{- end }}
+      {{- end }}
       {{- with .dnsConfig | default $.Values.serviceTemplate.dnsConfig }}
       dnsConfig:
 {{ toYaml . | indent 8 }}
