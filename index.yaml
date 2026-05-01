@@ -384,6 +384,18 @@ entries:
   kube-oidc-proxy:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2026-05-01T11:02:00.563903212Z"
+    description: A Helm chart for kube-oidc-proxy
+    digest: 403b31a8c344bf098a9e8c9f17f6b06c0c8feec640d54efc9dad5223cd441149
+    maintainers:
+    - name: improwised
+    name: kube-oidc-proxy
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/kube-oidc-proxy-1.1.0/kube-oidc-proxy-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-05-26T12:28:56.046341521Z"
     description: A Helm chart for kube-oidc-proxy
     digest: a434d9c3c14bb30399954abaf14e48c46835ab485b129d55bdfc86bb2dcdb9cb
@@ -1019,4 +1031,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2026-04-20T11:19:53.396164335Z"
+generated: "2026-05-01T11:02:00.564016479Z"
