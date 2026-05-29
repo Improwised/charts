@@ -11,7 +11,7 @@ data:
               address:
                 socket_address:
                   address: 0.0.0.0
-                  port_value: 443
+                  port_value: 8080
               filter_chains:
               - transport_socket:
                   name: envoy.transport_sockets.tls
