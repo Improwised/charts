@@ -52,6 +52,18 @@ entries:
   apexkube-agent:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2026-06-01T13:07:09.973749513Z"
+    description: A Helm chart for deploying the ApexKube agent with Envoy and WireGuard
+    digest: 50538a2ad025b876325811f182c39fc47e9fe7186a1f504b5654f020060a10a2
+    maintainers:
+    - name: improwised
+    name: apexkube-agent
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/apexkube-agent-1.0.1/apexkube-agent-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2026-04-20T11:19:53.3960811Z"
     description: A Helm chart for deploying the ApexKube agent with Envoy and WireGuard
     digest: 7f0af4a39c1842aaae819c55862c92bd4cae3fce1ddbe1d2d8177bfb54e7d421
@@ -1031,4 +1043,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2026-05-01T11:02:00.564016479Z"
+generated: "2026-06-01T13:07:09.973899312Z"
