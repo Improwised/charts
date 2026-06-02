@@ -10,6 +10,7 @@ data:
   wg0.conf: |
     [Interface]
     Address = {{ .Values.wireguard.config.address }}
+    PostUp = wg set %i private-key /etc/wireguard/privatekey
 
     [Peer]
     PublicKey = {{ .Values.wireguard.config.peer.publicKey }}

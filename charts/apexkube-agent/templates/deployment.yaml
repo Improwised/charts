@@ -64,10 +64,9 @@ spec:
               port: healthcheck
           {{- end }}
           env:
-            - name: LOG_LEVEL
-              value: info
-            - name: ENABLE_HEALTHCHECK
-              value: "{{ .Values.wireguard.healthcheck.enabled }}"
+            {{- if .Values.wireguard.env }}
+            {{- toYaml .Values.wireguard.env | nindent 12 }}
+            {{- end }}
           securityContext:
             {{- toYaml .Values.wireguard.securityContext | nindent 12 }}
           resources:
@@ -87,9 +86,8 @@ spec:
                   - /bin/sh
                   - -c
                   - |
-                    # Wait for WireGuard interface to be up
-                    sleep 5
-                    echo "WireGuard interface should be up now"
+                    # Wait for WireGuard interface to be up (poll instead of fixed sleep)
+                    until ip link show wg0 > /dev/null 2>&1; do sleep 1; done; echo "WireGuard is up"
       volumes:
         - name: envoy-config-volume
           configMap:
