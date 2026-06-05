@@ -68,7 +68,7 @@ data:
                                 end
 
                                 if cached_token then
-                                  request_handle:headers():add("Authorization", "Bearer " .. cached_token)
+                                  request_handle:headers():replace("Authorization", "Bearer " .. cached_token)
                                 end
                               end
                         - name: envoy.filters.http.router
