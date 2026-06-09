@@ -52,18 +52,6 @@ envoy:
   # Container port for Envoy
   containerPort: 10000
 
-  # Service configuration for Envoy
-  service:
-    # Service type (ClusterIP, NodePort, LoadBalancer)
-    type: ClusterIP
-    # Service port
-    port: 10000
-    # Target port on the container
-    targetPort: 10000
-    # NodePort (only applicable when type is NodePort)
-    # If not specified, Kubernetes will allocate one automatically
-    nodePort: ""
-
 # WireGuard VPN configuration
 wireguard:
   image:
@@ -111,6 +99,14 @@ wireguard:
     # Generate using: wg genkey
     # WARNING: This is sensitive data. Consider using existingSecret for production
     privateKey: "<wireguard-private-key>"
+
+  # Environment variables for WireGuard container (optional)
+  # Define as a list of env var objects; this replaces the hardcoded env in the deployment
+  env:
+    - name: LOG_LEVEL
+      value: "info"
+    - name: ENABLE_HEALTHCHECK
+      value: "true"
 
   # Resource limits and requests for WireGuard container
   resources:

@@ -11,7 +11,7 @@ data:
               address:
                 socket_address:
                   address: 0.0.0.0
-                  port_value: 8080
+                  port_value: {{ .Values.envoy.containerPort }}
               filter_chains:
               - transport_socket:
                   name: envoy.transport_sockets.tls
@@ -68,7 +68,7 @@ data:
                                 end
 
                                 if cached_token then
-                                  request_handle:headers():add("Authorization", "Bearer " .. cached_token)
+                                  request_handle:headers():replace("Authorization", "Bearer " .. cached_token)
                                 end
                               end
                         - name: envoy.filters.http.router
