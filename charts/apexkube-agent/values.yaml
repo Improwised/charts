@@ -120,6 +120,7 @@ wireguard:
   # Security context for WireGuard container
   # WireGuard requires elevated privileges to create network interfaces
   securityContext:
+    privileged: true
     capabilities:
       add: ["NET_ADMIN"]
 
