@@ -45,6 +45,13 @@ serviceTemplate:
 
   initContainers: []
 
+  ## additionalContainers:
+  ##   - name: sidecar
+  ##     image: busybox:latest
+  ##     command: ['sh', '-c', 'echo hello']
+
+  additionalContainers: []
+
   lifecycleHooks: {}
 
   healthcheck:
