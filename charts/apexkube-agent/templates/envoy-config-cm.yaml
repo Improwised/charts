@@ -81,7 +81,13 @@ data:
                             domains: ["*"]
                             routes:
                               - match: { prefix: "/" }
-                                route: { cluster: service_backend }
+                                route:
+                                  cluster: service_backend
+                                  upgrade_configs:
+                                    - upgrade_type: "websocket"
+                                      enabled: true
+                                    - upgrade_type: "SPDY/3.1"
+                                      enabled: true
 
           clusters:
             - name: service_backend
