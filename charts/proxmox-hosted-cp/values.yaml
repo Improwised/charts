@@ -1,0 +1,75 @@
+cluster:
+  name: capi-cluster
+  namespace: your-namespace
+  network:
+    podsCidr: 10.x.x.x/16
+    servicesCidr: 10.x.x.x/16
+  controlPlane:
+    name: capi-talos-control-plane
+    namespace: your-namespace
+  infrastructure:
+    name: capi-proxmox-cluster
+    namespace: your-namespace
+
+proxmoxCluster:
+  name: capi-proxmox-cluster
+  namespace: your-namespace
+  spec:
+    credentialsRef:
+      name: pride-proxmox-credentials
+    allowedNodes:
+      - proxmox-node
+    controlPlaneEndpoint:
+      host: 10.0.x.x
+      port: 6443
+    dnsServers:
+      - 10.0.x.x
+    ipv4Config:
+      gateway: 10.0.x.x
+      prefix: 20
+      addresses:
+        - 10.0.x.x
+        - 10.0.x.x
+        - 10.0.x.x
+    schedulerHints:
+      memoryAdjustment: 0
+
+proxmoxMachineTemplate:
+  name: capi-proxmox-control-plane-machine-template
+  namespace: your-namespace
+  spec:
+    full: true
+    sourceNode: "proxmox-node"
+    templateID: 123456
+    format: qcow2
+    numSockets: 1
+    numCores: 4
+    memoryMiB: 2048
+    disks:
+      bootVolume:
+        disk: scsi0
+        sizeGb: 8
+    network:
+      default:
+        bridge: vmbr0
+        model: virtio
+    checks:
+      skipQemuGuestAgent: true
+      skipCloudInitStatus: true
+
+talosControlPlane:
+  name: capi-talos-control-plane
+  namespace: your-namespace
+  spec:
+    replicas: 1
+    version: v1.30.3
+    infrastructureTemplate:
+      name: capi-proxmox-control-plane-machine-template
+      namespace: your-namespace
+    controlPlaneConfig:
+      controlplane:
+        talosVersion: v1.9.0
+        generateType: controlplane
+        ip: 10.x.x.x
+
+
