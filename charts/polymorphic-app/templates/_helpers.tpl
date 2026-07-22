@@ -234,3 +234,238 @@ readinessProbe:
   {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Container spec template - generates a single container definition
+Context: {
+  container: container definition,
+  root: root values,
+  defaultImage: default image repository and tag,
+  defaultEnv: default env vars,
+  defaultEnvFrom: default envFrom,
+  defaultVolumeMounts: default volume mounts
+}
+*/}}
+{{- define "polymorphic-app.container" -}}
+name: {{ .container.name | required "Container name is required" }}
+  {{- if .container.image }}
+image: "{{ .container.image.repository }}:{{ .container.image.tag }}"
+  {{- else if .defaultImage }}
+image: "{{ .defaultImage.repository }}:{{ .defaultImage.tag }}"
+  {{- else }}
+image: "{{ .root.Values.image.repository }}:{{ .root.Values.image.tag }}"
+  {{- end }}
+imagePullPolicy: {{ .root.Values.image.pullPolicy }}
+  {{- if or .container.env .defaultEnv .root.Values.env }}
+env:
+  {{- if .container.env }}
+{{ toYaml .container.env | indent 2 }}
+  {{- end }}
+  {{- if .defaultEnv }}
+{{ toYaml .defaultEnv | indent 2 }}
+  {{- end }}
+  {{- if .root.Values.env }}
+{{ toYaml .root.Values.env | indent 2 }}
+  {{- end }}
+  {{- end }}
+  {{- if or .container.envFrom .defaultEnvFrom .root.Values.envFrom }}
+envFrom:
+  {{- if .container.envFrom }}
+{{ toYaml .container.envFrom | indent 2 }}
+  {{- end }}
+  {{- if .defaultEnvFrom }}
+{{ toYaml .defaultEnvFrom | indent 2 }}
+  {{- end }}
+  {{- if .root.Values.envFrom }}
+{{ toYaml .root.Values.envFrom | indent 2 }}
+  {{- end }}
+  {{- end }}
+  {{- if .container.command }}
+command:
+{{ toYaml .container.command | indent 2 }}
+  {{- end }}
+  {{- if .container.args }}
+args:
+{{ toYaml .container.args | indent 2 }}
+  {{- end }}
+  {{- with .container.ports }}
+ports:
+{{ toYaml . | indent 2 }}
+  {{- end }}
+  {{- with .container.resources }}
+resources:
+{{ toYaml . | indent 2 }}
+  {{- end }}
+  {{- with .container.containerSecurityContext }}
+securityContext:
+{{ toYaml . | indent 2 }}
+  {{- end }}
+  {{- if .container.lifecycleHooks }}
+lifecycle:
+{{ toYaml .container.lifecycleHooks | indent 2 }}
+  {{- end }}
+  {{- if or .container.volumeMounts .defaultVolumeMounts .root.Values.volumeMounts }}
+volumeMounts:
+  {{- if .container.volumeMounts }}
+{{ toYaml .container.volumeMounts | indent 2 }}
+  {{- end }}
+  {{- if .defaultVolumeMounts }}
+{{ toYaml .defaultVolumeMounts | indent 2 }}
+  {{- end }}
+  {{- if .root.Values.volumeMounts }}
+{{ toYaml .root.Values.volumeMounts | indent 2 }}
+  {{- end }}
+  {{- end }}
+  {{- $health := .container.healthcheck -}}
+  {{- if and $health (ne $health.enabled false) }}
+{{- include "polymorphic-app.healthchecks" $health | nindent 0 }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+Pod spec template - generates the full pod spec (without initial 'spec:' key)
+Context: {
+  item: service/worker item definition,
+  root: root context ($),
+  template: template defaults (serviceTemplate or workerTemplate),
+  type: "service" or "worker"
+}
+*/}}
+{{- define "polymorphic-app.podSpec" -}}
+{{- if .item.imagePullSecrets }}
+imagePullSecrets:
+{{ toYaml .item.imagePullSecrets | indent 2 }}
+{{- else if .template.imagePullSecrets }}
+imagePullSecrets:
+{{ toYaml .template.imagePullSecrets | indent 2 }}
+{{- else if .root.Values.imagePullSecrets }}
+imagePullSecrets:
+{{ toYaml .root.Values.imagePullSecrets | indent 2 }}
+{{- end }}
+terminationGracePeriodSeconds: {{ .item.terminationGracePeriodSeconds | default .template.terminationGracePeriodSeconds }}
+{{- if or .template.initContainers .item.initContainers }}
+  {{- with .item.initContainers | default .template.initContainers }}
+initContainers:
+{{ toYaml . | indent 2 }}
+  {{- end }}
+{{- end }}
+containers:
+{{- $containers := .item.containers -}}
+{{- if not $containers -}}
+  {{- fail "containers array is required. Please define containers for your deployment." -}}
+{{- end -}}
+{{- range $container := $containers }}
+  - name: {{ $container.name | required "Container name is required" }}
+    {{- if $container.image }}
+    image: "{{ $container.image.repository }}:{{ $container.image.tag }}"
+    {{- else if $.template.image }}
+    image: "{{ $.template.image.repository }}:{{ $.template.image.tag }}"
+    {{- else }}
+    image: "{{ $.root.Values.image.repository }}:{{ $.root.Values.image.tag }}"
+    {{- end }}
+    imagePullPolicy: {{ $.root.Values.image.pullPolicy }}
+    {{- if or $container.env $.template.env $.root.Values.env }}
+    env:
+    {{- if $container.env }}
+{{ toYaml $container.env | indent 6 }}
+    {{- end }}
+    {{- if $.template.env }}
+{{ toYaml $.template.env | indent 6 }}
+    {{- end }}
+    {{- if $.root.Values.env }}
+{{ toYaml $.root.Values.env | indent 6 }}
+    {{- end }}
+    {{- end }}
+    {{- if or $container.envFrom $.template.envFrom $.root.Values.envFrom }}
+    envFrom:
+    {{- if $container.envFrom }}
+{{ toYaml $container.envFrom | indent 6 }}
+    {{- end }}
+    {{- if $.template.envFrom }}
+{{ toYaml $.template.envFrom | indent 6 }}
+    {{- end }}
+    {{- if $.root.Values.envFrom }}
+{{ toYaml $.root.Values.envFrom | indent 6 }}
+    {{- end }}
+    {{- end }}
+    {{- if $container.command }}
+    command:
+{{ toYaml $container.command | indent 6 }}
+    {{- end }}
+    {{- if $container.args }}
+    args:
+{{ toYaml $container.args | indent 6 }}
+    {{- end }}
+    {{- with $container.ports }}
+    ports:
+{{ toYaml . | indent 6 }}
+    {{- end }}
+    {{- with $container.resources }}
+    resources:
+{{ toYaml . | indent 6 }}
+    {{- end }}
+    {{- with $container.containerSecurityContext }}
+    securityContext:
+{{ toYaml . | indent 6 }}
+    {{- end }}
+    {{- if $container.lifecycleHooks }}
+    lifecycle:
+{{ toYaml $container.lifecycleHooks | indent 6 }}
+    {{- end }}
+    {{- if or $container.volumeMounts $.template.volumeMounts $.root.Values.volumeMounts }}
+    volumeMounts:
+    {{- if $container.volumeMounts }}
+{{ toYaml $container.volumeMounts | indent 6 }}
+    {{- end }}
+    {{- if $.template.volumeMounts }}
+{{ toYaml $.template.volumeMounts | indent 6 }}
+    {{- end }}
+    {{- if $.root.Values.volumeMounts }}
+{{ toYaml $.root.Values.volumeMounts | indent 6 }}
+    {{- end }}
+    {{- end }}
+    {{- $health := $container.healthcheck -}}
+    {{- if and $health (ne $health.enabled false) }}
+{{- include "polymorphic-app.healthchecks" $health | nindent 4 }}
+    {{- end }}
+{{- end }}
+{{- with .item.dnsConfig | default .template.dnsConfig }}
+dnsConfig:
+{{ toYaml . | indent 2 }}
+{{- end }}
+{{- with .item.securityContext | default .template.securityContext }}
+securityContext:
+{{ toYaml . | indent 2 }}
+{{- end }}
+volumes:
+{{- if .item.volumes }}
+{{ toYaml .item.volumes | indent 2 }}
+{{- end }}
+{{- if .root.Values.volumes }}
+{{ toYaml .root.Values.volumes | indent 2 }}
+{{- end }}
+{{- if .template.volumes }}
+{{ toYaml .template.volumes | indent 2 }}
+{{- end }}
+{{- with .item.nodeSelector | default .template.nodeSelector }}
+nodeSelector:
+{{ toYaml . | indent 2 }}
+{{- end }}
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 1
+      podAffinityTerm:
+        topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            {{- include "polymorphic-app.labels" $.root | nindent 12 }}
+            app.kubernetes.io/component: "{{ .item.name | default .template.name }}"
+{{- with .item.affinity | default .template.affinity }}
+{{ toYaml . | indent 2 }}
+{{- end }}
+{{- with .item.tolerations | default .template.tolerations }}
+tolerations:
+{{ toYaml . | indent 2 }}
+{{- end }}
+{{- end -}}
