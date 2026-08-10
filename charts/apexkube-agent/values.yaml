@@ -2,18 +2,21 @@
 
 # ServiceAccount configuration
 serviceAccount:
-  # Name of the service account to create/use
-  name: apexkube-agent
+  # Name of the service account to create/use.
+  # If not set, defaults to the release name (or fullnameOverride if configured).
+  name: ""
 
 # ClusterRole configuration
 clusterRole:
-  # Name of the ClusterRole to create
-  name: apexkube-agent
+  # Name of the ClusterRole to create.
+  # If not set, defaults to the release name (or fullnameOverride if configured).
+  name: ""
 
 # ClusterRoleBinding configuration
 clusterRoleBinding:
-  # Name of the ClusterRoleBinding to create
-  name: apexkube-agent
+  # Name of the ClusterRoleBinding to create.
+  # If not set, defaults to the release name (or fullnameOverride if configured).
+  name: ""
 
 # Envoy proxy configuration
 envoy:

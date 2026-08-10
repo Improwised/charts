@@ -71,3 +71,36 @@ WireGuard Secret name
 {{- printf "%s-wireguard-privatekey" (include "apexkube-agent.fullname" .) -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+ServiceAccount name
+*/}}
+{{- define "apexkube-agent.serviceAccountName" -}}
+{{- if .Values.serviceAccount.name -}}
+{{- .Values.serviceAccount.name -}}
+{{- else -}}
+{{- include "apexkube-agent.fullname" . -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+ClusterRole name
+*/}}
+{{- define "apexkube-agent.clusterRoleName" -}}
+{{- if .Values.clusterRole.name -}}
+{{- .Values.clusterRole.name -}}
+{{- else -}}
+{{- include "apexkube-agent.fullname" . -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+ClusterRoleBinding name
+*/}}
+{{- define "apexkube-agent.clusterRoleBindingName" -}}
+{{- if .Values.clusterRoleBinding.name -}}
+{{- .Values.clusterRoleBinding.name -}}
+{{- else -}}
+{{- include "apexkube-agent.fullname" . -}}
+{{- end -}}
+{{- end }}
