@@ -15,7 +15,7 @@ spec:
       labels:
         {{- include "apexkube-agent.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ .Values.serviceAccount.name }}
+      serviceAccountName: {{ include "apexkube-agent.serviceAccountName" . }}
       containers:
         - name: envoy
           image: "{{ .Values.envoy.image.repository }}:{{ .Values.envoy.image.tag }}"
