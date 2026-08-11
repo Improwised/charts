@@ -1,0 +1,48 @@
+{{- if .Values.api.enabled }}
+{{- $scheme := .Values.global.scheme | default "http" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "jovvix.api.fullname" . }}
+  labels:
+    {{- include "jovvix.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+data:
+  APP_ENV: {{ .Values.api.config.appEnv | quote }}
+  APP_PORT: {{ .Values.api.config.appPort | quote }}
+  DEBUG: {{ .Values.api.config.debug | quote }}
+  IS_DEVELOPMENT: {{ .Values.api.config.isDevelopment | quote }}
+  DB_DIALECT: {{ .Values.api.config.dbDialect | quote }}
+  DB_HOST: {{ include "jovvix.databaseHost" . }}
+  DB_NAME: {{ .Values.database.name | quote }}
+  DB_PORT: {{ .Values.database.port | quote }}
+  DB_QUERYSTRING: {{ printf "sslmode=%s" .Values.database.sslMode | quote }}
+  DB_USERNAME: {{ .Values.database.username | quote }}
+  REDIS_DATABASES: {{ .Values.api.config.redisDatabases | quote }}
+  REDIS_HOST: {{ include "jovvix.redisHost" . }}
+  REDIS_PORT: {{ .Values.redis.port | quote }}
+  DEFAULT_QUESTION_POINTS: {{ .Values.api.config.defaultQuestionPoints | quote }}
+  MAX_QUIZ_FILE_SIZE: {{ .Values.api.config.maxQuizFileSize | quote }}
+  MAXIMUM_POINTS_PER_QUESTION: {{ .Values.api.config.maximumPointsPerQuestion | quote }}
+  MINIMUM_POINTS_PER_QUESTION: {{ .Values.api.config.minimumPointsPerQuestion | quote }}
+  QUESTION_TIME_LIMIT: {{ .Values.api.config.questionTimeLimit | quote }}
+  SCOREBOARD_MAX_DURATION: {{ .Values.api.config.scoreBoardMaxDuration | quote }}
+  ACTIVE_QUIZ_SWEEP_MINUTES: {{ .Values.api.config.activeQuizSweepMinutes | quote }}
+  ACTIVE_QUIZ_TTL_HOURS: {{ .Values.api.config.activeQuizTtlHours | quote }}
+  BODY_LIMIT_MB: {{ .Values.api.config.bodyLimitMb | quote }}
+  MIGRATION_DIR: {{ .Values.api.config.migrationDir | quote }}
+  EMAIL_FROM: {{ .Values.api.config.emailFrom | quote }}
+  PUBLIC_QUIZ_ADMIN_EMAILS: {{ .Values.api.config.publicQuizAdminEmails | quote }}
+  ISSUER: {{ printf "%s://%s" $scheme .Values.global.domain | quote }}
+  WEB_URL: {{ printf "%s://%s" $scheme .Values.global.domain | quote }}
+  SELF_SERVICE_DEFAULT_BROWSER_RETURN_URL: {{ printf "%s://%s/api/v1/kratos/auth" $scheme .Values.global.domain | quote }}
+  SELF_SERVICE_FLOWS_REGISTRATION_AFTER_DEFAULT_BROWSER_RETURN_URL: {{ printf "%s://%s/api/v1/kratos/auth" $scheme .Values.global.domain | quote }}
+  SERVE_ADMIN_BASE_URL: http://{{ include "jovvix.kratosServicePrefix" . }}-admin/admin
+  SERVE_ADMIN_PORT: {{ .Values.api.config.serveAdminPort | quote }}
+  SERVE_PUBLIC_BASE_URL: http://{{ include "jovvix.kratosServicePrefix" . }}-public:{{ .Values.api.config.servePublicPort }}
+  SERVE_PUBLIC_PORT: {{ .Values.api.config.servePublicPort | quote }}
+  SMTP_HOST: {{ .Values.api.config.smtpHost | quote }}
+  SMTP_PORT: {{ .Values.api.config.smtpPort | quote }}
+  KRATOS_ENABLED: {{ .Values.api.config.kratosEnabled | quote }}
+  KRATOS_COOKIE_EXPIRATION_TIME: {{ .Values.api.config.kratosCookieExpirationTime | quote }}
+{{- end }}

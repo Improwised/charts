@@ -1,0 +1,546 @@
+# Default values for jovvix.
+
+#  Global values
+#  Public domain name for the application (e.g. quiz.example.com).
+#  Used in Kratos return URLs, API ISSUER, and UI NUXT_PUBLIC_BASE_URL.
+global:
+  domain: app.example.com
+  #  URL scheme for public endpoints ("http" or "https").
+  scheme: http
+  #  Default storage class for all persistent volumes. Leave empty to use the cluster default.
+  storageClass: ""
+  databaseHost: ""
+  security:
+    podSecurityContext: {}
+      # fsGroup: 1000
+    securityContext: {}
+      # capabilities:
+      #   drop:
+      #   - ALL
+      # readOnlyRootFilesystem: true
+      # runAsNonRoot: true
+      # runAsUser: 1000
+
+#  Database configuration
+#  When host is empty and postgres is enabled, the internal PostgreSQL
+#  StatefulSet is used. Set host to point at an external PostgreSQL instance
+#  and set postgres.enabled to false to use it.
+database:
+  #  External PostgreSQL hostname. Leave empty to use the internal StatefulSet.
+  host: ""
+  port: 5432
+  name: jovvix
+  username: jovvix
+  #  Password for an external database. When using the internal StatefulSet,
+  #  postgres.secret.password is used instead.
+  password: ""
+  sslMode: disable
+
+#  Redis/Valkey configuration
+#  When host is empty and valkey is enabled, the internal Valkey sub-chart is
+#  used. Set host to point at an external Redis/Valkey instance and set
+#  valkey.enabled to false to use it.
+redis:
+  #  External Redis/Valkey hostname. Leave empty to use the internal Valkey sub-chart.
+  host: ""
+  port: 6379
+  #  Password for an external Redis/Valkey instance. When using the internal
+  #  Valkey sub-chart, valkey.secret.password is used instead.
+  password: ""
+
+#  Override the name of the chart
+nameOverride: ""
+#  Override the full name of the chart
+fullnameOverride: ""
+
+imagePullSecrets: []
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+#  Alternative to HTTPRoute. Enable this instead of the default HTTPRoute
+#  if using a traditional Ingress controller (e.g. nginx-ingress).
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+#  HorizontalPodAutoscaler configuration for API and UI deployments.
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+#  PostgreSQL StatefulSet (internal database)
+#  Disable this and set database.host to use an external PostgreSQL instance.
+#  An initdb ConfigMap is created to bootstrap the kratos schema.
+postgres:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: postgres
+    tag: "18.4"
+    pullPolicy: IfNotPresent
+  port: 5432
+  storage:
+    size: 8Gi
+    #  Storage class for the database PVC. Falls back to global.storageClass.
+    storageClass: ""
+  resources:
+    limits:
+      memory: 1Gi
+    requests:
+      cpu: 10m
+      memory: 1Gi
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  #  PostgreSQL credentials. Empty by default; provide at install time
+  #  via --set, or reference an existing Kubernetes Secret.
+  secret:
+    enabled: true
+    #  Name of an existing Kubernetes Secret containing "username" and "password" keys.
+    existingSecret: ""
+    username: "jovvix"  # PostgreSQL username
+    password: ""        # PostgreSQL password
+
+#  Valkey sub-chart values (used as an in-memory cache / Redis-compatible store).
+#  Disable this and set redis.host to use an external Redis/Valkey instance.
+
+valkey:
+  enabled: true
+  image:
+    repository: valkey/valkey
+    tag: "9.0.2"
+  auth:
+    enabled: true
+    aclUsers:
+      default:
+        passwordKey: password
+        permissions: "~* &* +@all"
+    #  Name of the secret that stores the Valkey password. Created by the valkey-secret.yaml template.
+    usersExistingSecret: jovvix-valkey
+  dataStorage:
+    className: ""
+    enabled: true
+    requestedSize: 500Mi
+  replica:
+    enabled: false
+  resources:
+    limits:
+      memory: 500Mi
+    requests:
+      cpu: 10m
+      memory: 500Mi
+  initResources:
+    limits:
+      memory: 200Mi
+    requests:
+      cpu: 10m
+      memory: 200Mi
+  securityContext:
+    capabilities:
+      drop: ["ALL", "NET_RAW"]
+  #  Valkey password. Empty by default; provide at install time via --set,
+  #  or reference an existing Kubernetes Secret.
+  secret:
+    enabled: true
+    #  Name of an existing Kubernetes Secret containing a "password" key.
+    existingSecret: ""
+    password: ""        # Valkey password
+
+#  Kratos sub-chart values (Ory Kratos identity and authentication server).
+#  Handles user registration, login, password recovery, and session management.
+
+kratos:
+  enabled: true
+  development: true
+  image:
+    repository: oryd/kratos
+    tag: "v1.1.0"
+  resources: {}
+  ingress:
+    admin:
+      enabled: false
+    public:
+      enabled: false
+  #  HTTPRoute for Kratos admin and public endpoints.
+  #  Override parentRefs to use a different gateway.
+  httpRoute:
+    enabled: true
+    parentRefs:
+      - name: envoy-gateway
+        namespace: envoy-gateway-system
+  #  Disables the Kratos sub-chart's own secret creation. Our custom
+  #  kratos-secret.yaml template creates the secret instead.
+  secret:
+    enabled: false
+    #  Name of the secret created by kratos-secret.yaml.
+    nameOverride: jovvix-kratos
+  #  Kratos secrets. Empty by default; provide at install time via --set,
+  #  or reference an existing Kubernetes Secret.
+  secrets:
+    enabled: true
+    #  Name of an existing Kubernetes Secret containing all Kratos keys.
+    existingSecret: ""
+    secretsDefault: ""      # Kratos default secret (>= 32 characters)
+    secretsCookie: ""       # Kratos cookie secret (>= 32 characters)
+    secretsCipher: ""       # Kratos cipher secret (exactly 32 characters)
+    smtpConnectionURI: ""   # Kratos SMTP connection URI (e.g. "smtp://user:pass@host:587/")
+  deployment:
+    extraEnv:
+      - name: COURIER_SMTP_CONNECTION_URI
+        valueFrom:
+          secretKeyRef:
+            name: jovvix-kratos
+            key: smtpConnectionURI
+  courier:
+    extraEnv:
+      - name: COURIER_SMTP_CONNECTION_URI
+        valueFrom:
+          secretKeyRef:
+            name: jovvix-kratos
+            key: smtpConnectionURI
+  kratos:
+    development: true
+    automigration:
+      enabled: true
+      type: initContainer
+    config:
+      version: "v1.1.0"
+      cookies:
+        path: /
+        same_site: Lax
+      courier:
+        smtp:
+          from_address: no-reply@example.com
+      hashers:
+        algorithm: bcrypt
+        bcrypt:
+          cost: 8
+      identity:
+        default_schema_id: default
+        schemas:
+          - id: default
+            url: file:///etc/config/identity.schema.json
+      log:
+        format: json
+        leak_sensitive_values: true
+        level: warning
+      selfservice:
+        allowed_return_urls:
+          - "{{ .Values.global.scheme }}://{{ .Values.global.domain }}"
+        default_browser_return_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}"
+        flows:
+          error:
+            ui_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/error"
+          login:
+            after:
+              default_browser_return_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/api/v1/kratos/auth"
+            lifespan: 10m
+            ui_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/account/login"
+          logout:
+            after:
+              default_browser_return_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/login"
+          recovery:
+            enabled: true
+            ui_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/recovery"
+            use: code
+          registration:
+            after:
+              default_browser_return_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/api/v1/kratos/auth"
+              oidc:
+                hooks:
+                  - hook: session
+              password:
+                hooks:
+                  - hook: session
+            lifespan: 10m
+            ui_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/account/register"
+          settings:
+            privileged_session_max_age: 15m
+            required_aal: highest_available
+            ui_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/settings"
+          verification:
+            after:
+              default_browser_return_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/api/v1/kratos/auth"
+            enabled: true
+            ui_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}/verification"
+            use: code
+        methods:
+          code:
+            enabled: true
+          link:
+            enabled: true
+          lookup_secret:
+            enabled: true
+          oidc:
+            config:
+              base_redirect_uri: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}"
+              providers: []
+            enabled: false
+          password:
+            enabled: true
+          totp:
+            config:
+              issuer: Kratos
+            enabled: true
+      serve:
+        admin:
+          base_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}"
+          port: 4434
+        public:
+          base_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}"
+          cors:
+            allow_credentials: true
+            allowed_headers:
+              - Authorization
+              - Cookie
+              - Content-Type
+            allowed_methods:
+              - POST
+              - GET
+              - PUT
+              - PATCH
+              - DELETE
+            allowed_origins:
+              - "{{ .Values.global.scheme }}://{{ .Values.global.domain }}"
+            enabled: true
+            exposed_headers:
+              - Content-Type
+              - Set-Cookie
+          port: 4433
+    identitySchemas:
+      identity.schema.json: |
+        {
+          "$id": "https://schemas.ory.sh/presets/kratos/quickstart/email-password/identity.schema.json",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "Person",
+          "type": "object",
+          "properties": {
+          "traits": {
+              "type": "object",
+              "properties": {
+                  "email": {
+                      "type": "string",
+                      "format": "email",
+                      "title": "E-Mail",
+                      "minLength": 3,
+                      "ory.sh/kratos": {
+                          "credentials": {
+                              "password": {
+                                  "identifier": true
+                              }
+                          },
+                          "verification": {
+                              "via": "email"
+                          },
+                          "recovery": {
+                              "via": "email"
+                          }
+                      }
+                  },
+                  "name": {
+                      "type": "object",
+                      "properties": {
+                          "first": {
+                              "title": "First Name",
+                              "type": "string"
+                          },
+                          "last": {
+                              "title": "Last Name",
+                              "type": "string"
+                          }
+                      }
+                  }
+              },
+              "required": [
+                  "email"
+              ],
+              "additionalProperties": false
+            }
+          }
+        }
+
+#  Jovvix API server (Golang backend)
+
+api:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: improwised/jovvix-api
+    tag: main-77988f8-1785401490
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3300
+  #  HTTPRoute for the API service.
+  #  Override parentRefs to use a different gateway (default: Envoy Gateway).
+  #  Example: --set api.httpRoute.parentRefs[0].name=my-gateway
+  httpRoute:
+    enabled: true
+    parentRefs:
+      - name: envoy-gateway
+        namespace: envoy-gateway-system
+    matches:
+      - path:
+          type: PathPrefix
+          value: /api
+  resources:
+    limits:
+      memory: 300Mi
+    requests:
+      cpu: 10m
+      memory: 300Mi
+  #  Health check endpoint used for Kubernetes liveness and readiness probes.
+  healthcheck:
+    enabled: true
+    path: /api/healthz
+    initialDelaySeconds: 6
+    periodSeconds: 6
+    timeoutSeconds: 7
+    failureThreshold: 3
+  #  Init containers that wait for dependencies before the API pod starts.
+  initContainers:
+    enabled: true
+    waitForDb:
+      image:
+        repository: postgres
+        tag: "18.4"
+        pullPolicy: IfNotPresent
+    waitForRedis:
+      image:
+        repository: busybox
+        tag: "1.36"
+        pullPolicy: IfNotPresent
+    resources: {}
+  #  Database migration job that runs "jovvix migrate up" before the API starts.
+  #  Disable with --set api.migration.enabled=false if managing migrations externally.
+  migration:
+    enabled: true
+    image:
+      repository: improwised/jovvix-api
+      tag: main-77988f8-1785401490
+      pullPolicy: IfNotPresent
+    resources: {}
+  #  API secrets. Empty by default; provide at install time via --set,
+  #  or reference an existing Kubernetes Secret.
+  secret:
+    enabled: true
+    existingSecret: ""
+    jwtSecret: ""       # JWT signing secret (>= 32 characters)
+    smtpUsername: ""    # SMTP username
+    smtpPassword: ""    # SMTP password
+  config:
+    appEnv: local
+    appPort: "0.0.0.0:3300"
+    debug: "true"
+    isDevelopment: "true"
+    dbDialect: postgres
+    redisDatabases: "0"
+    defaultQuestionPoints: "1"
+    maxQuizFileSize: "3145728"
+    maximumPointsPerQuestion: "20"
+    minimumPointsPerQuestion: "0"
+    questionTimeLimit: "30"
+    scoreBoardMaxDuration: "30"
+    activeQuizSweepMinutes: "60"
+    activeQuizTtlHours: "24"
+    bodyLimitMb: "15"
+    migrationDir: database/migrations
+    emailFrom: no-reply@example.com
+    publicQuizAdminEmails: ""
+    issuer: ""
+    webUrl: ""
+    selfServiceDefaultBrowserReturnUrl: ""
+    selfServiceFlowsRegistrationAfterDefaultBrowserReturnUrl: ""
+    serveAdminPort: "80"
+    servePublicPort: "80"
+    smtpHost: smtp.example.com
+    smtpPort: "587"
+    kratosEnabled: "true"
+    kratosCookieExpirationTime: 2h23m
+
+#  Jovvix UI (Nuxt 3 / Vue.js frontend)
+
+ui:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: improwised/jovvix-ui
+    tag: main-de81219-1785915120
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 5000
+  #  HTTPRoute for the UI service (root path /).
+  #  Override parentRefs to use a different gateway (default: Envoy Gateway).
+  httpRoute:
+    enabled: true
+    parentRefs:
+      - name: envoy-gateway
+        namespace: envoy-gateway-system
+    matches:
+      - path:
+          type: PathPrefix
+          value: /
+  resources:
+    limits:
+      memory: 500Mi
+    requests:
+      cpu: 10m
+      memory: 500Mi
+  healthcheck:
+    enabled: true
+    path: /
+    initialDelaySeconds: 6
+    periodSeconds: 20
+    timeoutSeconds: 7
+    failureThreshold: 3
+  config:
+    appEnv: local
+    host: 0.0.0.0
+    mode: development
+    port: "4000"
+    #  Public base URL of the UI. Defaults to "<scheme>://<domain>" when empty.
+    nuxtPublicBaseUrl: ""
+    #  API URL. Defaults to "/api/v1" (relative, proxied through the same gateway).
+    nuxtPublicApiUrl: ""
+    #  WebSocket URL for real-time quiz events. Defaults to "ws(s)://<domain>/api/v1/socket".
+    nuxtPublicApiSocketUrl: ""
+    #  Kratos public URL. Defaults to "http(s)://<domain>" (proxied through the UI gateway).
+    nuxtPublicKratosUrl: ""
+    nuxtPublicPrivilegedSessionMaxAge: "15"
+    #  S3 bucket public URL for file uploads (optional).
+    s3BucketUrl: ""
+

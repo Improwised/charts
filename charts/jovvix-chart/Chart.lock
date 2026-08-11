@@ -1,0 +1,9 @@
+dependencies:
+- name: valkey
+  repository: https://valkey.io/valkey-helm/
+  version: 0.9.4
+- name: kratos
+  repository: https://k8s.ory.sh/helm/charts
+  version: 0.45.0
+digest: sha256:e0a1b037f6f660a1805261910b31434955c9425a000941d3956ae5dc3b309d81
+generated: "2026-08-03T11:56:19.320551841+05:30"
