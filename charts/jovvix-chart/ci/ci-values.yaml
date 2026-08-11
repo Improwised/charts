@@ -1,0 +1,20 @@
+postgres:
+  secret:
+    password: ci-postgres-password
+
+valkey:
+  secret:
+    password: ci-valkey-password
+
+kratos:
+  secrets:
+    secretsDefault: ci-kratos-default-secret-0123456789
+    secretsCookie: ci-kratos-cookie-secret-0123456789
+    secretsCipher: ci-kratos-cipher-secret-012345678
+    smtpConnectionURI: smtp://user:pass@smtp.example.com:587/
+
+api:
+  secret:
+    jwtSecret: ci-api-jwt-secret-0123456789abcdef
+    smtpUsername: ci
+    smtpPassword: ci-smtp-password
