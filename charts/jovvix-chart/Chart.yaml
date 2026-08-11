@@ -5,6 +5,8 @@ home: https://github.com/Improwised/charts
 icon: https://raw.githubusercontent.com/Improwised/jovVix/main/app/assets/images/readme-logo1.png
 sources:
   - https://github.com/Improwised/charts
+maintainers:
+  - name: improwised
 type: application
 version: 0.1.0
 appVersion: "1.0.0"

@@ -543,4 +543,3 @@ ui:
     nuxtPublicPrivilegedSessionMaxAge: "15"
     #  S3 bucket public URL for file uploads (optional).
     s3BucketUrl: ""
-
