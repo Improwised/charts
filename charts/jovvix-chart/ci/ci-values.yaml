@@ -12,7 +12,7 @@ kratos:
   secrets:
     secretsDefault: ci-kratos-default-secret-0123456789
     secretsCookie: ci-kratos-cookie-secret-0123456789
-    secretsCipher: ci-kratos-cipher-secret-012345678
+    secretsCipher: ci-kratos-cipher-secret-01234567
     smtpConnectionURI: smtp://user:pass@smtp.example.com:587/
 
 api:
