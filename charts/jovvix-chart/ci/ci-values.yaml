@@ -7,6 +7,8 @@ valkey:
     password: ci-valkey-password
 
 kratos:
+  httpRoute:
+    enabled: false
   secrets:
     secretsDefault: ci-kratos-default-secret-0123456789
     secretsCookie: ci-kratos-cookie-secret-0123456789
@@ -14,7 +16,13 @@ kratos:
     smtpConnectionURI: smtp://user:pass@smtp.example.com:587/
 
 api:
+  httpRoute:
+    enabled: false
   secret:
     jwtSecret: ci-api-jwt-secret-0123456789abcdef
     smtpUsername: ci
     smtpPassword: ci-smtp-password
+
+ui:
+  httpRoute:
+    enabled: false
