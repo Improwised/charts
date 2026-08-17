@@ -194,6 +194,8 @@ Parameters:
   .healthcheck  - Optional healthcheck config (for services)
   .ports        - Optional ports list (for services)
   .probeConfig  - Optional probe config (for workers - .probe with .aliveCommand)
+
+Merge order for env/envFrom/volumeMounts: global -> template -> item (item overrides, last-wins).
 */}}
 {{- define "polymorphic-app.containerSpec" -}}
 {{- $item := .item -}}
@@ -214,26 +216,26 @@ Parameters:
   imagePullPolicy: {{ $root.Values.image.pullPolicy }}
   {{- if or $item.env $root.Values.env $tmpl.env }}
   env:
-  {{- if $item.env }}
-{{ toYaml $item.env | indent 4 }}
+  {{- if $root.Values.env }}
+{{ toYaml $root.Values.env | indent 4 }}
   {{- end }}
   {{- if $tmpl.env }}
 {{ toYaml $tmpl.env | indent 4 }}
   {{- end }}
-  {{- if $root.Values.env }}
-{{ toYaml $root.Values.env | indent 4 }}
+  {{- if $item.env }}
+{{ toYaml $item.env | indent 4 }}
   {{- end }}
   {{- end }}
   {{- if or $item.envFrom $root.Values.envFrom $tmpl.envFrom }}
   envFrom:
-  {{- if $item.envFrom }}
-{{ toYaml $item.envFrom | indent 4 }}
+  {{- if $root.Values.envFrom }}
+{{ toYaml $root.Values.envFrom | indent 4 }}
   {{- end }}
   {{- if $tmpl.envFrom }}
 {{ toYaml $tmpl.envFrom | indent 4 }}
   {{- end }}
-  {{- if $root.Values.envFrom }}
-{{ toYaml $root.Values.envFrom | indent 4 }}
+  {{- if $item.envFrom }}
+{{ toYaml $item.envFrom | indent 4 }}
   {{- end }}
   {{- end }}
   {{- if $item.command }}
@@ -280,14 +282,14 @@ Parameters:
   {{- end }}
   {{- if or $item.volumeMounts $root.Values.volumeMounts $tmpl.volumeMounts }}
   volumeMounts:
-  {{- if $item.volumeMounts }}
-{{ toYaml $item.volumeMounts | indent 4 }}
-  {{- end }}
   {{- if $root.Values.volumeMounts }}
 {{ toYaml $root.Values.volumeMounts | indent 4 }}
   {{- end }}
   {{- if $tmpl.volumeMounts }}
 {{ toYaml $tmpl.volumeMounts | indent 4 }}
+  {{- end }}
+  {{- if $item.volumeMounts }}
+{{ toYaml $item.volumeMounts | indent 4 }}
   {{- end }}
   {{- end }}
 {{- end -}}
