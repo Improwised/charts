@@ -237,14 +237,18 @@ Parameters:
   {{- end }}
   {{- end }}
   {{- if $item.command }}
-  command: {{ toYaml $item.command | nindent 4 }}
+  command:
+{{ toYaml $item.command | indent 4 }}
   {{- else if $tmpl.command }}
-  command: {{ toYaml $tmpl.command | nindent 4 }}
+  command:
+{{ toYaml $tmpl.command | indent 4 }}
   {{- end }}
   {{- if $item.args }}
-  args: {{ toYaml $item.args | nindent 4 }}
+  args:
+{{ toYaml $item.args | indent 4 }}
   {{- else if $tmpl.args }}
-  args: {{ toYaml $tmpl.args | nindent 4 }}
+  args:
+{{ toYaml $tmpl.args | indent 4 }}
   {{- end }}
   {{- if $ports }}
   ports:
