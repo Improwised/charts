@@ -3436,12 +3436,42 @@
                         "type": "string"
                     }
                 },
-                "tolerations": {
-                    "type": "array"
+                    "resources": {
+                        "type": "object",
+                        "properties": {
+                            "limits": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "requests": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "lifecycleHooks": {
+                        "type": "object"
+                    },
+                    "tolerations": {
+                        "type": "array"
+                    }
                 }
-            }
-        },
-        "cronJobs": {
+            },
+            "cronJobs": {
             "type": [
                 "array",
                 "null"
@@ -3840,6 +3870,36 @@
                     },
                     "successfulJobsHistoryLimit": {
                         "type": "integer"
+                    },
+                    "resources": {
+                        "type": "object",
+                        "properties": {
+                            "limits": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "requests": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "lifecycleHooks": {
+                        "type": "object"
                     }
                 }
             }
@@ -3851,7 +3911,7 @@
                     "type": "object"
                 },
                 "annotations": {
-                    "type": "array"
+                    "type": "object"
                 },
                 "args": {
                     "type": "array",
@@ -4241,6 +4301,36 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "limits": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "requests": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "lifecycleHooks": {
+                    "type": "object"
                 }
             }
         },
@@ -4620,6 +4710,36 @@
                     },
                     "tolerations": {
                         "type": "array"
+                    },
+                    "resources": {
+                        "type": "object",
+                        "properties": {
+                            "limits": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "requests": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "lifecycleHooks": {
+                        "type": "object"
                     }
                 }
             }

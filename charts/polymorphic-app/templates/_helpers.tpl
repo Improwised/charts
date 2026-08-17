@@ -182,6 +182,113 @@ Return the appropriate apiVersion for cronjob.
 {{- end -}}
 
 {{/*
+Unified container specification template.
+Usage:
+{{ include "polymorphic-app.containerSpec" (dict "item" . "template" $.Values.serviceTemplate "root" $ "containerName" "svc" "healthcheck" $health "ports" .ports "probeConfig" .probe) }}
+
+Parameters:
+  .item         - The individual array item (service/worker/cronJob/job entry)
+  .template     - The corresponding *Template values (e.g. $.Values.serviceTemplate)
+  .root         - Root context ($)
+  .containerName - Base name for the container
+  .healthcheck  - Optional healthcheck config (for services)
+  .ports        - Optional ports list (for services)
+  .probeConfig  - Optional probe config (for workers - .probe with .aliveCommand)
+*/}}
+{{- define "polymorphic-app.containerSpec" -}}
+{{- $item := .item -}}
+{{- $tmpl := .template -}}
+{{- $root := .root -}}
+{{- $containerName := .containerName -}}
+{{- $health := .healthcheck -}}
+{{- $ports := .ports -}}
+{{- $probeConfig := .probeConfig -}}
+- name: "{{ if $root.Values.prefixWithReleaseName.enabled }}{{ $root.Release.Name }}-{{ end }}{{ $containerName }}"
+  {{- if $item.image }}
+  image: "{{ $item.image.repository }}:{{ $item.image.tag }}"
+  {{- else if $tmpl.image }}
+  image: "{{ $tmpl.image.repository }}:{{ $tmpl.image.tag }}"
+  {{- else }}
+  image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
+  {{- end }}
+  imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+  {{- if or $item.env $root.Values.env $tmpl.env }}
+  env:
+  {{- if $item.env }}
+{{ toYaml $item.env | indent 4 }}
+  {{- end }}
+  {{- if $tmpl.env }}
+{{ toYaml $tmpl.env | indent 4 }}
+  {{- end }}
+  {{- if $root.Values.env }}
+{{ toYaml $root.Values.env | indent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if or $item.envFrom $root.Values.envFrom $tmpl.envFrom }}
+  envFrom:
+  {{- if $item.envFrom }}
+{{ toYaml $item.envFrom | indent 4 }}
+  {{- end }}
+  {{- if $tmpl.envFrom }}
+{{ toYaml $tmpl.envFrom | indent 4 }}
+  {{- end }}
+  {{- if $root.Values.envFrom }}
+{{ toYaml $root.Values.envFrom | indent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $item.command }}
+  command: {{ toYaml $item.command | nindent 4 }}
+  {{- else if $tmpl.command }}
+  command: {{ toYaml $tmpl.command | nindent 4 }}
+  {{- end }}
+  {{- if $item.args }}
+  args: {{ toYaml $item.args | nindent 4 }}
+  {{- else if $tmpl.args }}
+  args: {{ toYaml $tmpl.args | nindent 4 }}
+  {{- end }}
+  {{- if $ports }}
+  ports:
+{{ toYaml $ports | indent 4 }}
+  {{- end }}
+  {{- $resources := ($item.resources | default $tmpl.resources) -}}
+  {{- if $resources }}
+  resources:
+{{ toYaml $resources | indent 4 }}
+  {{- end }}
+  {{- with ($item.containerSecurityContext | default $tmpl.containerSecurityContext) }}
+  securityContext:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+  {{- if or $tmpl.lifecycleHooks $item.lifecycleHooks }}
+  lifecycle:
+{{ toYaml ($item.lifecycleHooks | default $tmpl.lifecycleHooks) | indent 4 }}
+  {{- end }}
+  {{- if and $health (ne $health.enabled false) }}
+  {{- include "polymorphic-app.healthchecks" $health | nindent 2 }}
+  {{- end }}
+  {{- if $probeConfig }}
+  {{- $probe := dict "enabled" true "type" "exec" "command" $probeConfig.aliveCommand
+      "timeoutSeconds" ($probeConfig.timeoutSeconds | default 10)
+      "initialDelaySeconds" ($probeConfig.initialDelaySeconds | default 10)
+      "periodSeconds" ($probeConfig.periodSeconds | default 20)
+      "failureThreshold" ($probeConfig.failureThreshold | default 3) -}}
+  {{- include "polymorphic-app.healthchecks" $probe | nindent 2 }}
+  {{- end }}
+  {{- if or $item.volumeMounts $root.Values.volumeMounts $tmpl.volumeMounts }}
+  volumeMounts:
+  {{- if $item.volumeMounts }}
+{{ toYaml $item.volumeMounts | indent 4 }}
+  {{- end }}
+  {{- if $root.Values.volumeMounts }}
+{{ toYaml $root.Values.volumeMounts | indent 4 }}
+  {{- end }}
+  {{- if $tmpl.volumeMounts }}
+{{ toYaml $tmpl.volumeMounts | indent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 Core probe configuration
 */}}
 {{- define "polymorphic-app.probe-core" -}}

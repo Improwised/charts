@@ -319,6 +319,8 @@ cronJobTemplate:
     # capabilities:
     #   drop: []
     #   add: []
+  resources: {}
+  lifecycleHooks: {}
 
 cronJobs:
 #   - name: update-status
@@ -359,7 +361,7 @@ jobTemplate:
   env: []
   envFrom: []
   command:
-  annotations: []
+  annotations: {}
   volumeMounts: []
   securityContext: {}
     # fsGroup: 1001
@@ -370,6 +372,8 @@ jobTemplate:
     # capabilities:
     #   drop: []
     #   add: []
+  resources: {}
+  lifecycleHooks: {}
   affinity: {}
   tolerations: []
   volumes: []
