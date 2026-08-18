@@ -33,7 +33,7 @@ jobs:
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add bitnami-full-index https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14.5"
           check-latest: true
