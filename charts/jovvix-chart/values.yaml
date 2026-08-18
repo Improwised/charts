@@ -129,9 +129,8 @@ postgres:
   #  via --set, or reference an existing Kubernetes Secret.
   secret:
     enabled: true
-    #  Name of an existing Kubernetes Secret containing "username" and "password" keys.
+    #  Name of an existing Kubernetes Secret containing a "password" key.
     existingSecret: ""
-    username: "jovvix"  # PostgreSQL username
     password: ""        # PostgreSQL password
 
 #  Valkey sub-chart values (used as an in-memory cache / Redis-compatible store).
