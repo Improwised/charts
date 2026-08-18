@@ -1,0 +1,56 @@
+{{- if and .Values.api.enabled .Values.api.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "jovvix.fullname" . }}-migration
+  labels:
+    {{- include "jovvix.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migration
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "jovvix.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migration
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: wait-for-db
+          image: "{{ .Values.postgres.image.repository }}:{{ default .Chart.AppVersion .Values.postgres.image.tag }}"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              until pg_isready -h {{ include "jovvix.databaseHost" . }} -U {{ .Values.database.username }} -d {{ .Values.database.name }} -q; do
+                echo "Waiting for database..."
+                sleep 3
+              done
+              echo "Database is ready!"
+      containers:
+        - name: migration
+          image: "{{ .Values.api.migration.image.repository }}:{{ default .Chart.AppVersion .Values.api.migration.image.tag }}"
+          imagePullPolicy: {{ .Values.api.migration.image.pullPolicy }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - ./jovvix migrate up
+          envFrom:
+            - configMapRef:
+                name: {{ include "jovvix.api.fullname" . }}
+            - secretRef:
+                {{- if .Values.api.secret.existingSecret }}
+                name: {{ .Values.api.secret.existingSecret }}
+                {{- else }}
+                name: {{ include "jovvix.api.fullname" . }}
+                {{- end }}
+          {{- with .Values.api.migration.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      restartPolicy: Never
+  backoffLimit: 3
+{{- end }}

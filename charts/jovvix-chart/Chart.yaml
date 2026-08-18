@@ -1,0 +1,23 @@
+apiVersion: v2
+name: jovvix
+description: A Helm chart for Jovvix quiz application with API and UI services
+home: https://github.com/Improwised/charts
+icon: https://raw.githubusercontent.com/Improwised/jovVix/main/app/assets/images/readme-logo1.png
+sources:
+  - https://github.com/Improwised/charts
+maintainers:
+  - name: improwised
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+dependencies:
+  - name: valkey
+    version: 0.9.4
+    repository: https://valkey.io/valkey-helm/
+    alias: valkey
+    condition: valkey.enabled
+  - name: kratos
+    version: 0.45.0
+    repository: https://k8s.ory.sh/helm/charts
+    alias: kratos
+    condition: kratos.enabled
