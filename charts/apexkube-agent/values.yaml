@@ -40,6 +40,36 @@ envoy:
       #   \",\"kty\":\"OKP\",\"x\":\"<base64-encoded-public-key>\"}]}"
       publicKey: "<public-key>"
 
+    # HTTP connection manager stream idle timeout
+    # Closes idle streams after this duration (e.g., idle WebSocket connections)
+    # Set to 0s for infinite (not recommended - causes connection leaks)
+    streamIdleTimeout: "300s"
+
+    # Common HTTP protocol options (applied to all connections)
+    # Closes the entire TCP connection if zero active streams for this duration
+    commonHttpProtocolOptions:
+      idleTimeout: "3600s"
+
+    # Route-level timeout (max time for a single HTTP request including retries)
+    # Set to 0s for infinite (not recommended - hangs forever)
+    routeTimeout: "60s"
+
+    # Retry policy for failed requests
+    retry:
+      # Enable retry policy
+      enabled: true
+      # Conditions that trigger a retry (comma-separated)
+      # Common: reset,connect-failure,gateway-error,retriable-status-codes
+      retryOn: "reset,connect-failure,gateway-error,retriable-status-codes"
+      # Maximum number of retry attempts
+      numRetries: 2
+      # Timeout for each individual retry attempt
+      perTryTimeout: "30s"
+      # Retry backoff configuration
+      backoff:
+        baseInterval: "0.025s"
+        maxInterval: "1s"
+
   # Number of Envoy replicas
   replicas: 1
 
