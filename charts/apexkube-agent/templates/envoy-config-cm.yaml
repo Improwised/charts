@@ -28,7 +28,9 @@ data:
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
                       stat_prefix: ingress_http
-                      stream_idle_timeout: 0s
+                      stream_idle_timeout: {{ .Values.envoy.config.streamIdleTimeout | quote }}
+                      common_http_protocol_options:
+                        idle_timeout: {{ .Values.envoy.config.commonHttpProtocolOptions.idleTimeout | quote }}
                       http_filters:
                         - name: envoy.filters.http.jwt_authn
                           typed_config:
@@ -83,8 +85,17 @@ data:
                             routes:
                               - match: { prefix: "/" }
                                 route:
-                                  timeout: 0s
+                                  timeout: {{ .Values.envoy.config.routeTimeout | quote }}
                                   cluster: service_backend
+                                  {{- if .Values.envoy.config.retry.enabled }}
+                                  retry_policy:
+                                    retry_on: {{ .Values.envoy.config.retry.retryOn | quote }}
+                                    num_retries: {{ .Values.envoy.config.retry.numRetries }}
+                                    per_try_timeout: {{ .Values.envoy.config.retry.perTryTimeout | quote }}
+                                    retry_back_off:
+                                      base_interval: {{ .Values.envoy.config.retry.backoff.baseInterval | quote }}
+                                      max_interval: {{ .Values.envoy.config.retry.backoff.maxInterval | quote }}
+                                  {{- end }}
                                   upgrade_configs:
                                     - upgrade_type: "websocket"
                                       enabled: true
