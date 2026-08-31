@@ -404,7 +404,8 @@ api:
   replicaCount: 1
   image:
     repository: improwised/jovvix-api
-    tag: main-77988f8-1785401490
+    #  Required. Find available tags at: https://hub.docker.com/r/improwised/jovvix-api/tags
+    tag: ""
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -455,7 +456,8 @@ api:
     enabled: true
     image:
       repository: improwised/jovvix-api
-      tag: main-77988f8-1785401490
+      #  Required. Find available tags at: https://hub.docker.com/r/improwised/jovvix-api/tags
+      tag: ""
       pullPolicy: IfNotPresent
     resources: {}
   #  API secrets. Empty by default; provide at install time via --set,
@@ -503,7 +505,8 @@ ui:
   replicaCount: 1
   image:
     repository: improwised/jovvix-ui
-    tag: main-de81219-1785915120
+    #  Required. Find available tags at: https://hub.docker.com/r/improwised/jovvix-ui/tags
+    tag: ""
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP

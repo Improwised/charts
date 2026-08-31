@@ -33,7 +33,7 @@ spec:
               echo "Database is ready!"
       containers:
         - name: migration
-          image: "{{ .Values.api.migration.image.repository }}:{{ default .Chart.AppVersion .Values.api.migration.image.tag }}"
+          image: "{{ .Values.api.migration.image.repository }}:{{ .Values.api.migration.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.api.migration.image.pullPolicy }}
           command: ["/bin/sh", "-c"]
           args:

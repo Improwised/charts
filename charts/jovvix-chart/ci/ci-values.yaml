@@ -18,6 +18,12 @@ kratos:
 api:
   httpRoute:
     enabled: false
+  #  Find available tags at: https://hub.docker.com/r/improwised/jovvix-api/tags
+  image:
+    tag: "main-77988f8-1785401490"
+  migration:
+    image:
+      tag: "main-77988f8-1785401490"
   secret:
     jwtSecret: ci-api-jwt-secret-0123456789abcdef
     smtpUsername: ci
@@ -26,3 +32,6 @@ api:
 ui:
   httpRoute:
     enabled: false
+  #  Find available tags at: https://hub.docker.com/r/improwised/jovvix-ui/tags
+  image:
+    tag: "main-de81219-1785915120"
