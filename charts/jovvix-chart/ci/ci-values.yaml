@@ -10,6 +10,8 @@ global:
   domain: ci.example.com
 
 kratos:
+  httpRoute:
+    enabled: false
   secrets:
     secretsDefault: ci-kratos-default-secret-0123456789
     secretsCookie: ci-kratos-cookie-secret-0123456789
@@ -17,6 +19,8 @@ kratos:
     smtpConnectionURI: smtp://user:pass@smtp.example.com:587/
 
 api:
+  httpRoute:
+    enabled: false
   #  Find available tags at: https://hub.docker.com/r/improwised/jovvix-api/tags
   image:
     tag: "main-77988f8-1785401490"
@@ -29,6 +33,8 @@ api:
     smtpPassword: ci-smtp-password
 
 ui:
+  httpRoute:
+    enabled: false
   #  Find available tags at: https://hub.docker.com/r/improwised/jovvix-ui/tags
   image:
     tag: "main-de81219-1785915120"
