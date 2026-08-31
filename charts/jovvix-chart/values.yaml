@@ -181,6 +181,9 @@ valkey:
 #  Kratos sub-chart values (Ory Kratos identity and authentication server).
 #  Handles user registration, login, password recovery, and session management.
 
+# WARNING: development mode leaks sensitive values in logs and disables HTTPS
+# enforcement. Set to false for production, but TLS termination at the gateway
+# is then required.
 kratos:
   enabled: true
   development: true
@@ -197,6 +200,8 @@ kratos:
   #  Override parentRefs to use a different gateway.
   httpRoute:
     enabled: true
+    #  Port the Kratos admin and public Services expose.
+    port: 80
     parentRefs:
       - name: envoy-gateway
         namespace: envoy-gateway-system
@@ -230,6 +235,7 @@ kratos:
           secretKeyRef:
             name: jovvix-kratos
             key: smtpConnectionURI
+  # WARNING: see kratos.development above.
   kratos:
     development: true
     automigration:
