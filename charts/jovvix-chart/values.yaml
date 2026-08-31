@@ -101,6 +101,7 @@ autoscaling:
 postgres:
   enabled: true
   replicaCount: 1
+  terminationGracePeriodSeconds: 120
   image:
     repository: postgres
     tag: "18.4"

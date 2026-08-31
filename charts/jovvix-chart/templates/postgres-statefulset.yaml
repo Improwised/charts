@@ -19,7 +19,7 @@ spec:
         {{- include "jovvix.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: postgres
     spec:
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ .Values.postgres.terminationGracePeriodSeconds }}
       {{- with .Values.global.security.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
