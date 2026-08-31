@@ -157,40 +157,6 @@ Return the appropriate apiVersion for ingress
 {{- end -}}
 {{- end }}
 
-{{/*
-Return the appropriate ingress backend
-*/}}
-{{- define "jovvix.ingress.backend" -}}
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
-paths:
-  - path: {{ .path }}
-    pathType: {{ .pathType | default "ImplementationSpecific" }}
-    backend:
-      service:
-        name: {{ .serviceName }}
-        port:
-          number: {{ .servicePort }}
-{{- else -}}
-paths:
-  - path: {{ .path }}
-    backend:
-      serviceName: {{ .serviceName }}
-      servicePort: {{ .servicePort }}
-{{- end -}}
-{{- end }}
-
-{{/*
-Return the appropriate ingress pathType
-*/}}
-{{- define "jovvix.ingress.pathtype" -}}
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "ImplementationSpecific" -}}
-{{- else -}}
-{{- print "" -}}
-{{- end -}}
-{{- end }}
-
-
 {{/* Kratos secrets, required via --set at install time */}}
 {{- define "jovvix.kratos.secretsDefault" -}}
 {{- .Values.kratos.secrets.secretsDefault | required "kratos.secrets.secretsDefault is required (helm install --set kratos.secrets.secretsDefault=...)" -}}
