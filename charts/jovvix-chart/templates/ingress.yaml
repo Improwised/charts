@@ -24,8 +24,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ .Values.global.domain | quote }}
       http:
         paths:
           {{- if $.Values.api.enabled }}
@@ -37,6 +36,29 @@ spec:
                 port:
                   number: {{ $.Values.api.service.port }}
           {{- end }}
+          {{- if $.Values.kratos.enabled }}
+          - path: /admin/identities
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "jovvix.kratosServicePrefix" $ }}-admin
+                port:
+                  number: {{ $.Values.kratos.httpRoute.port }}
+          - path: /self-service
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "jovvix.kratosServicePrefix" $ }}-public
+                port:
+                  number: {{ $.Values.kratos.httpRoute.port }}
+          - path: /sessions
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "jovvix.kratosServicePrefix" $ }}-public
+                port:
+                  number: {{ $.Values.kratos.httpRoute.port }}
+          {{- end }}
           {{- if $.Values.ui.enabled }}
           - path: /
             pathType: Prefix
@@ -46,5 +68,4 @@ spec:
                 port:
                   number: {{ $.Values.ui.service.port }}
           {{- end }}
-    {{- end }}
 {{- end }}
