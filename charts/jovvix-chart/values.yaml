@@ -186,7 +186,7 @@ valkey:
 # is then required.
 kratos:
   enabled: true
-  development: true
+  development: false
   image:
     repository: oryd/kratos
     tag: "v1.1.0"
@@ -237,7 +237,7 @@ kratos:
             key: smtpConnectionURI
   # WARNING: see kratos.development above.
   kratos:
-    development: true
+    development: false
     automigration:
       enabled: true
       type: initContainer
@@ -260,7 +260,7 @@ kratos:
             url: file:///etc/config/identity.schema.json
       log:
         format: json
-        leak_sensitive_values: true
+        leak_sensitive_values: false
         level: warning
       selfservice:
         allowed_return_urls:
