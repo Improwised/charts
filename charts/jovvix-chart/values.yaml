@@ -9,7 +9,6 @@ global:
   scheme: http
   #  Default storage class for all persistent volumes. Leave empty to use the cluster default.
   storageClass: ""
-  databaseHost: ""
   security:
     podSecurityContext: {}
       # fsGroup: 1000
