@@ -469,8 +469,8 @@ api:
   config:
     appEnv: local
     appPort: "0.0.0.0:3300"
-    debug: "true"
-    isDevelopment: "true"
+    debug: "false"
+    isDevelopment: "false"
     dbDialect: postgres
     redisDatabases: "0"
     defaultQuestionPoints: "1"
