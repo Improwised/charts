@@ -144,7 +144,8 @@ valkey:
       default:
         passwordKey: password
         permissions: "~* &* +@all"
-    #  Name of the secret that stores the Valkey password. Created by the valkey-secret.yaml template.
+    #  Name of the secret that stores the Valkey password. Set to
+    #  valkey.secret.name so the sub-chart references our secret.
     usersExistingSecret: jovvix-valkey
   dataStorage:
     className: ""
@@ -171,6 +172,9 @@ valkey:
   #  or reference an existing Kubernetes Secret.
   secret:
     enabled: true
+    #  Name of the secret created by valkey-secret.yaml. Also referenced by
+    #  the Valkey sub-chart via valkey.auth.usersExistingSecret.
+    name: jovvix-valkey
     #  Name of an existing Kubernetes Secret containing a "password" key.
     existingSecret: ""
     password: ""        # Valkey password
