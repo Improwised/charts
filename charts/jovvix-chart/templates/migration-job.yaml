@@ -31,6 +31,8 @@ spec:
                 sleep 3
               done
               echo "Database is ready!"
+          resources:
+            {{- toYaml .Values.api.migration.resources | nindent 12 }}
       containers:
         - name: migration
           image: "{{ .Values.api.migration.image.repository }}:{{ .Values.api.migration.image.tag | default .Chart.AppVersion }}"
