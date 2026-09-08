@@ -451,7 +451,9 @@ api:
         tag: "1.36"
         pullPolicy: IfNotPresent
     resources: {}
-  #  Database migration job that runs "jovvix migrate up" before the API starts.
+  #  Database migration initContainer that runs "jovvix migrate up" before the
+  #  API starts. Runs in every API pod; relies on golang-migrate advisory locks
+  #  for concurrency safety with replicaCount > 1.
   #  Disable with --set api.migration.enabled=false if managing migrations externally.
   migration:
     enabled: true

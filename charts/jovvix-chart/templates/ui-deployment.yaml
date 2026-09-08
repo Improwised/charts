@@ -50,7 +50,7 @@ spec:
               weight: 1
       containers:
         - name: jovvix-ui
-          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | required "ui.image.tag must be set" }}"
           imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
           {{- with .Values.global.security.securityContext }}
           securityContext:

@@ -48,8 +48,9 @@ spec:
                     {{- include "jovvix.api.selectorLabels" . | nindent 20 }}
                 topologyKey: kubernetes.io/hostname
               weight: 1
-      {{- if .Values.api.initContainers.enabled }}
+      {{- if or .Values.api.initContainers.enabled .Values.api.migration.enabled }}
       initContainers:
+        {{- if .Values.api.initContainers.enabled }}
         - name: wait-for-db
           image: "{{ .Values.api.initContainers.waitForDb.image.repository }}:{{ .Values.api.initContainers.waitForDb.image.tag }}"
           imagePullPolicy: {{ .Values.api.initContainers.waitForDb.image.pullPolicy }}
@@ -74,13 +75,15 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        {{- end }}
         {{- if .Values.api.migration.enabled }}
         - name: migration
-          image: "{{ .Values.api.migration.image.repository }}:{{ .Values.api.migration.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.api.migration.image.repository }}:{{ .Values.api.migration.image.tag | required "api.migration.image.tag must be set" }}"
           imagePullPolicy: {{ .Values.api.migration.image.pullPolicy }}
           command: ["/bin/sh", "-c"]
           args:
-            - ./jovvix migrate up
+            - >-
+              until ./jovvix migrate up; do echo "migration failed, retrying..."; sleep 5; done
           envFrom:
             - configMapRef:
                 name: {{ include "jovvix.api.fullname" . }}
@@ -98,7 +101,7 @@ spec:
       {{- end }}
       containers:
         - name: jovvix-api
-          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag | required "api.image.tag must be set" }}"
           imagePullPolicy: {{ .Values.api.image.pullPolicy }}
           {{- with .Values.global.security.securityContext }}
           securityContext:
