@@ -462,6 +462,9 @@ api:
       #  Required. Find available tags at: https://hub.docker.com/r/improwised/jovvix-api/tags
       tag: ""
       pullPolicy: IfNotPresent
+    #  Maximum number of migration attempts before the initContainer exits
+    #  with a failure. Each attempt is spaced 5 seconds apart.
+    maxRetries: 5
     resources: {}
   #  API secrets. Empty by default; provide at install time via --set,
   #  or reference an existing Kubernetes Secret.

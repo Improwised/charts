@@ -83,7 +83,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - >-
-              until ./jovvix migrate up; do echo "migration failed, retrying..."; sleep 5; done
+              attempt=1; until ./jovvix migrate up; do echo "migration attempt $attempt failed"; attempt=$((attempt+1)); if [ $attempt -gt {{ .Values.api.migration.maxRetries | default 5 }} ]; then echo "migration failed after $((attempt-1)) attempts"; exit 1; fi; sleep 5; done
           envFrom:
             - configMapRef:
                 name: {{ include "jovvix.api.fullname" . }}

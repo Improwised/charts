@@ -18,7 +18,10 @@ helm install jovvix . \
   --set kratos.secrets.secretsDefault=<32-char-secret> \
   --set kratos.secrets.secretsCookie=<32-char-secret> \
   --set kratos.secrets.secretsCipher=<exactly-32-char-secret> \
-  --set 'kratos.secrets.smtpConnectionURI=smtp://user:pass@smtp.example.com:587/'
+  --set 'kratos.secrets.smtpConnectionURI=smtp://user:pass@smtp.example.com:587/' \
+  --set api.image.tag=<api-tag> \
+  --set api.migration.image.tag=<api-tag> \
+  --set ui.image.tag=<ui-tag>
 ```
 
 ## Prerequisites
@@ -43,10 +46,13 @@ helm install jovvix . \
   --set kratos.secrets.secretsDefault=<32-char-secret> \
   --set kratos.secrets.secretsCookie=<32-char-secret> \
   --set kratos.secrets.secretsCipher=<exactly-32-char-secret> \
-  --set 'kratos.secrets.smtpConnectionURI=smtp://user:pass@smtp.example.com:587/'
+  --set 'kratos.secrets.smtpConnectionURI=smtp://user:pass@smtp.example.com:587/' \
+  --set api.image.tag=<api-tag> \
+  --set api.migration.image.tag=<api-tag> \
+  --set ui.image.tag=<ui-tag>
 ```
 
-All secrets are required and must be provided via `--set`. The chart fails immediately with the exact `--set` flag if any are missing.
+All secrets and image tags are required and must be provided via `--set`. The chart fails immediately with the exact `--set` flag if any are missing.
 
 ## Required Secrets
 
@@ -61,6 +67,14 @@ All secrets are required and must be provided via `--set`. The chart fails immed
 | `kratos.secrets.secretsCookie` | Kratos cookie secret (>= 32 characters) |
 | `kratos.secrets.secretsCipher` | Kratos cipher secret (exactly 32 characters) |
 | `kratos.secrets.smtpConnectionURI` | SMTP connection URI for the Kratos courier |
+
+## Required Images
+
+| Image | Description |
+|-------|-------------|
+| `api.image.tag` | Jovvix API image tag (see [Docker Hub](https://hub.docker.com/r/improwised/jovvix-api/tags)) |
+| `api.migration.image.tag` | Jovvix API image tag for migration (same as `api.image.tag`) |
+| `ui.image.tag` | Jovvix UI image tag (see [Docker Hub](https://hub.docker.com/r/improwised/jovvix-ui/tags)) |
 
 ## Configuration
 
