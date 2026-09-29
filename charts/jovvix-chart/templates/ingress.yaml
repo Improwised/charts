@@ -1,0 +1,71 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: {{ include "jovvix.ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: {{ include "jovvix.fullname" . }}
+  labels:
+    {{- include "jovvix.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.global.domain | quote }}
+      http:
+        paths:
+          {{- if $.Values.api.enabled }}
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "jovvix.api.fullname" $ }}
+                port:
+                  number: {{ $.Values.api.service.port }}
+          {{- end }}
+          {{- if $.Values.kratos.enabled }}
+          - path: /admin/identities
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "jovvix.kratosServicePrefix" $ }}-admin
+                port:
+                  number: {{ $.Values.kratos.httpRoute.port }}
+          - path: /self-service
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "jovvix.kratosServicePrefix" $ }}-public
+                port:
+                  number: {{ $.Values.kratos.httpRoute.port }}
+          - path: /sessions
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "jovvix.kratosServicePrefix" $ }}-public
+                port:
+                  number: {{ $.Values.kratos.httpRoute.port }}
+          {{- end }}
+          {{- if $.Values.ui.enabled }}
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "jovvix.ui.fullname" $ }}
+                port:
+                  number: {{ $.Values.ui.service.port }}
+          {{- end }}
+{{- end }}

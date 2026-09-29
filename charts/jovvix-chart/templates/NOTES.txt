@@ -1,0 +1,34 @@
+Jovvix has been deployed successfully!
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+{{- if .Values.api.enabled }}
+API Service:
+  http://{{ include "jovvix.api.fullname" . }}:{{ .Values.api.service.port }}
+{{- end }}
+
+{{- if .Values.ui.enabled }}
+UI Service:
+  http://{{ include "jovvix.ui.fullname" . }}:{{ .Values.ui.service.port }}
+{{- end }}
+
+{{- if .Values.postgres.enabled }}
+PostgreSQL:
+  {{ include "jovvix.fullname" . }}-db-rw:{{ .Values.database.port }}
+{{- else if .Values.database.host }}
+PostgreSQL (external):
+  {{ .Values.database.host }}:{{ .Values.database.port }}
+{{- end }}
+
+{{- if .Values.valkey.enabled }}
+Valkey:
+  {{ include "jovvix.fullname" . }}-valkey:6379
+{{- end }}
+
+{{- if .Values.kratos.enabled }}
+Kratos Admin:
+  http://{{ include "jovvix.fullname" . }}-kratos-admin
+Kratos Public:
+  http://{{ include "jovvix.fullname" . }}-kratos-public
+{{- end }}
