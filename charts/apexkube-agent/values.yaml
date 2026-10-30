@@ -162,8 +162,9 @@ tls:
 # Affinity rules for pod scheduling
 # affinity: {}
 
-# Pod annotations
-# podAnnotations: {}
+# Extra pod annotations. Attach a Reloader annotation here when the ConfigMap or
+# Secret is managed outside Helm and mounts through subPath.
+podAnnotations: {}
 
-# Pod labels
-# podLabels: {}
+# Extra pod labels
+podLabels: {}

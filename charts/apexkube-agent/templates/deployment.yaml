@@ -14,10 +14,17 @@ spec:
     metadata:
       labels:
         {{- include "apexkube-agent.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       annotations:
         checksum/envoy-config: {{ include (print $.Template.BasePath "/envoy-config-cm.yaml") . | sha256sum }}
         checksum/wireguard-config: {{ include (print $.Template.BasePath "/wireguard-config-cm.yaml") . | sha256sum }}
+        checksum/wireguard-privatekey: {{ include (print $.Template.BasePath "/wireguard-privatekey-sec.yaml") . | sha256sum }}
         checksum/tls-secret: {{ include (print $.Template.BasePath "/tls-sec.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "apexkube-agent.serviceAccountName" . }}
       containers:
@@ -38,11 +45,10 @@ spec:
           readinessProbe:
             exec:
               command:
-                - sh
-                - -c
-                - wg show wg0 latest-handshakes | awk -v now=$(date +%s) '$2 > 0 && now - $2 < 300 { f = 1 } END { exit !f }'
+                - /usr/local/bin/healthcheck.sh
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 5
           {{- end }}
           startupProbe:
             tcpSocket:
