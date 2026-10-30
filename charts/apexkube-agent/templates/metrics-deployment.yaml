@@ -1,0 +1,86 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "apexkube-agent.metrics.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "apexkube-agent.metrics.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.metrics.replicas }}
+  selector:
+    matchLabels:
+      {{- include "apexkube-agent.metrics.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "apexkube-agent.metrics.selectorLabels" . | nindent 8 }}
+        {{- with .Values.metrics.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/envoy-config: {{ include (print $.Template.BasePath "/metrics-envoy-config-cm.yaml") . | sha256sum }}
+        checksum/wireguard-config: {{ include (print $.Template.BasePath "/metrics-wireguard-config-cm.yaml") . | sha256sum }}
+        checksum/wireguard-privatekey: {{ include (print $.Template.BasePath "/metrics-wireguard-privatekey-sec.yaml") . | sha256sum }}
+        {{- with .Values.metrics.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "apexkube-agent.metrics.fullname" . }}
+      # The metrics agent never calls the Kubernetes API, so it carries no token.
+      automountServiceAccountToken: false
+      containers:
+        # Same image as the access agent: the entrypoint brings up WireGuard and
+        # then execs Envoy with the plain-HTTP metrics config.
+        - name: agent
+          image: "{{ default .Values.image.repository .Values.metrics.image.repository }}:{{ default .Values.image.tag .Values.metrics.image.tag }}"
+          imagePullPolicy: {{ default .Values.image.pullPolicy .Values.metrics.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.metrics.envoy.containerPort }}
+              protocol: TCP
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.metrics.resources | nindent 12 }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            exec:
+              command:
+                - /usr/local/bin/healthcheck.sh
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          {{- end }}
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 48
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          volumeMounts:
+            - name: envoy-config-volume
+              mountPath: /etc/envoy/envoy.yaml
+              subPath: envoy.yaml
+            - name: wireguard-config-volume
+              mountPath: /etc/wireguard/wg0.conf
+              subPath: wg0.conf
+            - name: wireguard-privatekey-volume
+              mountPath: /etc/wireguard/privatekey
+              subPath: privatekey
+      volumes:
+        - name: envoy-config-volume
+          configMap:
+            name: {{ include "apexkube-agent.metrics.fullname" . }}-envoy-config
+        - name: wireguard-config-volume
+          configMap:
+            name: {{ include "apexkube-agent.metrics.wireguard.configMapName" . }}
+        - name: wireguard-privatekey-volume
+          secret:
+            secretName: {{ include "apexkube-agent.metrics.wireguard.secretName" . }}
+{{- end }}

@@ -1,4 +1,4 @@
-{{- if not .Values.tls.existingSecret }}
+{{- if and .Values.access.enabled .Values.envoy.tls.enabled (not .Values.tls.existingSecret) }}
 apiVersion: v1
 kind: Secret
 metadata:

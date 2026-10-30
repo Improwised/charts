@@ -1,3 +1,7 @@
+{{- if not (or .Values.access.enabled .Values.metrics.enabled) }}
+{{- fail "at least one of access.enabled or metrics.enabled must be true" }}
+{{- end }}
+{{- if .Values.access.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,6 +31,9 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ include "apexkube-agent.serviceAccountName" . }}
+      {{- if not .Values.envoy.injectServiceAccountToken }}
+      automountServiceAccountToken: false
+      {{- end }}
       containers:
         # Single container: WireGuard tunnel is brought up by the entrypoint,
         # which then execs Envoy as PID 1.
@@ -65,9 +72,11 @@ spec:
             - name: envoy-config-volume
               mountPath: /etc/envoy/envoy.yaml
               subPath: envoy.yaml
+            {{- if .Values.envoy.tls.enabled }}
             - name: tls-secret-volume
               mountPath: /etc/ssl/certs
               readOnly: true
+            {{- end }}
             - name: wireguard-config-volume
               mountPath: /etc/wireguard/wg0.conf
               subPath: wg0.conf
@@ -84,6 +93,9 @@ spec:
         - name: wireguard-privatekey-volume
           secret:
             secretName: {{ include "apexkube-agent.wireguard.secretName" . }}
+        {{- if .Values.envoy.tls.enabled }}
         - name: tls-secret-volume
           secret:
             secretName: {{ default (printf "%s-tls" (include "apexkube-agent.fullname" . )) .Values.tls.existingSecret }}
+        {{- end }}
+{{- end }}
