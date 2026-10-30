@@ -35,6 +35,36 @@ helm install apexkube-agent ./charts/apexkube-agent \
   --set wireguard.existingSecret=wireguard-privatekey
 ```
 
+## Upgrading from 1.x
+
+Chart 2.0.0 ships one container (`agent`) built from the public image
+`improwised/apexkube-agent`, replacing the separate `envoy` and `wireguard` containers.
+This is a breaking change for chart values.
+
+| 1.x key | 2.x |
+|---|---|
+| `envoy.image.*`, `wireguard.image.*` | `image.*` (one combined image) |
+| `wireguard.securityContext.*` | `securityContext.*` (only `NET_ADMIN`; `privileged` is no longer needed) |
+| `wireguard.resources.*` | `envoy.resources.*` |
+| `wireguard.healthcheck.*` | removed — readiness now checks the WireGuard handshake age |
+| `wireguard.env` | removed (no equivalent) |
+
+`wireguard.config`, `wireguard.existingConfigMap`, `wireguard.existingSecret`, `envoy.config`,
+`envoy.replicas`, `envoy.resources`, `tls.*` and the RBAC keys are unchanged.
+
+Upgrading an existing 1.x release with `--reuse-values` fails, because the 1.x release values have
+no `image` key:
+
+```
+Error: UPGRADE FAILED: ... at <.Values.image.repository>: nil pointer evaluating interface {}.repository
+```
+
+Pass the values file explicitly instead:
+
+```bash
+helm upgrade apexkube-agent ./charts/apexkube-agent -n apexkube-agent -f my-values.yaml
+```
+
 ## Configuration
 
 ### WireGuard Configuration
@@ -54,6 +84,23 @@ wireguard:
 ```
 
 **Warning**: Not secure for production. Private keys stored in values files may be committed to Git.
+
+#### Endpoint Resolution
+
+The endpoint is resolved inside the agent pod, using the cluster's DNS. When it is a hostname,
+every cluster running an agent must resolve it to the gateway's WireGuard address, otherwise
+`wg-quick` brings up an interface whose handshake never completes.
+
+k3s generates the `NodeHosts` block of `kube-system/coredns` from node names; extra entries are
+added by hand. On hydra11:
+
+```
+10.20.1.100 management-dev.pride.improwised.dev
+```
+
+Confirm with `wg show wg0` in the pod: `latest handshake` must be recent and `transfer` must show
+bytes received. A tunnel stuck at `0 B received` means the endpoint resolved somewhere that does
+not serve UDP on the WireGuard port.
 
 #### Option 2: Existing Resources (Production - Recommended)
 
