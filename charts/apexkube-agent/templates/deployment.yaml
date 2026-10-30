@@ -14,18 +14,53 @@ spec:
     metadata:
       labels:
         {{- include "apexkube-agent.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/envoy-config: {{ include (print $.Template.BasePath "/envoy-config-cm.yaml") . | sha256sum }}
+        checksum/wireguard-config: {{ include (print $.Template.BasePath "/wireguard-config-cm.yaml") . | sha256sum }}
+        checksum/wireguard-privatekey: {{ include (print $.Template.BasePath "/wireguard-privatekey-sec.yaml") . | sha256sum }}
+        checksum/tls-secret: {{ include (print $.Template.BasePath "/tls-sec.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "apexkube-agent.serviceAccountName" . }}
       containers:
-        - name: envoy
-          image: "{{ .Values.envoy.image.repository }}:{{ .Values.envoy.image.tag }}"
-          imagePullPolicy: {{ .Values.envoy.image.pullPolicy }}
+        # Single container: WireGuard tunnel is brought up by the entrypoint,
+        # which then execs Envoy as PID 1.
+        - name: agent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: https
               containerPort: {{ .Values.envoy.containerPort }}
               protocol: TCP
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.envoy.resources | nindent 12 }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            exec:
+              command:
+                - /usr/local/bin/healthcheck.sh
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          {{- end }}
+          startupProbe:
+            tcpSocket:
+              port: https
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 48
+          livenessProbe:
+            tcpSocket:
+              port: https
+            initialDelaySeconds: 15
+            periodSeconds: 20
           volumeMounts:
             - name: envoy-config-volume
               mountPath: /etc/envoy/envoy.yaml
@@ -33,69 +68,12 @@ spec:
             - name: tls-secret-volume
               mountPath: /etc/ssl/certs
               readOnly: true
-
-        # WireGuard sidecar container
-        - name: wireguard
-          image: "{{ .Values.wireguard.image.repository }}:{{ .Values.wireguard.image.tag }}"
-          imagePullPolicy: {{ .Values.wireguard.image.pullPolicy }}
-          command:
-            - sh
-            - -c
-            - |
-              # Wait a moment for network to be ready
-              sleep 2
-              echo "WireGuard public key: '$(wg pubkey < /etc/wireguard/privatekey)'"
-              /entrypoint.sh
-          ports:
-            - containerPort: 51820
-              protocol: UDP
-              name: wireguard
-            - containerPort: {{ .Values.wireguard.healthcheck.port }}
-              protocol: TCP
-              name: healthcheck
-          {{- if .Values.wireguard.healthcheck.enabled }}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: healthcheck
-          readinessProbe:
-            httpGet:
-              path: /
-              port: healthcheck
-          {{- end }}
-          env:
-            {{- if .Values.wireguard.env }}
-            {{- toYaml .Values.wireguard.env | nindent 12 }}
-            {{- end }}
-          securityContext:
-            {{- toYaml .Values.wireguard.securityContext | nindent 12 }}
-          resources:
-            {{- toYaml .Values.wireguard.resources | nindent 12 }}
-          volumeMounts:
             - name: wireguard-config-volume
               mountPath: /etc/wireguard/wg0.conf
               subPath: wg0.conf
             - name: wireguard-privatekey-volume
               mountPath: /etc/wireguard/privatekey
               subPath: privatekey
-          # Lifecycle hook to ensure WireGuard starts before envoy is fully ready
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                  - /bin/sh
-                  - -c
-                  - |
-                    # Wait for WireGuard interface to be up (poll with timeout instead of indefinite loop)
-                    for i in 1 2 3 4 5 6 7 8 9 10; do
-                      if ip link show wg0 > /dev/null 2>&1; then
-                        echo "WireGuard is up"
-                        exit 0
-                      fi
-                      sleep 1
-                    done
-                    echo "WireGuard failed to start in time"
-                    exit 1
       volumes:
         - name: envoy-config-volume
           configMap:

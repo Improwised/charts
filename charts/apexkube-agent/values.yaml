@@ -1,5 +1,22 @@
 # Default values for apexkube-agent.
 
+# Agent image - single container running both WireGuard and Envoy
+image:
+  repository: improwised/apexkube-agent
+  tag: 1.0.1
+  pullPolicy: IfNotPresent
+
+# Security context for the agent container
+# WireGuard requires NET_ADMIN to create the tunnel interface
+securityContext:
+  capabilities:
+    add: ["NET_ADMIN"]
+
+# Readiness requires a completed WireGuard handshake, which proves the tunnel
+# reaches the gateway. Disable only where no gateway is reachable (chart-testing).
+readinessProbe:
+  enabled: true
+
 # ServiceAccount configuration
 serviceAccount:
   # Name of the service account to create/use.
@@ -20,14 +37,6 @@ clusterRoleBinding:
 
 # Envoy proxy configuration
 envoy:
-  image:
-    # Envoy image repository
-    repository: envoyproxy/envoy
-    # Envoy image tag
-    tag: v1.31.0
-    # Image pull policy
-    pullPolicy: IfNotPresent
-
   config:
     jwt:
       # JWT issuer identifier
@@ -87,14 +96,6 @@ envoy:
 
 # WireGuard VPN configuration
 wireguard:
-  image:
-    # WireGuard image repository
-    repository: masipcat/wireguard-go
-    # WireGuard image tag
-    tag: 0.0.20230223
-    # Image pull policy
-    pullPolicy: IfNotPresent
-
   # Use an existing ConfigMap for WireGuard configuration (non-sensitive data)
   # The ConfigMap must have a key named 'wg0.conf' containing the WireGuard config
   # If specified, it will override the inline configuration below
@@ -133,37 +134,6 @@ wireguard:
     # WARNING: This is sensitive data. Consider using existingSecret for production
     privateKey: "<wireguard-private-key>"
 
-  # Environment variables for WireGuard container (optional)
-  # Define as a list of env var objects; this replaces the hardcoded env in the deployment
-  env:
-    - name: LOG_LEVEL
-      value: "info"
-    - name: ENABLE_HEALTHCHECK
-      value: "true"
-
-  # Resource limits and requests for WireGuard container
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "500m"
-
-  # Security context for WireGuard container
-  # WireGuard requires elevated privileges to create network interfaces
-  securityContext:
-    privileged: true
-    capabilities:
-      add: ["NET_ADMIN"]
-
-  # Health check configuration for WireGuard
-  healthcheck:
-    # Enable health check endpoint
-    enabled: false
-    # Port for health check endpoint
-    port: 8080
-
 # TLS configuration for Envoy's HTTPS listener
 tls:
   # Option 1: Use an existing Kubernetes secret containing TLS certificate and key
@@ -192,8 +162,9 @@ tls:
 # Affinity rules for pod scheduling
 # affinity: {}
 
-# Pod annotations
-# podAnnotations: {}
+# Extra pod annotations. Attach a Reloader annotation here when the ConfigMap or
+# Secret is managed outside Helm and mounts through subPath.
+podAnnotations: {}
 
-# Pod labels
-# podLabels: {}
+# Extra pod labels
+podLabels: {}
