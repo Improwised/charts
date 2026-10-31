@@ -1,0 +1,20 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "apexkube-agent.metrics.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "apexkube-agent.metrics.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    # Remote-write, not scrape: writers post to /api/v1/receive and envoy
+    # preserves the path.
+    - name: remote-write
+      port: {{ .Values.metrics.envoy.containerPort }}
+      protocol: TCP
+      targetPort: http
+  selector:
+    {{- include "apexkube-agent.metrics.selectorLabels" . | nindent 4 }}
+{{- end }}
