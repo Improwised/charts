@@ -69,6 +69,19 @@ Requirements:
 `metrics.envoy.config` is merged over `envoy.config`, so set only the timeouts or retries
 that should differ, for example `metrics.envoy.config.routeTimeout: 5s`.
 
+The metrics profile also renders a ClusterIP Service `<fullname>-metrics` on port
+`metrics.envoy.containerPort` (10000), so in-cluster writers use a stable name instead of
+the pod IP:
+
+```yaml
+remote_write:
+  - url: http://<fullname>-metrics.<namespace>.svc.cluster.local:10000/api/v1/receive
+```
+
+Envoy preserves the request path, so writers POST to `/api/v1/receive` and the backend
+receives it unchanged. A cluster that only forwards mesh traffic onward to a local backend
+never uses this Service; leaving it in place costs one unused ClusterIP.
+
 ### Metrics-only install
 
 For a cluster that should run a metrics agent and no access agent, ship
