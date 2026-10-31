@@ -1,0 +1,12 @@
+dependencies:
+- name: postgresql
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 16.7.21
+- name: redis
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 21.2.13
+- name: kratos
+  repository: https://k8s.ory.sh/helm/charts
+  version: 0.45.0
+digest: sha256:88fc564a207e9b01b1758dfe0911c2181d73a0bd67b9b2d560a50809d55b5353
+generated: "2025-08-06T18:48:56.874391824+05:30"
