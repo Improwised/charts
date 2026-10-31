@@ -1,0 +1,40 @@
+postgres:
+  secret:
+    password: ci-postgres-password
+
+valkey:
+  secret:
+    password: ci-valkey-password
+
+global:
+  domain: ci.example.com
+
+kratos:
+  httpRoute:
+    enabled: false
+  secrets:
+    secretsDefault: ci-kratos-default-secret-0123456789
+    secretsCookie: ci-kratos-cookie-secret-0123456789
+    secretsCipher: ci-kratos-cipher-secret-01234567
+    smtpConnectionURI: smtp://user:pass@smtp.example.com:587/
+
+api:
+  httpRoute:
+    enabled: false
+  #  Find available tags at: https://hub.docker.com/r/improwised/jovvix-api/tags
+  image:
+    tag: "main-77988f8-1785401490"
+  migration:
+    image:
+      tag: "main-77988f8-1785401490"
+  secret:
+    jwtSecret: ci-api-jwt-secret-0123456789abcdef
+    smtpUsername: ci
+    smtpPassword: ci-smtp-password
+
+ui:
+  httpRoute:
+    enabled: false
+  #  Find available tags at: https://hub.docker.com/r/improwised/jovvix-ui/tags
+  image:
+    tag: "main-de81219-1785915120"

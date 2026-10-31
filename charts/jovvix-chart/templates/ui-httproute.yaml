@@ -1,0 +1,23 @@
+{{- if and .Values.ui.enabled .Values.ui.httpRoute.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "jovvix.ui.fullname" . }}
+  labels:
+    {{- include "jovvix.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ui
+spec:
+  hostnames:
+    {{- toYaml (.Values.ui.httpRoute.hostnames | default (list .Values.global.domain)) | nindent 4 }}
+  parentRefs:
+    {{- toYaml .Values.ui.httpRoute.parentRefs | nindent 4 }}
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ include "jovvix.ui.fullname" . }}
+          port: {{ .Values.ui.service.port }}
+          weight: 1
+      matches:
+        {{- toYaml .Values.ui.httpRoute.matches | nindent 8 }}
+{{- end }}
