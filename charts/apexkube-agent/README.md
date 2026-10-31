@@ -10,7 +10,95 @@ This chart deploys:
 - **Agent** — single container running WireGuard (tunnel) and Envoy (JWT authentication, TLS termination)
 - **RBAC** — ServiceAccount, ClusterRole, and ClusterRoleBinding
 
+## Deployment profiles
+
+One release can run one or two agents from the same image. They differ only in Envoy's
+listener/upstream settings and in their WireGuard identity.
+
+| | `access` | `metrics` |
+|---|---|---|
+| Default | on | off |
+| Downstream listener | TLS, certificate from `tls.*` | plain HTTP |
+| Client auth | JWT verified against `envoy.config.jwt.publicKey` | none |
+| Upstream | `kubernetes.default.svc:443`, TLS | `metrics.envoy.backend` (default `thanos-receive:10908`), plain HTTP |
+| Service account token | injected as `Authorization: Bearer` | not injected, not mounted |
+| Cluster-wide RBAC | ClusterRole + binding | none |
+| Resources | `envoy.resources` (64Mi/50m → 128Mi/100m) | `metrics.resources` (128Mi/100m → 256Mi/500m) |
+
+Defaults deploy the access agent exactly as chart 2.0.0 did, so existing installs need
+no values change.
+
+### Adding a metrics agent
+
+Set `metrics.enabled: true` and give it a WireGuard identity of its own:
+
+```yaml
+metrics:
+  enabled: true
+  wireguard:
+    existingSecret: metrics-wireguard-privatekey
+  envoy:
+    backend:
+      host: thanos-receive
+      port: 10908
+```
+
+That renders a second Deployment `<fullname>-metrics` next to the access one, with its
+own ServiceAccount, envoy ConfigMap, WireGuard ConfigMap and private-key Secret:
+
+```
+WireGuard server
+├── peer A → <fullname>          : wg0, envoy TLS + JWT + SA token → kubernetes.default.svc:443
+└── peer B → <fullname>-metrics  : wg0, envoy plain HTTP           → thanos-receive:10908
+```
+
+The tunnel lives inside the pod, so isolation is real: a scrape flood only consumes the
+metrics pod's CPU and memory limits and never shares the access tunnel's queues. The
+metrics pod carries no service account token and no cluster-wide RBAC, so it cannot reach
+the Kubernetes API even if the tunnel were mis-scoped.
+
+Requirements:
+
+- **A dedicated WireGuard peer for the metrics agent** — its own key pair and tunnel
+  address (`metrics.wireguard.config.*`, or `metrics.wireguard.existingSecret` /
+  `existingConfigMap`). Two agents sharing a key or address will collide.
+- **Scope that peer's `AllowedIPs` server-side** to the Thanos endpoint only.
+- Do not raise `metrics.replicas` above 1 unless each replica gets its own identity:
+  replicas share the configured key and address.
+
+`metrics.envoy.config` is merged over `envoy.config`, so set only the timeouts or retries
+that should differ, for example `metrics.envoy.config.routeTimeout: 5s`.
+
+### Metrics-only install
+
+For a cluster that should run a metrics agent and no access agent, ship
+`values-metrics.yaml` (or set the two toggles yourself):
+
+```bash
+helm upgrade --install apexkube-agent improwised/apexkube-agent \
+  -n apexkube-metrics -f values-metrics.yaml
+```
+
+```yaml
+access:
+  enabled: false
+metrics:
+  enabled: true
+```
+
+At least one of the two must be enabled; the chart fails to render otherwise.
+
+### Tuning the access agent
+
+The access agent keeps the keys it always had. `envoy.tls.enabled`,
+`envoy.jwt.enabled`, `envoy.injectServiceAccountToken`, `envoy.backend.*` and
+`envoy.backend.tls.enabled` let a single-pod install point somewhere else, for example a
+small cluster that only needs one agent in front of a plain-HTTP backend. Disabling
+`envoy.tls.enabled` also drops the certificate Secret and its volume mount; disabling
+`envoy.injectServiceAccountToken` sets `automountServiceAccountToken: false`.
+
 ## Installation
+
 
 ### Quick Start (Development)
 

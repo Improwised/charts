@@ -1,3 +1,4 @@
+{{- if .Values.access.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,6 +14,7 @@ data:
                   address: 0.0.0.0
                   port_value: {{ .Values.envoy.containerPort }}
               filter_chains:
+              {{- if .Values.envoy.tls.enabled }}
               - transport_socket:
                   name: envoy.transport_sockets.tls
                   typed_config:
@@ -24,6 +26,9 @@ data:
                           private_key:
                             filename: /etc/ssl/certs/tls.key
                 filters:
+              {{- else }}
+              - filters:
+              {{- end }}
                   - name: envoy.filters.network.http_connection_manager
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
@@ -32,6 +37,7 @@ data:
                       common_http_protocol_options:
                         idle_timeout: {{ .Values.envoy.config.commonHttpProtocolOptions.idleTimeout | quote }}
                       http_filters:
+                      {{- if .Values.envoy.jwt.enabled }}
                         - name: envoy.filters.http.jwt_authn
                           typed_config:
                             "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
@@ -52,28 +58,27 @@ data:
                               - match:  { prefix: "/" }
                                 requires:
                                   provider_name: "jwt_provider"
+                      {{- end }}
+                      {{- if .Values.envoy.injectServiceAccountToken }}
                         - name: envoy.filters.http.lua
                           typed_config:
                             "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
                             inline_code: |
-                              -- Caches the service account token in memory
-                              local cached_token = nil
+                              -- Read the projected service account token on every request so a
+                              -- rotated token is picked up immediately. No cache means no
+                              -- dependency on os.time(), which the sandbox does not guarantee.
                               function envoy_on_request(request_handle)
-                                if not cached_token then
-                                  -- Read token from the projected service account token file
-                                  local file = io.open("/var/run/secrets/kubernetes.io/serviceaccount/token", "r")
-                                  if file then
-                                    cached_token = file:read("*a")
-                                    file:close()
-                                    -- Trim whitespace
-                                    cached_token = cached_token:match("^%s*(.-)%s*$")
+                                local file = io.open("/var/run/secrets/kubernetes.io/serviceaccount/token", "r")
+                                if file then
+                                  local token = file:read("*a")
+                                  file:close()
+                                  token = token:match("^%s*(.-)%s*$")
+                                  if token and token ~= "" then
+                                    request_handle:headers():replace("Authorization", "Bearer " .. token)
                                   end
                                 end
-
-                                if cached_token then
-                                  request_handle:headers():replace("Authorization", "Bearer " .. cached_token)
-                                end
                               end
+                      {{- end }}
                         - name: envoy.filters.http.router
                           typed_config:
                             "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -114,14 +119,17 @@ data:
                       - endpoint:
                           address:
                             socket_address:
-                              address: kubernetes.default.svc
-                              port_value: 443
+                              address: {{ .Values.envoy.backend.host }}
+                              port_value: {{ .Values.envoy.backend.port }}
+              {{- if .Values.envoy.backend.tls.enabled }}
               transport_socket:
                 name: envoy.transport_sockets.tls
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-                  sni: kubernetes.default.svc
+                  sni: {{ .Values.envoy.backend.host }}
                   common_tls_context:
                     validation_context:
                       trusted_ca:
                         filename: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              {{- end }}
+{{- end }}

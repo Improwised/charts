@@ -17,6 +17,54 @@ securityContext:
 readinessProbe:
   enabled: true
 
+# Agent profiles rendered by this release.
+# access: Envoy in front of the Kubernetes API (TLS, client JWT, service account token).
+access:
+  enabled: true
+
+# metrics: a second, independent agent pod relaying scrapes to a plain-HTTP
+# Thanos receive endpoint over its own WireGuard tunnel. Running it as its own
+# pod (and its own tunnel) keeps scrape volume off the access agent.
+# Requires a separate WireGuard peer: its own key pair and tunnel address.
+metrics:
+  enabled: false
+  replicas: 1
+  # Empty values inherit the top-level image above.
+  image:
+    repository: ""
+    tag: ""
+    pullPolicy: ""
+  # Sized for scrape bursts; the access agent keeps its own smaller limits.
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+  envoy:
+    containerPort: 10000
+    backend:
+      host: thanos-receive
+      port: 10908
+    # Merged over envoy.config; set only the timeouts or retries that differ.
+    config: {}
+  wireguard:
+    # Use an existing ConfigMap with a wg0.conf key, or an existing Secret with a
+    # privatekey key. They must belong to a peer dedicated to this agent.
+    existingConfigMap: ""
+    existingSecret: ""
+    config:
+      address: ""
+      peer:
+        publicKey: "<metrics-peer-public-key>"
+        endpoint: ""
+        allowedIPs: ""
+        persistentKeepalive: 5
+      privateKey: "<metrics-wireguard-private-key>"
+  podAnnotations: {}
+  podLabels: {}
+
 # ServiceAccount configuration
 serviceAccount:
   # Name of the service account to create/use.
@@ -25,12 +73,18 @@ serviceAccount:
 
 # ClusterRole configuration
 clusterRole:
+  # Create the ClusterRole. Default rules are wildcard (cluster-admin
+  # equivalent); disable for agents that never call the Kubernetes API.
+  create: true
   # Name of the ClusterRole to create.
   # If not set, defaults to the release name (or fullnameOverride if configured).
   name: ""
 
 # ClusterRoleBinding configuration
 clusterRoleBinding:
+  # Create the ClusterRoleBinding. Disable alongside clusterRole.create for
+  # agents that never call the Kubernetes API.
+  create: true
   # Name of the ClusterRoleBinding to create.
   # If not set, defaults to the release name (or fullnameOverride if configured).
   name: ""
@@ -94,6 +148,29 @@ envoy:
   # Container port for Envoy
   containerPort: 10000
 
+  # Downstream listener TLS. When false the listener serves plain HTTP and no
+  # certificate Secret is required (see the `metrics` profile in values-metrics.yaml).
+  tls:
+    enabled: true
+
+  # Upstream (Envoy -> backend) settings
+  backend:
+    # Backend host and port Envoy proxies to. Defaults target the Kubernetes API,
+    # which is the `access` profile.
+    host: kubernetes.default.svc
+    port: 443
+    # TLS to the backend. Disable for plain-HTTP backends such as thanos-receive.
+    tls:
+      enabled: true
+
+  # Verify client JWTs with the public key from envoy.config.jwt.publicKey
+  jwt:
+    enabled: true
+
+  # Inject the pod's projected service account token as the upstream
+  # Authorization header. Requires a service account with the backend's RBAC.
+  injectServiceAccountToken: true
+
 # WireGuard VPN configuration
 wireguard:
   # Use an existing ConfigMap for WireGuard configuration (non-sensitive data)
@@ -135,6 +212,7 @@ wireguard:
     privateKey: "<wireguard-private-key>"
 
 # TLS configuration for Envoy's HTTPS listener
+# Only used when envoy.tls.enabled is true
 tls:
   # Option 1: Use an existing Kubernetes secret containing TLS certificate and key
   # The secret must have keys: tls.crt and tls.key

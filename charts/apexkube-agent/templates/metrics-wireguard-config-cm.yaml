@@ -1,0 +1,20 @@
+{{- if and .Values.metrics.enabled (not .Values.metrics.wireguard.existingConfigMap) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "apexkube-agent.metrics.fullname" . }}-wireguard-config
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "apexkube-agent.metrics.labels" . | nindent 4 }}
+data:
+  wg0.conf: |
+    [Interface]
+    Address = {{ .Values.metrics.wireguard.config.address }}
+    PostUp = wg set %i private-key /etc/wireguard/privatekey
+
+    [Peer]
+    PublicKey = {{ .Values.metrics.wireguard.config.peer.publicKey }}
+    Endpoint = {{ .Values.metrics.wireguard.config.peer.endpoint }}
+    AllowedIPs = {{ .Values.metrics.wireguard.config.peer.allowedIPs }}
+    PersistentKeepalive = {{ .Values.metrics.wireguard.config.peer.persistentKeepalive }}
+{{- end -}}
