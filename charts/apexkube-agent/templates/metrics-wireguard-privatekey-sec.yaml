@@ -1,4 +1,4 @@
-{{- if and .Values.metrics.enabled (not .Values.metrics.wireguard.existingSecret) -}}
+{{- if and .Values.metrics.enabled (not .Values.access.enabled) (not .Values.metrics.wireguard.existingSecret) -}}
 apiVersion: v1
 kind: Secret
 metadata:

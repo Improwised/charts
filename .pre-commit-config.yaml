@@ -9,11 +9,15 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: check-symlinks
+      # chart-testing fixtures carry throwaway keys (see ci-values.yaml);
+      # they are test data, not credentials.
       - id: detect-private-key
+        exclude: ^charts/apexkube-agent/ci/
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
+        exclude: ^charts/apexkube-agent/ci/
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v9.24.0
     hooks:
