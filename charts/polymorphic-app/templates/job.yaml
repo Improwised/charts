@@ -20,7 +20,7 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "polymorphic-app.labels" $ | nindent 8 }}
+        {{- include "polymorphic-app.podLabels" $ | nindent 8 }}
         app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
     spec:
       {{- if .imagePullSecrets }}

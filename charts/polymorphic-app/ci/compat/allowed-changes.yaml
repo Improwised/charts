@@ -8,3 +8,11 @@
       The PDB selector matched only app.kubernetes.io/component, so it could select pods of another release
       with the same component name in the namespace. It now also matches name + instance, and the PDB carries
       the standard labels.
+  - path: '\.spec\.template\.metadata\.labels\.helm\.sh/chart$'
+    reason: >-
+      helm.sh/chart (which carries the chart version) is no longer a pod-template label, so a chart upgrade
+      no longer restarts every pod or fails non-hook Jobs. Upgrading to this version rolls pods once.
+  - path: '\.podAntiAffinity\..*\.labelSelector\.matchLabels\.(helm\.sh/chart|app\.kubernetes\.io/(version|managed-by))$'
+    reason: >-
+      The default anti-affinity selected pods by every common label including the chart version, so pods of
+      two chart versions did not repel each other during a rollout. It now uses the selector labels.

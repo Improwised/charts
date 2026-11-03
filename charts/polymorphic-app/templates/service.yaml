@@ -36,7 +36,7 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "polymorphic-app.labels" $ | nindent 8 }}
+        {{- include "polymorphic-app.podLabels" $ | nindent 8 }}
         app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
       {{- with .podAnnotations | default $.Values.serviceTemplate.podAnnotations }}
       annotations:
@@ -104,7 +104,7 @@ spec:
               topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  {{- include "polymorphic-app.labels" $ | nindent 18 }}
+                  {{- include "polymorphic-app.selectorLabels" $ | nindent 18 }}
                   app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
     {{- with .affinity | default $.Values.serviceTemplate.affinity }}
 {{ toYaml . | indent 8 }}

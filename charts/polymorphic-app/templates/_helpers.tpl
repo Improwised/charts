@@ -52,6 +52,19 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
+Pod template labels: the common labels minus helm.sh/chart. That label changes on every chart version, so
+having it in a pod template restarted every pod, and failed every non-hook Job (whose pod template is
+immutable), on each chart upgrade even when nothing about the workload changed.
+*/}}
+{{- define "polymorphic-app.podLabels" -}}
+{{ include "polymorphic-app.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{/*
 Item value if the item sets the key (even to false/0/""), else the template value.
 `.item.x | default .template.x` cannot express an explicit false, because false is "empty" to `default`.
 Usage: include "polymorphic-app.pick" (dict "item" .ingress "template" $.Values.serviceTemplate.ingress "key" "enabled")
