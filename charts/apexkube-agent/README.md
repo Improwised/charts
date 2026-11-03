@@ -12,8 +12,9 @@ This chart deploys:
 
 ## Deployment profiles
 
-One release can run one or two agents from the same image. They differ only in Envoy's
-listener/upstream settings and in their WireGuard identity.
+One release can run one or two profiles from the same image. When both are enabled they
+share **one pod, one container, one WireGuard identity and one tunnel**; a second pod is
+only deployed for a metrics-only install.
 
 | | `access` | `metrics` |
 |---|---|---|
@@ -25,62 +26,57 @@ listener/upstream settings and in their WireGuard identity.
 | Cluster-wide RBAC | ClusterRole + binding | none |
 | Resources | `envoy.resources` (64Mi/50m → 128Mi/100m) | `metrics.resources` (128Mi/100m → 256Mi/500m) |
 
-Defaults deploy the access agent exactly as chart 2.0.0 did, so existing installs need
-no values change.
+Defaults deploy the access agent exactly as before, so an install that only uses access
+needs no values change.
 
-### Adding a metrics agent
+### Adding the metrics listener
 
-Set `metrics.enabled: true` and give it a WireGuard identity of its own:
+`metrics.enabled: true` adds a second Envoy listener to the **access pod** — no second
+Deployment, no second WireGuard identity:
 
 ```yaml
 metrics:
   enabled: true
-  wireguard:
-    existingSecret: metrics-wireguard-privatekey
   envoy:
     backend:
-      host: thanos-receive
+      host: thanos-receive.monitoring.svc.cluster.local
       port: 10908
 ```
 
-That renders a second Deployment `<fullname>-metrics` next to the access one, with its
-own ServiceAccount, envoy ConfigMap, WireGuard ConfigMap and private-key Secret:
-
 ```
-WireGuard server
-├── peer A → <fullname>          : wg0, envoy TLS + JWT + SA token → kubernetes.default.svc:443
-└── peer B → <fullname>-metrics  : wg0, envoy plain HTTP           → thanos-receive:10908
+<fullname>  wg0 (the access identity)
+├── envoy :10000  TLS + JWT  → kubernetes.default.svc:443   (access)
+└── envoy :10001  plain HTTP → metrics.envoy.backend        (metrics)
 ```
 
-The tunnel lives inside the pod, so isolation is real: a scrape flood only consumes the
-metrics pod's CPU and memory limits and never shares the access tunnel's queues. The
-metrics pod carries no service account token and no cluster-wide RBAC, so it cannot reach
-the Kubernetes API even if the tunnel were mis-scoped.
+The metrics listener uses `metrics.envoy.combinedPort` (default `10001`) because
+`envoy.containerPort` belongs to the access listener. `metrics.image.*`,
+`metrics.resources` and `metrics.wireguard.*` are ignored in this shape: the pod keeps the
+access identity and sizing. `metrics.envoy.config` is merged over `envoy.config`, so set
+only the timeouts or retries that should differ.
 
-Requirements:
-
-- **A dedicated WireGuard peer for the metrics agent** — its own key pair and tunnel
-  address (`metrics.wireguard.config.*`, or `metrics.wireguard.existingSecret` /
-  `existingConfigMap`). Two agents sharing a key or address will collide.
-- **Scope that peer's `AllowedIPs` server-side** to the Thanos endpoint only.
-- Do not raise `metrics.replicas` above 1 unless each replica gets its own identity:
-  replicas share the configured key and address.
-
-`metrics.envoy.config` is merged over `envoy.config`, so set only the timeouts or retries
-that should differ, for example `metrics.envoy.config.routeTimeout: 5s`.
-
-The metrics profile also renders a ClusterIP Service `<fullname>-metrics` on port
-`metrics.envoy.containerPort` (10000), so in-cluster writers use a stable name instead of
-the pod IP:
+The chart renders a ClusterIP Service `<fullname>-metrics` on that port, so in-cluster
+writers use a stable name instead of the pod IP:
 
 ```yaml
 remote_write:
-  - url: http://<fullname>-metrics.<namespace>.svc.cluster.local:10000/api/v1/receive
+  - url: http://<fullname>-metrics.<namespace>.svc.cluster.local:10001/api/v1/receive
 ```
 
 Envoy preserves the request path, so writers POST to `/api/v1/receive` and the backend
-receives it unchanged. A cluster that only forwards mesh traffic onward to a local backend
-never uses this Service; leaving it in place costs one unused ClusterIP.
+receives it unchanged.
+
+Access and metrics share one tunnel, so scope that peer's `AllowedIPs` to the destinations
+the agent actually needs, and treat the metrics listener as reachable by everything the
+tunnel can reach. Restrict in-cluster access to that port with a NetworkPolicy when other
+namespaces should not be able to write.
+
+#### Upgrading from 2.x
+
+Before 3.0.0, `metrics.enabled: true` rendered a second Deployment `<fullname>-metrics`
+with its own WireGuard identity. It now runs inside the access pod. Upgrading collapses
+the two pods into one: drop `metrics.wireguard.*` from your values and point writers at
+the Service on `metrics.envoy.combinedPort` (`10001`) instead of `10000`.
 
 ### Metrics-only install
 
@@ -98,6 +94,11 @@ access:
 metrics:
   enabled: true
 ```
+
+This is the only shape that deploys a separate `<fullname>-metrics` Deployment, with its
+own ServiceAccount, envoy ConfigMap and WireGuard identity, because there is no access
+pod to host the listener. In this shape the listener keeps `metrics.envoy.containerPort`
+(10000) and `metrics.image.*` / `metrics.resources` apply.
 
 At least one of the two must be enabled; the chart fails to render otherwise.
 

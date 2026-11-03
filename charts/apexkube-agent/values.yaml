@@ -44,6 +44,10 @@ metrics:
       cpu: "500m"
   envoy:
     containerPort: 10000
+    # Port the metrics listener uses when it runs inside the access pod.
+    # Must differ from containerPort. Ignored in a metrics-only install, where
+    # the listener uses containerPort instead.
+    combinedPort: 10001
     backend:
       host: thanos-receive
       port: 10908

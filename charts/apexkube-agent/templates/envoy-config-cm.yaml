@@ -107,6 +107,46 @@ data:
                                     - upgrade_type: "SPDY/3.1"
                                       enabled: true
 
+{{- if .Values.metrics.enabled }}
+            - name: metrics_listener
+              address:
+                socket_address:
+                  address: 0.0.0.0
+                  port_value: {{ .Values.metrics.envoy.combinedPort }}
+              filter_chains:
+              - filters:
+                  - name: envoy.filters.network.http_connection_manager
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                      stat_prefix: ingress_http_metrics
+                      stream_idle_timeout: {{ .Values.envoy.config.streamIdleTimeout | quote }}
+                      common_http_protocol_options:
+                        idle_timeout: {{ .Values.envoy.config.commonHttpProtocolOptions.idleTimeout | quote }}
+                      http_filters:
+                        - name: envoy.filters.http.router
+                          typed_config:
+                            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                      route_config:
+                        name: metrics_route
+                        virtual_hosts:
+                          - name: metrics_backend
+                            domains: ["*"]
+                            routes:
+                              - match: { prefix: "/" }
+                                route:
+                                  timeout: {{ .Values.envoy.config.routeTimeout | quote }}
+                                  cluster: metrics_backend
+                                  {{- if .Values.envoy.config.retry.enabled }}
+                                  retry_policy:
+                                    retry_on: {{ .Values.envoy.config.retry.retryOn | quote }}
+                                    num_retries: {{ .Values.envoy.config.retry.numRetries }}
+                                    per_try_timeout: {{ .Values.envoy.config.retry.perTryTimeout | quote }}
+                                    retry_back_off:
+                                      base_interval: {{ .Values.envoy.config.retry.backoff.baseInterval | quote }}
+                                      max_interval: {{ .Values.envoy.config.retry.backoff.maxInterval | quote }}
+                                  {{- end }}
+{{- end }}
+
           clusters:
             - name: service_backend
               connect_timeout: 0.25s
@@ -132,4 +172,20 @@ data:
                       trusted_ca:
                         filename: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
               {{- end }}
+{{- if .Values.metrics.enabled }}
+            - name: metrics_backend
+              connect_timeout: 0.25s
+              type: STRICT_DNS
+              lb_policy: ROUND_ROBIN
+              load_assignment:
+                cluster_name: metrics_backend
+                endpoints:
+                  - lb_endpoints:
+                      - endpoint:
+                          address:
+                            socket_address:
+                              address: {{ .Values.metrics.envoy.backend.host | quote }}
+                              port_value: {{ .Values.metrics.envoy.backend.port }}
+{{- end }}
+
 {{- end }}
