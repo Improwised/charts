@@ -1,4 +1,11 @@
 {{- range .Values.jobs }}
+{{- /* Any map, including {}, turns the hook on (with defaults); an absent item value falls back to jobTemplate.hook. */}}
+{{- $hook := ternary .hook $.Values.jobTemplate.hook (and (hasKey . "hook") (kindIs "map" .hook)) }}
+{{- $hookOn := kindIs "map" $hook }}
+{{- $annotations := .annotations | default $.Values.jobTemplate.annotations | default dict }}
+{{- if and $hookOn (hasKey $annotations "helm.sh/hook") }}
+{{- fail (printf "jobs[%s]: set either hook or a helm.sh/hook annotation, not both" .name) }}
+{{- end }}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -13,15 +20,27 @@ metadata:
     app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
   annotations:
     linkerd.io/inject: disabled
+{{- if $hookOn }}
+    helm.sh/hook: {{ join "," ($hook.events | default (list "pre-install" "pre-upgrade")) | quote }}
+    helm.sh/hook-weight: {{ $hook.weight | default 0 | quote }}
+    helm.sh/hook-delete-policy: {{ join "," ($hook.deletePolicy | default (list "before-hook-creation")) | quote }}
+{{- end }}
 {{- with .annotations | default $.Values.jobTemplate.annotations }}
     {{- toYaml . | nindent 4 }}
 {{- end }}
 spec:
+  {{- with include "polymorphic-app.extraSpec" (dict "template" $.Values.jobTemplate.extraJobSpec "item" .extraJobSpec "managed" (list "template") "what" "extraJobSpec") }}
+  {{- . | nindent 2 }}
+  {{- end }}
   template:
     metadata:
       labels:
         {{- include "polymorphic-app.podLabels" $ | nindent 8 }}
         app.kubernetes.io/component: "{{ .name | default $.Values.jobTemplate.name }}"
+      {{- with .podAnnotations | default $.Values.jobTemplate.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       {{- if .imagePullSecrets }}
       imagePullSecrets:
@@ -36,6 +55,10 @@ spec:
       {{- end }}
       {{- end }}
       restartPolicy: Never
+      {{- with .initContainers | default $.Values.jobTemplate.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
 {{- $jobName := .name | default $.Values.jobTemplate.name }}
 {{ include "polymorphic-app.containerSpec" (dict
@@ -55,6 +78,9 @@ spec:
       {{- with .tolerations | default $.Values.jobTemplate.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with include "polymorphic-app.extraSpec" (dict "template" $.Values.jobTemplate.extraPodSpec "item" .extraPodSpec "managed" (include "polymorphic-app.managedPodSpecKeys" . | fromJsonArray) "what" "extraPodSpec") }}
+      {{- . | nindent 6 }}
       {{- end }}
       volumes:
       {{- if .volumes }}

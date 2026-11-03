@@ -1,0 +1,83 @@
+# chart-testing install of the 2.10.0 opt-in features. Only fields available on every Kubernetes version in the
+# CI matrix (1.33+) are used.
+services:
+  - name: web
+    image:
+      repository: nginx
+      tag: "1.29"
+    ports:
+      - name: http
+        containerPort: 80
+    healthcheck:
+      enabled: true
+      type: httpGet
+      path: /
+      port: http
+      probes:
+        startup:
+          periodSeconds: 2
+          failureThreshold: 30
+    lifecycleHooks:
+      preStop:
+        sleep:
+          seconds: 2
+    topologySpread:
+      - topologyKey: kubernetes.io/hostname
+    podDisruptionBudget:
+      enabled: true
+      maxUnavailable: 1
+      unhealthyPodEvictionPolicy: AlwaysAllow
+    autoscaling: true
+    minReplicaCount: 1
+    maxReplicaCount: 2
+    hpa:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 120
+    extraPodSpec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+    extraContainerSpec:
+      resizePolicy:
+        - resourceName: cpu
+          restartPolicy: NotRequired
+    service:
+      ports:
+        - name: http
+          port: 80
+          targetPort: http
+workers:
+  - name: consumer
+    image:
+      repository: busybox
+      tag: "1.37"
+    command: ["sh", "-c", "while true; do sleep 30; done"]
+    podAnnotations:
+      example.com/role: consumer
+    initContainers:
+      - name: sidecar
+        image: busybox:1.37
+        restartPolicy: Always
+        command: ["sh", "-c", "while true; do sleep 30; done"]
+jobs:
+  - name: migrate
+    image:
+      repository: busybox
+      tag: "1.37"
+    command: ["sh", "-c", "echo migrated"]
+    hook:
+      weight: -1
+    extraJobSpec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 120
+cronJobs:
+  - name: report
+    image:
+      repository: busybox
+      tag: "1.37"
+    schedule: "0 6 * * *"
+    timeZone: Etc/UTC
+    concurrencyPolicy: Forbid
+    command: ["sh", "-c", "echo report"]
+    extraJobSpec:
+      ttlSecondsAfterFinished: 600

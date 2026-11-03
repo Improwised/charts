@@ -113,6 +113,20 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+    {{- $component := .name | default $.Values.serviceTemplate.name }}
+    {{- with .topologySpread | default $.Values.serviceTemplate.topologySpread }}
+      topologySpreadConstraints:
+      {{- range . }}
+        {{- $c := mergeOverwrite (dict "maxSkew" 1 "whenUnsatisfiable" "ScheduleAnyway" "matchLabelKeys" (list "pod-template-hash")) (deepCopy .) }}
+        {{- if not $c.labelSelector }}
+        {{- $_ := set $c "labelSelector" (dict "matchLabels" (merge (include "polymorphic-app.selectorLabels" $ | fromYaml) (dict "app.kubernetes.io/component" $component))) }}
+        {{- end }}
+        - {{- toYaml $c | nindent 10 }}
+      {{- end }}
+    {{- end }}
+    {{- with include "polymorphic-app.extraSpec" (dict "template" $.Values.serviceTemplate.extraPodSpec "item" .extraPodSpec "managed" (append (include "polymorphic-app.managedPodSpecKeys" . | fromJsonArray) "topologySpreadConstraints") "what" "extraPodSpec") }}
+{{ . | indent 6 }}
+    {{- end }}
 {{- if .volumeClaimTemplates }}
   volumeClaimTemplates:
 
@@ -148,13 +162,22 @@ spec:
     {{- end }}
   minReplicas: {{ .minReplicaCount | default $.Values.serviceTemplate.minReplicaCount }}
   maxReplicas: {{ .maxReplicaCount | default $.Values.serviceTemplate.maxReplicaCount }}
+  {{- $hpa := mergeOverwrite (deepCopy ($.Values.serviceTemplate.hpa | default dict)) (deepCopy (.hpa | default dict)) }}
   metrics:
+  {{- if $hpa.metrics }}
+  {{- toYaml $hpa.metrics | nindent 2 }}
+  {{- else }}
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
         averageUtilization: {{ .averageUtilization | default $.Values.serviceTemplate.averageUtilization }}
+  {{- end }}
+  {{- with $hpa.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   # - type: Resource
   #   resource:
   #     name: memory

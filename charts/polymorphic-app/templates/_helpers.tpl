@@ -65,6 +65,33 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
+Opt-in raw spec fields (extraPodSpec, extraContainerSpec, extraJobSpec): the template-level map, then the
+item-level map deep-merged on top, rendered as-is. This exposes any Kubernetes field the chart has no value
+for (including ones added in future Kubernetes releases) without a chart change. Keys the chart already
+renders are refused, so the output never contains duplicate keys and the first-class values stay the
+single way to set them.
+Usage: include "polymorphic-app.extraSpec" (dict "template" $.Values.serviceTemplate.extraPodSpec "item" .extraPodSpec "managed" (list "containers") "what" "extraPodSpec")
+*/}}
+{{- define "polymorphic-app.extraSpec" -}}
+{{- $m := mergeOverwrite (deepCopy (.template | default dict)) (deepCopy (.item | default dict)) -}}
+{{- range $k, $_ := $m -}}
+{{- if has $k $.managed -}}
+{{- fail (printf "%s.%s is already rendered by the chart; use the chart's own value for it" $.what $k) -}}
+{{- end -}}
+{{- end -}}
+{{- if $m -}}{{- toYaml $m -}}{{- end -}}
+{{- end -}}
+
+{{/* Pod spec keys the chart renders for every kind; services additionally own topologySpreadConstraints. */}}
+{{- define "polymorphic-app.managedPodSpecKeys" -}}
+{{- toJson (list "imagePullSecrets" "terminationGracePeriodSeconds" "initContainers" "containers" "dnsConfig" "securityContext" "volumes" "nodeSelector" "affinity" "tolerations" "restartPolicy") -}}
+{{- end -}}
+
+{{- define "polymorphic-app.managedContainerKeys" -}}
+{{- toJson (list "name" "image" "imagePullPolicy" "env" "envFrom" "command" "args" "ports" "resources" "securityContext" "lifecycle" "livenessProbe" "readinessProbe" "startupProbe" "volumeMounts") -}}
+{{- end -}}
+
+{{/*
 Item value if the item sets the key (even to false/0/""), else the template value.
 `.item.x | default .template.x` cannot express an explicit false, because false is "empty" to `default`.
 Usage: include "polymorphic-app.pick" (dict "item" .ingress "template" $.Values.serviceTemplate.ingress "key" "enabled")
@@ -336,6 +363,9 @@ Merge order for env/envFrom/volumeMounts: global -> template -> item (item overr
 {{ toYaml $item.volumeMounts | indent 4 }}
   {{- end }}
   {{- end }}
+  {{- with include "polymorphic-app.extraSpec" (dict "template" $tmpl.extraContainerSpec "item" $item.extraContainerSpec "managed" (include "polymorphic-app.managedContainerKeys" . | fromJsonArray) "what" "extraContainerSpec") }}
+{{ . | indent 2 }}
+  {{- end }}
 {{- end -}}
 
 {{/*
@@ -374,6 +404,11 @@ Liveness and readiness probes
   {{- $p := $health.probes | default dict -}}
   {{- $liveness := $health.liveness | default $p.liveness -}}
   {{- $readiness := $health.readiness | default $p.readiness -}}
+  {{- $startup := $health.startup | default $p.startup -}}
+  {{- if $startup }}
+startupProbe:
+{{- include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $startup) | nindent 2 }}
+  {{- end }}
   {{- if or $liveness $readiness -}}
     {{- if $liveness }}
 livenessProbe:
