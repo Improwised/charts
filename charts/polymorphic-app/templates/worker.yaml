@@ -17,10 +17,7 @@ metadata:
 {{- end }}
 spec:
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 50%
-      maxSurge: 100%
+    {{- include "polymorphic-app.strategy" (dict "item" . "template" $.Values.workerTemplate) | nindent 4 }}
   replicas: {{ if ne .minReplicaCount nil }}{{ .minReplicaCount }}{{ else }}{{ $.Values.workerTemplate.minReplicaCount }}{{ end }}
   selector:
     matchLabels:

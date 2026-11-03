@@ -8,6 +8,8 @@ serviceTemplate:
     periodSeconds: 5
 services:
   - name: demo-1
+    strategy:
+      type: Recreate
     image:
       repository: nginx
       tag: "latest"

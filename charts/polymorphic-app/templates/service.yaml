@@ -19,10 +19,7 @@ spec:
   {{ if .type }}
   {{- else }}
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 50%
-      maxSurge: 100%
+    {{- include "polymorphic-app.strategy" (dict "item" . "template" $.Values.serviceTemplate) | nindent 4 }}
   {{- end }}
   replicas: {{ if ne .minReplicaCount nil }}{{ .minReplicaCount }}{{ else }}{{ $.Values.serviceTemplate.minReplicaCount }}{{ end }}
   {{ if eq .type "StatefulSet"}}
