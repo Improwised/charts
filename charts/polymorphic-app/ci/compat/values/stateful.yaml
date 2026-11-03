@@ -1,0 +1,62 @@
+# Stateful single-replica apps: a StatefulSet with a volume claim template and a Deployment on an existing claim
+# with the Recreate strategy.
+prefixWithReleaseName:
+  enabled: false
+services:
+  - name: db
+    type: StatefulSet
+    image:
+      repository: docker.io/library/postgres
+      tag: "17"
+    ports:
+      - name: pg
+        containerPort: 5432
+    securityContext:
+      fsGroup: 999
+      runAsUser: 999
+      runAsGroup: 999
+    volumeMounts:
+      - name: data
+        mountPath: /var/lib/postgresql/data
+    volumeClaimTemplates:
+      - metadata:
+          name: data
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    service:
+      enabled: true
+      type: ClusterIP
+      ports:
+        - name: pg
+          port: 5432
+          targetPort: pg
+  - name: files
+    image:
+      repository: ghcr.io/example/files
+      tag: "0.9.1"
+    strategy:
+      type: Recreate
+    volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: files-data
+    volumeMounts:
+      - name: data
+        mountPath: /data
+    affinity:
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: db
+    service:
+      enabled: true
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 80
+          targetPort: http

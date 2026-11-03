@@ -93,6 +93,28 @@ serviceTemplate:
   # Use Recreate for single-replica apps that mount a ReadWriteOnce volume, otherwise the new pod
   # can wait forever for the volume held by the old pod. Ignored for `type: StatefulSet` services.
   strategy: {}
+  # HPA tuning when autoscaling is true. `metrics` replaces the default CPU metric; `behavior` is passed as-is.
+  # hpa:
+  #   metrics:
+  #     - type: Resource
+  #       resource: {name: memory, target: {type: Utilization, averageUtilization: 75}}
+  #   behavior:
+  #     scaleDown: {stabilizationWindowSeconds: 300}
+  # Spread pods across nodes/zones. The chart fills in maxSkew: 1, whenUnsatisfiable: ScheduleAnyway,
+  # matchLabelKeys: [pod-template-hash] and the labelSelector for this service; any of them can be overridden.
+  # topologySpread:
+  #   - topologyKey: kubernetes.io/hostname
+  # Any other pod spec field, rendered as-is (template first, item deep-merged on top). Fields the chart renders
+  # itself (containers, volumes, affinity, tolerations, ...) are rejected; use their own values instead.
+  # extraPodSpec:
+  #   serviceAccountName: my-app
+  #   automountServiceAccountToken: false
+  #   priorityClassName: high
+  #   hostUsers: false            # user namespaces
+  # Any other field of the main container, rendered as-is (same rules as extraPodSpec).
+  # extraContainerSpec:
+  #   resizePolicy:
+  #     - {resourceName: cpu, restartPolicy: NotRequired}
   autoscaling: false
   minReplicaCount: 1
   maxReplicaCount: 1
@@ -201,6 +223,10 @@ workerTemplate:
   # Use Recreate for single-replica apps that mount a ReadWriteOnce volume, otherwise the new pod
   # can wait forever for the volume held by the old pod.
   strategy: {}
+  # podAnnotations: {}
+  # Init containers; `restartPolicy: Always` makes one a native sidecar that runs alongside the worker.
+  # initContainers: []
+  # hpa, extraPodSpec, extraContainerSpec: same as serviceTemplate.
   autoscaling: false
   minReplicaCount: 1
   maxReplicaCount: 1
@@ -209,7 +235,9 @@ workerTemplate:
     enabled: false
   env: []
   envFrom: []
-  averageUtilization: 100
+  # CPU target for worker HPAs. Unset falls back to serviceTemplate.averageUtilization (50), which is what
+  # every chart version up to 2.9.0 applied to workers regardless of this key.
+  # averageUtilization: 100
   volumeMounts: []
   volumes: []
 
@@ -335,6 +363,12 @@ cronJobTemplate:
     #   add: []
   resources: {}
   lifecycleHooks: {}
+  # timeZone: Asia/Kolkata         # IANA zone for `schedule`; unset = the controller's zone
+  # concurrencyPolicy: Forbid      # Allow | Forbid | Replace
+  # Extra Job spec fields, rendered as-is: backoffLimit, ttlSecondsAfterFinished, activeDeadlineSeconds,
+  # podFailurePolicy, ...
+  # extraJobSpec: {}
+  # podAnnotations, initContainers, extraPodSpec, extraContainerSpec: same as workerTemplate/serviceTemplate.
 
 cronJobs:
 #   - name: update-status
@@ -391,6 +425,13 @@ jobTemplate:
   affinity: {}
   tolerations: []
   volumes: []
+  # Run as a Helm hook (e.g. migrations). A plain Job cannot be updated in place, so a Job that is not a hook
+  # fails the upgrade whenever its pod template changes. Do not combine with a helm.sh/hook annotation.
+  # hook:
+  #   events: [pre-install, pre-upgrade]      # default
+  #   weight: 0                               # default
+  #   deletePolicy: [before-hook-creation]    # default
+  # extraJobSpec, podAnnotations, initContainers, extraPodSpec, extraContainerSpec: as for cronJobTemplate.
 
 jobs:
   # - name: migrate

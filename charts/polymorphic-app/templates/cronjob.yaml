@@ -21,9 +21,23 @@ spec:
   failedJobsHistoryLimit: {{ .failedJobsHistoryLimit   | default $.Values.cronJobTemplate.failedJobsHistoryLimit | default 0 }}
   schedule: {{ .schedule | quote }}
   suspend: {{ .suspend | default false }}
+  {{- with .timeZone | default $.Values.cronJobTemplate.timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  {{- with .concurrencyPolicy | default $.Values.cronJobTemplate.concurrencyPolicy }}
+  concurrencyPolicy: {{ . }}
+  {{- end }}
   jobTemplate:
     spec:
+      {{- with include "polymorphic-app.extraSpec" (dict "template" $.Values.cronJobTemplate.extraJobSpec "item" .extraJobSpec "managed" (list "template") "what" "extraJobSpec") }}
+      {{- . | nindent 6 }}
+      {{- end }}
       template:
+        {{- with .podAnnotations | default $.Values.cronJobTemplate.podAnnotations }}
+        metadata:
+          annotations:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
         spec:
           {{- if .imagePullSecrets }}
           imagePullSecrets:
@@ -38,6 +52,10 @@ spec:
           {{- end }}
           {{- end }}
           restartPolicy: Never
+          {{- with .initContainers | default $.Values.cronJobTemplate.initContainers }}
+          initContainers:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           containers:
 {{- $cronName := .name | default $.Values.cronJobTemplate.name }}
 {{ include "polymorphic-app.containerSpec" (dict
@@ -52,11 +70,14 @@ spec:
           {{- end }}
           {{- with .affinity | default $.Values.cronJobTemplate.affinity }}
           affinity:
-          {{ toYaml . | indent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .tolerations | default $.Values.cronJobTemplate.tolerations }}
           tolerations:
-          {{ toYaml . | indent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with include "polymorphic-app.extraSpec" (dict "template" $.Values.cronJobTemplate.extraPodSpec "item" .extraPodSpec "managed" (include "polymorphic-app.managedPodSpecKeys" . | fromJsonArray) "what" "extraPodSpec") }}
+          {{- . | nindent 10 }}
           {{- end }}
           volumes:
       {{- if .volumes }}

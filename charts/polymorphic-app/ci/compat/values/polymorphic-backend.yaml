@@ -1,0 +1,102 @@
+# One image, several entrypoints: API + UI services with Ingress, sidecar annotations, a hook migration Job,
+# a plain Job, a CronJob, an autoscaled worker and a PodDisruptionBudget.
+image:
+  repository: ghcr.io/example/backend
+  tag: "2.0.0"
+envFrom:
+  - secretRef:
+      name: backend-env
+env:
+  - name: TZ
+    value: UTC
+imagePullSecrets:
+  - name: registry
+serviceTemplate:
+  minReplicaCount: 2
+  initContainers:
+    - name: wait-for-db
+      image: busybox:1.36
+      command: ["sh", "-c", "until nc -z db 5432; do sleep 2; done"]
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+services:
+  - name: api
+    command: ["/app/server"]
+    args: ["api"]
+    ports:
+      - name: http
+        containerPort: 3000
+    podAnnotations:
+      dapr.io/enabled: "true"
+      dapr.io/app-id: api
+      dapr.io/app-port: "3000"
+    healthcheck:
+      enabled: true
+      type: httpGet
+      probes:
+        liveness:
+          path: /live
+          port: http
+          periodSeconds: 10
+        readiness:
+          path: /ready
+          port: http
+          periodSeconds: 5
+    service:
+      enabled: true
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 80
+          targetPort: http
+    ingress:
+      enabled: true
+      className: nginx
+      hosts:
+        - host: api.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+              servicePort: 80
+      tls:
+        - secretName: api-tls
+          hosts:
+            - api.example.com
+  - name: ui
+    image:
+      repository: ghcr.io/example/ui
+      tag: "2.0.0"
+    minReplicaCount: 1
+    podDisruptionBudget:
+      enabled: false
+    healthcheck:
+      enabled: true
+      type: tcpSocket
+      port: 80
+workers:
+  - name: queue
+    args: ["worker", "--queue", "default"]
+    autoscaling: true
+    minReplicaCount: 1
+    maxReplicaCount: 4
+    probe:
+      aliveCommand: ["/app/server", "alive"]
+jobs:
+  - name: migrate
+    args: ["migrate", "up"]
+    annotations:
+      helm.sh/hook: pre-install,pre-upgrade
+      helm.sh/hook-weight: "-1"
+      helm.sh/hook-delete-policy: before-hook-creation
+  - name: seed
+    args: ["seed"]
+cronJobs:
+  - name: report
+    schedule: "0 6 * * *"
+    args: ["report"]
+    successfulJobsHistoryLimit: 1
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
