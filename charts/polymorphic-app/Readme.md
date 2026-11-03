@@ -12,3 +12,24 @@ This chart is ideal for deploying applications that support polymorphic containe
   * Jobs: Typically used to run one-off jobs, mostly helm hooks, to be run when installing/uninstalling/upgrading the helm deployment. Used to run database migrations by default. Backed by Kubernetes `Job`.
   * CronJobs: Typically used to run scheduled jobs. Used for triggering events and batch processing jobs at a regular interval. Backed by Kubernetes `CronJob`.
 * Designed to be used with [Flux Helm Controller](https://github.com/fluxcd/helm-controller), [Helmfile](https://github.com/roboll/helmfile), and any other mechanism that is backed by helm values-file override.
+
+## Update strategy
+
+Deployments (services and workers) default to `RollingUpdate` with `maxUnavailable: 50%` and `maxSurge: 100%`.
+Override it per service/worker, or for all of them through `serviceTemplate.strategy` / `workerTemplate.strategy`:
+
+```yaml
+services:
+  - name: web
+    strategy:
+      type: Recreate
+```
+
+* The value is used as a whole object and is never merged with the default, so `type: Recreate` does not inherit a `rollingUpdate` block (Kubernetes rejects that combination).
+* Use `Recreate` for single-replica apps that mount a `ReadWriteOnce` volume. With `RollingUpdate` the new pod can be scheduled on another node and wait forever for the volume still held by the old pod, which stalls the release. `Recreate` trades that for a short, bounded outage on every rollout.
+* StatefulSet services (`type: StatefulSet`) do not render a `strategy`.
+* **Changing an existing Deployment from `RollingUpdate` to `Recreate`**: Helm/Flux server-side apply keeps the API-defaulted `rollingUpdate` block and the upgrade fails with `spec.strategy.rollingUpdate: Forbidden: may not be specified when strategy type is 'Recreate'`. Clear it once on the live object, then reconcile again:
+
+  ```bash
+  kubectl -n <ns> patch deployment <name> --type=merge -p '{"spec":{"strategy":{"type":"Recreate","rollingUpdate":null}}}'
+  ```

@@ -182,6 +182,26 @@ Return the appropriate apiVersion for cronjob.
 {{- end -}}
 
 {{/*
+Deployment update strategy.
+Usage: {{ include "polymorphic-app.strategy" (dict "item" . "template" $.Values.serviceTemplate) | nindent 4 }}
+
+An item-level `strategy` replaces the template-level one as a whole (never deep-merged, so
+`type: Recreate` cannot inherit a `rollingUpdate` block, which Kubernetes rejects).
+When neither is set the historical default is rendered.
+*/}}
+{{- define "polymorphic-app.strategy" -}}
+{{- $strategy := .item.strategy | default .template.strategy -}}
+{{- if $strategy -}}
+{{- toYaml $strategy -}}
+{{- else -}}
+type: RollingUpdate
+rollingUpdate:
+  maxUnavailable: 50%
+  maxSurge: 100%
+{{- end -}}
+{{- end -}}
+
+{{/*
 Unified container specification template.
 Usage:
 {{ include "polymorphic-app.containerSpec" (dict "item" . "template" $.Values.serviceTemplate "root" $ "containerName" "svc" "healthcheck" $health "ports" .ports "probeConfig" .probe) }}

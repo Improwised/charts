@@ -694,6 +694,39 @@
                 "maxReplicaCount": {
                     "type": "integer"
                 },
+                "strategy": {
+                    "type": "object",
+                    "description": "Deployment update strategy. Empty keeps the default (RollingUpdate, maxUnavailable 50%, maxSurge 100%). Replaces the template-level value as a whole, it is not merged.",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "RollingUpdate",
+                                "Recreate"
+                            ]
+                        },
+                        "rollingUpdate": {
+                            "type": [
+                                "object",
+                                "null"
+                            ],
+                            "properties": {
+                                "maxSurge": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                },
+                                "maxUnavailable": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
                 "minReplicaCount": {
                     "type": "integer"
                 },
@@ -1971,6 +2004,39 @@
                     "maxReplicaCount": {
                         "type": "integer"
                     },
+                    "strategy": {
+                        "type": "object",
+                        "description": "Deployment update strategy. Empty keeps the default (RollingUpdate, maxUnavailable 50%, maxSurge 100%). Replaces the template-level value as a whole, it is not merged.",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "RollingUpdate",
+                                    "Recreate"
+                                ]
+                            },
+                            "rollingUpdate": {
+                                "type": [
+                                    "object",
+                                    "null"
+                                ],
+                                "properties": {
+                                    "maxSurge": {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ]
+                                    },
+                                    "maxUnavailable": {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "minReplicaCount": {
                         "type": "integer"
                     },
@@ -2162,6 +2228,39 @@
                 },
                 "maxReplicaCount": {
                     "type": "integer"
+                },
+                "strategy": {
+                    "type": "object",
+                    "description": "Deployment update strategy. Empty keeps the default (RollingUpdate, maxUnavailable 50%, maxSurge 100%). Replaces the template-level value as a whole, it is not merged.",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "RollingUpdate",
+                                "Recreate"
+                            ]
+                        },
+                        "rollingUpdate": {
+                            "type": [
+                                "object",
+                                "null"
+                            ],
+                            "properties": {
+                                "maxSurge": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                },
+                                "maxUnavailable": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                }
+                            }
+                        }
+                    }
                 },
                 "minReplicaCount": {
                     "type": "integer"
@@ -2676,6 +2775,39 @@
                     },
                     "maxReplicaCount": {
                         "type": "integer"
+                    },
+                    "strategy": {
+                        "type": "object",
+                        "description": "Deployment update strategy. Empty keeps the default (RollingUpdate, maxUnavailable 50%, maxSurge 100%). Replaces the template-level value as a whole, it is not merged.",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "RollingUpdate",
+                                    "Recreate"
+                                ]
+                            },
+                            "rollingUpdate": {
+                                "type": [
+                                    "object",
+                                    "null"
+                                ],
+                                "properties": {
+                                    "maxSurge": {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ]
+                                    },
+                                    "maxUnavailable": {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
                     },
                     "minReplicaCount": {
                         "type": "integer"

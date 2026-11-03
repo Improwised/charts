@@ -86,6 +86,13 @@ serviceTemplate:
     # Set either `minAvailable` OR `maxUnavailable`
     # minAvailable: 1
     # maxUnavailable: 1
+  # Deployment update strategy. Empty means the historical default
+  # (RollingUpdate, maxUnavailable: 50%, maxSurge: 100%). Set the whole object, it is not merged:
+  #   strategy:
+  #     type: Recreate
+  # Use Recreate for single-replica apps that mount a ReadWriteOnce volume, otherwise the new pod
+  # can wait forever for the volume held by the old pod. Ignored for `type: StatefulSet` services.
+  strategy: {}
   autoscaling: false
   minReplicaCount: 1
   maxReplicaCount: 1
@@ -187,6 +194,13 @@ services: []
 workerTemplate:
   name: worker
   image:
+  # Deployment update strategy. Empty means the historical default
+  # (RollingUpdate, maxUnavailable: 50%, maxSurge: 100%). Set the whole object, it is not merged:
+  #   strategy:
+  #     type: Recreate
+  # Use Recreate for single-replica apps that mount a ReadWriteOnce volume, otherwise the new pod
+  # can wait forever for the volume held by the old pod.
+  strategy: {}
   autoscaling: false
   minReplicaCount: 1
   maxReplicaCount: 1
