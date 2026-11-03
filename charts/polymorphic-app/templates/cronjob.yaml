@@ -52,11 +52,11 @@ spec:
           {{- end }}
           {{- with .affinity | default $.Values.cronJobTemplate.affinity }}
           affinity:
-          {{ toYaml . | indent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .tolerations | default $.Values.cronJobTemplate.tolerations }}
           tolerations:
-          {{ toYaml . | indent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           volumes:
       {{- if .volumes }}

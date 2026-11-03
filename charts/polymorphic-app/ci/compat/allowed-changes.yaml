@@ -2,4 +2,9 @@
 # measured against. .ci/scripts/render-compat.py fails on any difference not matched here. Once that version is
 # no longer the base (after the next release), its entries stop applying, so stale entries are harmless.
 # Each entry: path = regex matched against "<Kind>.<dotted.path>" of the changed field, reason = why.
-{}
+"2.9.0":
+  - path: '^PodDisruptionBudget\.(metadata\.labels|spec\.selector\.matchLabels)\.'
+    reason: >-
+      The PDB selector matched only app.kubernetes.io/component, so it could select pods of another release
+      with the same component name in the namespace. It now also matches name + instance, and the PDB carries
+      the standard labels.

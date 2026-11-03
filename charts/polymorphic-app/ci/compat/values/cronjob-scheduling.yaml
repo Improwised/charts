@@ -1,0 +1,19 @@
+# A CronJob pinned to labelled nodes. Up to 2.9.0 this rendered invalid YAML (tolerations/affinity indentation).
+cronJobs:
+  - name: backup
+    image:
+      repository: ghcr.io/example/backup
+      tag: "1.0.0"
+    schedule: "30 1 * * *"
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: batch
+        effect: NoSchedule
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role/batch
+                  operator: Exists

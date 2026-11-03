@@ -113,6 +113,6 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: {{ .averageUtilization | default $.Values.serviceTemplate.averageUtilization }}
+        averageUtilization: {{ .averageUtilization | default $.Values.workerTemplate.averageUtilization | default $.Values.serviceTemplate.averageUtilization }}
 {{- end }}
 {{- end }}

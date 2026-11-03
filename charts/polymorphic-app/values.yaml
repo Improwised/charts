@@ -209,7 +209,9 @@ workerTemplate:
     enabled: false
   env: []
   envFrom: []
-  averageUtilization: 100
+  # CPU target for worker HPAs. Unset falls back to serviceTemplate.averageUtilization (50), which is what
+  # every chart version up to 2.9.0 applied to workers regardless of this key.
+  # averageUtilization: 100
   volumeMounts: []
   volumes: []
 

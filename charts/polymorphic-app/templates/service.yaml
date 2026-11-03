@@ -38,9 +38,9 @@ spec:
       labels:
         {{- include "polymorphic-app.labels" $ | nindent 8 }}
         app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
-      {{ if .podAnnotations }}
+      {{- with .podAnnotations | default $.Values.serviceTemplate.podAnnotations }}
       annotations:
-{{ toYaml .podAnnotations | indent 8 }}
+{{ toYaml . | indent 8 }}
       {{- end }}
     spec:
       {{- if .imagePullSecrets }}
@@ -163,7 +163,7 @@ spec:
   #       averageValue: 100Mi
 {{- end }}
 {{- if .service}}
-{{- if or ( .service.enabled ) ($.Values.serviceTemplate.service.enabled) }}
+{{- if eq "true" (include "polymorphic-app.pick" (dict "item" .service "template" $.Values.serviceTemplate.service "key" "enabled")) }}
 ---
 apiVersion: v1
 kind: Service
@@ -232,10 +232,12 @@ spec:
     app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
 {{- end }}
 
-{{- if and .httpRoute (.httpRoute.enabled | default $.Values.serviceTemplate.httpRoute.enabled) }}
+{{- if and .httpRoute (eq "true" (include "polymorphic-app.pick" (dict "item" .httpRoute "template" $.Values.serviceTemplate.httpRoute "key" "enabled"))) }}
+{{- $svcName := .name | default $.Values.serviceTemplate.name }}
+{{- $routePath := dig "matches" "path" nil .httpRoute | default $.Values.serviceTemplate.httpRoute.matches.path }}
+{{- $routeTimeouts := dig "matches" "timeouts" nil .httpRoute }}
+{{- $svcPorts := dig "ports" nil (.service | default dict) | default $.Values.serviceTemplate.service.ports }}
 ---
-{{- $svcName := .name | default $.Values.serviceTemplate.name -}}
-{{- $fullName := printf "%s-%s-svc" $.Release.Name ($svcName) -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -261,11 +263,11 @@ spec:
   {{- end }}
   rules:
   - matches:
-    {{- with (.httpRoute.matches.path | default $.Values.serviceTemplate.httpRoute.matches.path) }}
+    {{- with $routePath }}
     - path:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- with .httpRoute.matches.timeouts }}
+    {{- with $routeTimeouts }}
     timeouts:
       {{- toYaml . | nindent 6 }}
     {{- end }}
@@ -276,17 +278,17 @@ spec:
       {{- else }}
       name: "{{ $svcName }}"
       {{- end }}
-      port: {{ (index .service.ports 0).port | default (index $.Values.serviceTemplate.service.ports 0).port }}
+      port: {{ (index $svcPorts 0).port }}
     {{- with .httpRoute.filters }}
     filters:
       {{- toYaml . | nindent 6 }}
     {{- end }}
 {{- end }}
 
-{{- if and .ingress (.ingress.enabled | default $.Values.serviceTemplate.ingress.enabled) }}
+{{- if and .ingress (eq "true" (include "polymorphic-app.pick" (dict "item" .ingress "template" $.Values.serviceTemplate.ingress "key" "enabled"))) }}
+{{- $svcName := .name | default $.Values.serviceTemplate.name }}
+{{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) }}
 ---
-{{- $svcName := .name | default $.Values.serviceTemplate.name -}}
-{{- $fullName := printf "%s-%s-svc" $.Release.Name (.name | default $.Values.serviceTemplate.name) -}}
 apiVersion: {{ include "ingress.apiVersion" $ }}
 kind: Ingress
 metadata:
@@ -345,6 +347,7 @@ metadata:
   name: "{{ .name | default $.Values.serviceTemplate.name }}"
   {{- end }}
   labels:
+    {{- include "polymorphic-app.labels" $ | nindent 4 }}
     app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
 spec:
 {{- if .podDisruptionBudget }}
@@ -366,6 +369,7 @@ spec:
 {{- end }}
   selector:
     matchLabels:
+      {{- include "polymorphic-app.selectorLabels" $ | nindent 6 }}
       app.kubernetes.io/component: "{{ .name | default $.Values.serviceTemplate.name }}"
 {{- end }}
 {{- end }}

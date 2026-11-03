@@ -52,6 +52,17 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
+Item value if the item sets the key (even to false/0/""), else the template value.
+`.item.x | default .template.x` cannot express an explicit false, because false is "empty" to `default`.
+Usage: include "polymorphic-app.pick" (dict "item" .ingress "template" $.Values.serviceTemplate.ingress "key" "enabled")
+Returns a string; compare with eq "true".
+*/}}
+{{- define "polymorphic-app.pick" -}}
+{{- $i := .item | default dict -}}
+{{- if hasKey $i .key -}}{{- index $i .key -}}{{- else -}}{{- index (.template | default dict) .key -}}{{- end -}}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "polymorphic-app.serviceAccountName" -}}
@@ -233,7 +244,7 @@ Merge order for env/envFrom/volumeMounts: global -> template -> item (item overr
   {{- else }}
   image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
   {{- end }}
-  imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+  imagePullPolicy: {{ ($item.image | default dict).pullPolicy | default ($tmpl.image | default dict).pullPolicy | default $root.Values.image.pullPolicy }}
   {{- if or $item.env $root.Values.env $tmpl.env }}
   env:
   {{- if $root.Values.env }}
