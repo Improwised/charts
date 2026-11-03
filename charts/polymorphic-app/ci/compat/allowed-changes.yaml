@@ -1,0 +1,5 @@
+# Intentional changes to rendered output, keyed by the chart version on the default branch that the change is
+# measured against. .ci/scripts/render-compat.py fails on any difference not matched here. Once that version is
+# no longer the base (after the next release), its entries stop applying, so stale entries are harmless.
+# Each entry: path = regex matched against "<Kind>.<dotted.path>" of the changed field, reason = why.
+{}

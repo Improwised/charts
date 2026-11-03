@@ -1,0 +1,64 @@
+# A typical web app behind Gateway API: one service, HTTPRoute, probes, hardened container, secrets via envFrom.
+prefixWithReleaseName:
+  enabled: false
+image:
+  pullPolicy: IfNotPresent
+serviceTemplate:
+  annotations:
+    reloader.stakater.com/auto: "true"
+services:
+  - name: web
+    image:
+      repository: ghcr.io/example/web
+      tag: "1.4.2"
+      pullPolicy: IfNotPresent
+    ports:
+      - name: http
+        containerPort: 8080
+        protocol: TCP
+    envFrom:
+      - secretRef:
+          name: web-env
+    healthcheck:
+      enabled: true
+      type: httpGet
+      path: /healthz
+      port: http
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 256Mi
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
+    volumes:
+      - name: tmp
+        emptyDir: {}
+    volumeMounts:
+      - name: tmp
+        mountPath: /tmp
+    service:
+      enabled: true
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 80
+          targetPort: http
+    httpRoute:
+      enabled: true
+      parentRefs:
+        - name: public
+          namespace: gateway-system
+      hostnames:
+        - web.example.com
+      matches:
+        path:
+          type: PathPrefix
+          value: /
+        timeouts:
+          request: 60s
