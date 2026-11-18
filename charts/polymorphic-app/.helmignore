@@ -20,3 +20,5 @@
 .idea/
 *.tmproj
 .vscode/
+# CI fixtures (chart-testing values, render-compat inputs) are not part of the published chart
+ci/

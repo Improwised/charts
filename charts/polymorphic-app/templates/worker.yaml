@@ -26,8 +26,12 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "polymorphic-app.labels" $ | nindent 8 }}
+        {{- include "polymorphic-app.podLabels" $ | nindent 8 }}
         app.kubernetes.io/component: "{{ .name | default $.Values.workerTemplate.name }}"
+      {{- with .podAnnotations | default $.Values.workerTemplate.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       {{- if .imagePullSecrets }}
       imagePullSecrets:
@@ -42,6 +46,10 @@ spec:
       {{- end }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default $.Values.workerTemplate.terminationGracePeriodSeconds }}
+      {{- with .initContainers | default $.Values.workerTemplate.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
 {{- $workerName := .name | default $.Values.workerTemplate.name }}
 {{- $workerProbe := .probe | default $.Values.workerTemplate.probe }}
@@ -82,6 +90,9 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+    {{- with include "polymorphic-app.extraSpec" (dict "template" $.Values.workerTemplate.extraPodSpec "item" .extraPodSpec "managed" (include "polymorphic-app.managedPodSpecKeys" . | fromJsonArray) "what" "extraPodSpec") }}
+{{ . | indent 6 }}
+    {{- end }}
 
 {{- if .autoscaling | default $.Values.workerTemplate.autoscaling }}
 ---
@@ -107,12 +118,21 @@ spec:
     {{- end }}
   minReplicas: {{ .minReplicaCount | default $.Values.workerTemplate.minReplicaCount }}
   maxReplicas: {{ .maxReplicaCount | default $.Values.workerTemplate.maxReplicaCount }}
+  {{- $hpa := mergeOverwrite (deepCopy ($.Values.workerTemplate.hpa | default dict)) (deepCopy (.hpa | default dict)) }}
   metrics:
+  {{- if $hpa.metrics }}
+  {{- toYaml $hpa.metrics | nindent 2 }}
+  {{- else }}
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: {{ .averageUtilization | default $.Values.serviceTemplate.averageUtilization }}
+        averageUtilization: {{ .averageUtilization | default $.Values.workerTemplate.averageUtilization | default $.Values.serviceTemplate.averageUtilization }}
+  {{- end }}
+  {{- with $hpa.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}
 {{- end }}
