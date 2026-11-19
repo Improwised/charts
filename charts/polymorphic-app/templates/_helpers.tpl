@@ -52,6 +52,57 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
+Pod template labels: the common labels minus helm.sh/chart. That label changes on every chart version, so
+having it in a pod template restarted every pod, and failed every non-hook Job (whose pod template is
+immutable), on each chart upgrade even when nothing about the workload changed.
+*/}}
+{{- define "polymorphic-app.podLabels" -}}
+{{ include "polymorphic-app.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{/*
+Opt-in raw spec fields (extraPodSpec, extraContainerSpec, extraJobSpec): the template-level map, then the
+item-level map deep-merged on top, rendered as-is. This exposes any Kubernetes field the chart has no value
+for (including ones added in future Kubernetes releases) without a chart change. Keys the chart already
+renders are refused, so the output never contains duplicate keys and the first-class values stay the
+single way to set them.
+Usage: include "polymorphic-app.extraSpec" (dict "template" $.Values.serviceTemplate.extraPodSpec "item" .extraPodSpec "managed" (list "containers") "what" "extraPodSpec")
+*/}}
+{{- define "polymorphic-app.extraSpec" -}}
+{{- $m := mergeOverwrite (deepCopy (.template | default dict)) (deepCopy (.item | default dict)) -}}
+{{- range $k, $_ := $m -}}
+{{- if has $k $.managed -}}
+{{- fail (printf "%s.%s is already rendered by the chart; use the chart's own value for it" $.what $k) -}}
+{{- end -}}
+{{- end -}}
+{{- if $m -}}{{- toYaml $m -}}{{- end -}}
+{{- end -}}
+
+{{/* Pod spec keys the chart renders for every kind; services additionally own topologySpreadConstraints. */}}
+{{- define "polymorphic-app.managedPodSpecKeys" -}}
+{{- toJson (list "imagePullSecrets" "terminationGracePeriodSeconds" "initContainers" "containers" "dnsConfig" "securityContext" "volumes" "nodeSelector" "affinity" "tolerations" "restartPolicy") -}}
+{{- end -}}
+
+{{- define "polymorphic-app.managedContainerKeys" -}}
+{{- toJson (list "name" "image" "imagePullPolicy" "env" "envFrom" "command" "args" "ports" "resources" "securityContext" "lifecycle" "livenessProbe" "readinessProbe" "startupProbe" "volumeMounts") -}}
+{{- end -}}
+
+{{/*
+Item value if the item sets the key (even to false/0/""), else the template value.
+`.item.x | default .template.x` cannot express an explicit false, because false is "empty" to `default`.
+Usage: include "polymorphic-app.pick" (dict "item" .ingress "template" $.Values.serviceTemplate.ingress "key" "enabled")
+Returns a string; compare with eq "true".
+*/}}
+{{- define "polymorphic-app.pick" -}}
+{{- $i := .item | default dict -}}
+{{- if hasKey $i .key -}}{{- index $i .key -}}{{- else -}}{{- index (.template | default dict) .key -}}{{- end -}}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "polymorphic-app.serviceAccountName" -}}
@@ -182,6 +233,142 @@ Return the appropriate apiVersion for cronjob.
 {{- end -}}
 
 {{/*
+Deployment update strategy.
+Usage: {{ include "polymorphic-app.strategy" (dict "item" . "template" $.Values.serviceTemplate) | nindent 4 }}
+
+An item-level `strategy` replaces the template-level one as a whole (never deep-merged, so
+`type: Recreate` cannot inherit a `rollingUpdate` block, which Kubernetes rejects).
+When neither is set the historical default is rendered.
+*/}}
+{{- define "polymorphic-app.strategy" -}}
+{{- $strategy := .item.strategy | default .template.strategy -}}
+{{- if $strategy -}}
+{{- toYaml $strategy -}}
+{{- else -}}
+type: RollingUpdate
+rollingUpdate:
+  maxUnavailable: 50%
+  maxSurge: 100%
+{{- end -}}
+{{- end -}}
+
+{{/*
+Unified container specification template.
+Usage:
+{{ include "polymorphic-app.containerSpec" (dict "item" . "template" $.Values.serviceTemplate "root" $ "containerName" "svc" "healthcheck" $health "ports" .ports "probeConfig" .probe) }}
+
+Parameters:
+  .item         - The individual array item (service/worker/cronJob/job entry)
+  .template     - The corresponding *Template values (e.g. $.Values.serviceTemplate)
+  .root         - Root context ($)
+  .containerName - Base name for the container
+  .healthcheck  - Optional healthcheck config (for services)
+  .ports        - Optional ports list (for services)
+  .probeConfig  - Optional probe config (for workers - .probe with .aliveCommand)
+
+Merge order for env/envFrom/volumeMounts: global -> template -> item (item overrides, last-wins).
+*/}}
+{{- define "polymorphic-app.containerSpec" -}}
+{{- $item := .item -}}
+{{- $tmpl := .template -}}
+{{- $root := .root -}}
+{{- $containerName := .containerName -}}
+{{- $health := .healthcheck -}}
+{{- $ports := .ports -}}
+{{- $probeConfig := .probeConfig -}}
+- name: "{{ if $root.Values.prefixWithReleaseName.enabled }}{{ $root.Release.Name }}-{{ end }}{{ $containerName }}"
+  {{- if $item.image }}
+  image: "{{ $item.image.repository }}:{{ $item.image.tag }}"
+  {{- else if $tmpl.image }}
+  image: "{{ $tmpl.image.repository }}:{{ $tmpl.image.tag }}"
+  {{- else }}
+  image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
+  {{- end }}
+  imagePullPolicy: {{ ($item.image | default dict).pullPolicy | default ($tmpl.image | default dict).pullPolicy | default $root.Values.image.pullPolicy }}
+  {{- if or $item.env $root.Values.env $tmpl.env }}
+  env:
+  {{- if $root.Values.env }}
+{{ toYaml $root.Values.env | indent 4 }}
+  {{- end }}
+  {{- if $tmpl.env }}
+{{ toYaml $tmpl.env | indent 4 }}
+  {{- end }}
+  {{- if $item.env }}
+{{ toYaml $item.env | indent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if or $item.envFrom $root.Values.envFrom $tmpl.envFrom }}
+  envFrom:
+  {{- if $root.Values.envFrom }}
+{{ toYaml $root.Values.envFrom | indent 4 }}
+  {{- end }}
+  {{- if $tmpl.envFrom }}
+{{ toYaml $tmpl.envFrom | indent 4 }}
+  {{- end }}
+  {{- if $item.envFrom }}
+{{ toYaml $item.envFrom | indent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if $item.command }}
+  command:
+{{ toYaml $item.command | indent 4 }}
+  {{- else if $tmpl.command }}
+  command:
+{{ toYaml $tmpl.command | indent 4 }}
+  {{- end }}
+  {{- if $item.args }}
+  args:
+{{ toYaml $item.args | indent 4 }}
+  {{- else if $tmpl.args }}
+  args:
+{{ toYaml $tmpl.args | indent 4 }}
+  {{- end }}
+  {{- if $ports }}
+  ports:
+{{ toYaml $ports | indent 4 }}
+  {{- end }}
+  {{- $resources := ($item.resources | default $tmpl.resources) -}}
+  {{- if $resources }}
+  resources:
+{{ toYaml $resources | indent 4 }}
+  {{- end }}
+  {{- with ($item.containerSecurityContext | default $tmpl.containerSecurityContext) }}
+  securityContext:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+  {{- if or $tmpl.lifecycleHooks $item.lifecycleHooks }}
+  lifecycle:
+{{ toYaml ($item.lifecycleHooks | default $tmpl.lifecycleHooks) | indent 4 }}
+  {{- end }}
+  {{- if and $health (ne $health.enabled false) }}
+  {{- include "polymorphic-app.healthchecks" $health | nindent 2 }}
+  {{- end }}
+  {{- if $probeConfig }}
+  {{- $probe := dict "enabled" true "type" "exec" "command" $probeConfig.aliveCommand
+      "timeoutSeconds" ($probeConfig.timeoutSeconds | default 10)
+      "initialDelaySeconds" ($probeConfig.initialDelaySeconds | default 10)
+      "periodSeconds" ($probeConfig.periodSeconds | default 20)
+      "failureThreshold" ($probeConfig.failureThreshold | default 3) -}}
+  {{- include "polymorphic-app.healthchecks" $probe | nindent 2 }}
+  {{- end }}
+  {{- if or $item.volumeMounts $root.Values.volumeMounts $tmpl.volumeMounts }}
+  volumeMounts:
+  {{- if $root.Values.volumeMounts }}
+{{ toYaml $root.Values.volumeMounts | indent 4 }}
+  {{- end }}
+  {{- if $tmpl.volumeMounts }}
+{{ toYaml $tmpl.volumeMounts | indent 4 }}
+  {{- end }}
+  {{- if $item.volumeMounts }}
+{{ toYaml $item.volumeMounts | indent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- with include "polymorphic-app.extraSpec" (dict "template" $tmpl.extraContainerSpec "item" $item.extraContainerSpec "managed" (include "polymorphic-app.managedContainerKeys" . | fromJsonArray) "what" "extraContainerSpec") }}
+{{ . | indent 2 }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 Core probe configuration
 */}}
 {{- define "polymorphic-app.probe-core" -}}
@@ -217,6 +404,11 @@ Liveness and readiness probes
   {{- $p := $health.probes | default dict -}}
   {{- $liveness := $health.liveness | default $p.liveness -}}
   {{- $readiness := $health.readiness | default $p.readiness -}}
+  {{- $startup := $health.startup | default $p.startup -}}
+  {{- if $startup }}
+startupProbe:
+{{- include "polymorphic-app.probe-core" (dict "healthcheck" $health "probe" $startup) | nindent 2 }}
+  {{- end }}
   {{- if or $liveness $readiness -}}
     {{- if $liveness }}
 livenessProbe:

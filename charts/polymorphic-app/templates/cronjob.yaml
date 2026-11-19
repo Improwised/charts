@@ -21,9 +21,23 @@ spec:
   failedJobsHistoryLimit: {{ .failedJobsHistoryLimit   | default $.Values.cronJobTemplate.failedJobsHistoryLimit | default 0 }}
   schedule: {{ .schedule | quote }}
   suspend: {{ .suspend | default false }}
+  {{- with .timeZone | default $.Values.cronJobTemplate.timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  {{- with .concurrencyPolicy | default $.Values.cronJobTemplate.concurrencyPolicy }}
+  concurrencyPolicy: {{ . }}
+  {{- end }}
   jobTemplate:
     spec:
+      {{- with include "polymorphic-app.extraSpec" (dict "template" $.Values.cronJobTemplate.extraJobSpec "item" .extraJobSpec "managed" (list "template") "what" "extraJobSpec") }}
+      {{- . | nindent 6 }}
+      {{- end }}
       template:
+        {{- with .podAnnotations | default $.Values.cronJobTemplate.podAnnotations }}
+        metadata:
+          annotations:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
         spec:
           {{- if .imagePullSecrets }}
           imagePullSecrets:
@@ -38,77 +52,32 @@ spec:
           {{- end }}
           {{- end }}
           restartPolicy: Never
+          {{- with .initContainers | default $.Values.cronJobTemplate.initContainers }}
+          initContainers:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           containers:
-          {{- if $.Values.prefixWithReleaseName.enabled }}
-          - name: "{{ $.Release.Name }}-{{ .name | default $.Values.cronJobTemplate.name }}"
-          {{- else}}
-          - name: "{{ .name | default $.Values.cronJobTemplate.name }}"
-          {{- end }}
-            {{- if .image }}
-            image: "{{ .image.repository }}:{{ .image.tag }}"
-            {{- else if $.Values.cronJobTemplate.image }}
-            image: "{{ $.Values.cronJobTemplate.image.repository }}:{{ $.Values.cronJobTemplate.image.tag }}"
-            {{- else }}
-            image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
-            {{- end }}
-            env:
-          {{- if .env }}
-{{ toYaml .env | indent 14 }}
-          {{- end }}
-          {{- if $.Values.env }}
-{{ toYaml $.Values.env | indent 14 }}
-          {{- end }}
-          {{- if $.Values.cronJobTemplate.env }}
-{{ toYaml $.Values.cronJobTemplate.env | indent 14 }}
-          {{- end }}
-            envFrom:
-            {{- if .envFrom }}
-{{ toYaml .envFrom | indent 14 }}
-            {{- end }}
-            {{- if $.Values.envFrom }}
-{{ toYaml $.Values.envFrom | indent 14 }}
-            {{- end }}
-            {{- if $.Values.cronJobTemplate.envFrom }}
-{{ toYaml $.Values.cronJobTemplate.envFrom | indent 14 }}
-            {{- end }}
-            imagePullPolicy: {{ $.Values.image.pullPolicy }}
-            {{- with .containerSecurityContext | default $.Values.cronJobTemplate.containerSecurityContext }}
-            securityContext:
-{{ toYaml . | indent 14 }}
-            {{- end }}
-            {{- if .command }}
-              {{- with .command | default $.Values.cronJobTemplate.command }}
-            command:
-{{ toYaml . | indent 14 }}
-              {{- end }}
-            {{- end }}
-            {{- if .args }}
-              {{- with .args | default $.Values.cronJobTemplate.args }}
-            args:
-{{ toYaml . | indent 14 }}
-              {{- end }}
-            {{- end }}
-            volumeMounts:
-          {{- if .volumeMounts }}
-{{ toYaml .volumeMounts | indent 12 }}
-          {{- end }}
-          {{- if $.Values.volumeMounts }}
-{{ toYaml $.Values.volumeMounts | indent 12 }}
-          {{- end }}
-          {{- if $.Values.cronJobTemplate.volumeMounts }}
-{{ toYaml $.Values.cronJobTemplate.volumeMounts | indent 12 }}
-          {{- end }}
+{{- $cronName := .name | default $.Values.cronJobTemplate.name }}
+{{ include "polymorphic-app.containerSpec" (dict
+  "item" .
+  "template" $.Values.cronJobTemplate
+  "root" $
+  "containerName" $cronName
+) | indent 12 }}
           {{- with .securityContext | default $.Values.cronJobTemplate.securityContext }}
           securityContext:
 {{ toYaml . | indent 12 }}
           {{- end }}
           {{- with .affinity | default $.Values.cronJobTemplate.affinity }}
           affinity:
-          {{ toYaml . | indent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .tolerations | default $.Values.cronJobTemplate.tolerations }}
           tolerations:
-          {{ toYaml . | indent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with include "polymorphic-app.extraSpec" (dict "template" $.Values.cronJobTemplate.extraPodSpec "item" .extraPodSpec "managed" (include "polymorphic-app.managedPodSpecKeys" . | fromJsonArray) "what" "extraPodSpec") }}
+          {{- . | nindent 10 }}
           {{- end }}
           volumes:
       {{- if .volumes }}

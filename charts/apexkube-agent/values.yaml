@@ -1,5 +1,74 @@
 # Default values for apexkube-agent.
 
+# Agent image - single container running both WireGuard and Envoy
+image:
+  repository: improwised/apexkube-agent
+  tag: 1.0.1
+  pullPolicy: IfNotPresent
+
+# Security context for the agent container
+# WireGuard requires NET_ADMIN to create the tunnel interface
+securityContext:
+  capabilities:
+    add: ["NET_ADMIN"]
+
+# Readiness requires a completed WireGuard handshake, which proves the tunnel
+# reaches the gateway. Disable only where no gateway is reachable (chart-testing).
+readinessProbe:
+  enabled: true
+
+# Agent profiles rendered by this release.
+# access: Envoy in front of the Kubernetes API (TLS, client JWT, service account token).
+access:
+  enabled: true
+
+# metrics: a second, independent agent pod relaying scrapes to a plain-HTTP
+# Thanos receive endpoint over its own WireGuard tunnel. Running it as its own
+# pod (and its own tunnel) keeps scrape volume off the access agent.
+# Requires a separate WireGuard peer: its own key pair and tunnel address.
+metrics:
+  enabled: false
+  replicas: 1
+  # Empty values inherit the top-level image above.
+  image:
+    repository: ""
+    tag: ""
+    pullPolicy: ""
+  # Sized for scrape bursts; the access agent keeps its own smaller limits.
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+  envoy:
+    containerPort: 10000
+    # Port the metrics listener uses when it runs inside the access pod.
+    # Must differ from containerPort. Ignored in a metrics-only install, where
+    # the listener uses containerPort instead.
+    combinedPort: 10001
+    backend:
+      host: thanos-receive
+      port: 10908
+    # Merged over envoy.config; set only the timeouts or retries that differ.
+    config: {}
+  wireguard:
+    # Use an existing ConfigMap with a wg0.conf key, or an existing Secret with a
+    # privatekey key. They must belong to a peer dedicated to this agent.
+    existingConfigMap: ""
+    existingSecret: ""
+    config:
+      address: ""
+      peer:
+        publicKey: "<metrics-peer-public-key>"
+        endpoint: ""
+        allowedIPs: ""
+        persistentKeepalive: 5
+      privateKey: "<metrics-wireguard-private-key>"
+  podAnnotations: {}
+  podLabels: {}
+
 # ServiceAccount configuration
 serviceAccount:
   # Name of the service account to create/use.
@@ -8,26 +77,24 @@ serviceAccount:
 
 # ClusterRole configuration
 clusterRole:
+  # Create the ClusterRole. Default rules are wildcard (cluster-admin
+  # equivalent); disable for agents that never call the Kubernetes API.
+  create: true
   # Name of the ClusterRole to create.
   # If not set, defaults to the release name (or fullnameOverride if configured).
   name: ""
 
 # ClusterRoleBinding configuration
 clusterRoleBinding:
+  # Create the ClusterRoleBinding. Disable alongside clusterRole.create for
+  # agents that never call the Kubernetes API.
+  create: true
   # Name of the ClusterRoleBinding to create.
   # If not set, defaults to the release name (or fullnameOverride if configured).
   name: ""
 
 # Envoy proxy configuration
 envoy:
-  image:
-    # Envoy image repository
-    repository: envoyproxy/envoy
-    # Envoy image tag
-    tag: v1.31.0
-    # Image pull policy
-    pullPolicy: IfNotPresent
-
   config:
     jwt:
       # JWT issuer identifier
@@ -39,6 +106,36 @@ envoy:
       # Example: "{\"keys\":[{\"alg\":\"EdDSA\",\"crv\":\"Ed25519\",\"iss\":\"apexkube\
       #   \",\"kty\":\"OKP\",\"x\":\"<base64-encoded-public-key>\"}]}"
       publicKey: "<public-key>"
+
+    # HTTP connection manager stream idle timeout
+    # Closes idle streams after this duration (e.g., idle WebSocket connections)
+    # Set to 0s for infinite (not recommended - causes connection leaks)
+    streamIdleTimeout: "300s"
+
+    # Common HTTP protocol options (applied to all connections)
+    # Closes the entire TCP connection if zero active streams for this duration
+    commonHttpProtocolOptions:
+      idleTimeout: "3600s"
+
+    # Route-level timeout (max time for a single HTTP request including retries)
+    # Set to 0s for infinite (not recommended - hangs forever)
+    routeTimeout: "60s"
+
+    # Retry policy for failed requests
+    retry:
+      # Enable retry policy
+      enabled: true
+      # Conditions that trigger a retry (comma-separated)
+      # Common: reset,connect-failure,gateway-error,retriable-status-codes
+      retryOn: "reset,connect-failure,gateway-error,retriable-status-codes"
+      # Maximum number of retry attempts
+      numRetries: 2
+      # Timeout for each individual retry attempt
+      perTryTimeout: "30s"
+      # Retry backoff configuration
+      backoff:
+        baseInterval: "0.025s"
+        maxInterval: "1s"
 
   # Number of Envoy replicas
   replicas: 1
@@ -55,16 +152,31 @@ envoy:
   # Container port for Envoy
   containerPort: 10000
 
+  # Downstream listener TLS. When false the listener serves plain HTTP and no
+  # certificate Secret is required (see the `metrics` profile in values-metrics.yaml).
+  tls:
+    enabled: true
+
+  # Upstream (Envoy -> backend) settings
+  backend:
+    # Backend host and port Envoy proxies to. Defaults target the Kubernetes API,
+    # which is the `access` profile.
+    host: kubernetes.default.svc
+    port: 443
+    # TLS to the backend. Disable for plain-HTTP backends such as thanos-receive.
+    tls:
+      enabled: true
+
+  # Verify client JWTs with the public key from envoy.config.jwt.publicKey
+  jwt:
+    enabled: true
+
+  # Inject the pod's projected service account token as the upstream
+  # Authorization header. Requires a service account with the backend's RBAC.
+  injectServiceAccountToken: true
+
 # WireGuard VPN configuration
 wireguard:
-  image:
-    # WireGuard image repository
-    repository: masipcat/wireguard-go
-    # WireGuard image tag
-    tag: 0.0.20230223
-    # Image pull policy
-    pullPolicy: IfNotPresent
-
   # Use an existing ConfigMap for WireGuard configuration (non-sensitive data)
   # The ConfigMap must have a key named 'wg0.conf' containing the WireGuard config
   # If specified, it will override the inline configuration below
@@ -103,38 +215,8 @@ wireguard:
     # WARNING: This is sensitive data. Consider using existingSecret for production
     privateKey: "<wireguard-private-key>"
 
-  # Environment variables for WireGuard container (optional)
-  # Define as a list of env var objects; this replaces the hardcoded env in the deployment
-  env:
-    - name: LOG_LEVEL
-      value: "info"
-    - name: ENABLE_HEALTHCHECK
-      value: "true"
-
-  # Resource limits and requests for WireGuard container
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "500m"
-
-  # Security context for WireGuard container
-  # WireGuard requires elevated privileges to create network interfaces
-  securityContext:
-    privileged: true
-    capabilities:
-      add: ["NET_ADMIN"]
-
-  # Health check configuration for WireGuard
-  healthcheck:
-    # Enable health check endpoint
-    enabled: false
-    # Port for health check endpoint
-    port: 8080
-
 # TLS configuration for Envoy's HTTPS listener
+# Only used when envoy.tls.enabled is true
 tls:
   # Option 1: Use an existing Kubernetes secret containing TLS certificate and key
   # The secret must have keys: tls.crt and tls.key
@@ -162,8 +244,9 @@ tls:
 # Affinity rules for pod scheduling
 # affinity: {}
 
-# Pod annotations
-# podAnnotations: {}
+# Extra pod annotations. Attach a Reloader annotation here when the ConfigMap or
+# Secret is managed outside Helm and mounts through subPath.
+podAnnotations: {}
 
-# Pod labels
-# podLabels: {}
+# Extra pod labels
+podLabels: {}

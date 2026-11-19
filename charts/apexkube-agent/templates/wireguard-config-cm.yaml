@@ -1,4 +1,4 @@
-{{- if not .Values.wireguard.existingConfigMap -}}
+{{- if and .Values.access.enabled (not .Values.wireguard.existingConfigMap) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

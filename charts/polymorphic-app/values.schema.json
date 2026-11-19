@@ -372,6 +372,10 @@
                                             "type": "integer"
                                         }
                                     }
+                                },
+                                "startup": {
+                                    "type": "object",
+                                    "description": "Startup probe. Same keys as probes.liveness; type, path and port fall back to the shared healthcheck."
                                 }
                             }
                         },
@@ -395,6 +399,10 @@
                         },
                         "failureThreshold": {
                             "type": "integer"
+                        },
+                        "startup": {
+                            "type": "object",
+                            "description": "Startup probe. Same keys as probes.liveness; type, path and port fall back to the shared healthcheck."
                         }
                     }
                 },
@@ -409,6 +417,13 @@
                         },
                         "maxUnavailable": {
                             "type": "integer"
+                        },
+                        "unhealthyPodEvictionPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "IfHealthyBudget",
+                                "AlwaysAllow"
+                            ]
                         }
                     },
                     "required": [
@@ -694,6 +709,39 @@
                 "maxReplicaCount": {
                     "type": "integer"
                 },
+                "strategy": {
+                    "type": "object",
+                    "description": "Deployment update strategy. Empty keeps the default (RollingUpdate, maxUnavailable 50%, maxSurge 100%). Replaces the template-level value as a whole, it is not merged.",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "RollingUpdate",
+                                "Recreate"
+                            ]
+                        },
+                        "rollingUpdate": {
+                            "type": [
+                                "object",
+                                "null"
+                            ],
+                            "properties": {
+                                "maxSurge": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                },
+                                "maxUnavailable": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
                 "minReplicaCount": {
                     "type": "integer"
                 },
@@ -852,6 +900,39 @@
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "appArmorProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "RuntimeDefault",
+                                        "Unconfined",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ]
+                        },
+                        "seLinuxChangePolicy": {
+                            "type": "string",
+                            "enum": [
+                                "MountOption",
+                                "Recursive"
+                            ]
+                        },
+                        "supplementalGroupsPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "Merge",
+                                "Strict"
+                            ]
                         }
                     },
                     "additionalProperties": false
@@ -957,6 +1038,25 @@
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "appArmorProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "RuntimeDefault",
+                                        "Unconfined",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ]
                         }
                     },
                     "additionalProperties": false
@@ -1102,6 +1202,46 @@
                                 }
                             },
                             "name": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "extraPodSpec": {
+                    "type": "object",
+                    "description": "Extra pod spec fields rendered as-is (e.g. hostUsers, serviceAccountName, priorityClassName, runtimeClassName, pod-level resources). Template map first, item map deep-merged on top. Keys the chart renders itself are rejected at render time."
+                },
+                "extraContainerSpec": {
+                    "type": "object",
+                    "description": "Extra fields for the main container rendered as-is (e.g. resizePolicy, restartPolicyRules, workingDir). Keys the chart renders itself are rejected at render time."
+                },
+                "hpa": {
+                    "type": "object",
+                    "description": "HorizontalPodAutoscaler tuning, used when autoscaling is true.",
+                    "properties": {
+                        "metrics": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            },
+                            "description": "Replaces the default CPU utilization metric."
+                        },
+                        "behavior": {
+                            "type": "object",
+                            "description": "HPA spec.behavior, rendered as-is."
+                        }
+                    }
+                },
+                "topologySpread": {
+                    "type": "array",
+                    "description": "Topology spread constraints. Each entry defaults maxSkew: 1, whenUnsatisfiable: ScheduleAnyway, matchLabelKeys: [pod-template-hash] and a labelSelector for this service's pods; set any of them to override.",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "topologyKey"
+                        ],
+                        "properties": {
+                            "topologyKey": {
                                 "type": "string"
                             }
                         }
@@ -1302,6 +1442,10 @@
                                                 "type": "integer"
                                             }
                                         }
+                                    },
+                                    "startup": {
+                                        "type": "object",
+                                        "description": "Startup probe. Same keys as probes.liveness; type, path and port fall back to the shared healthcheck."
                                     }
                                 }
                             },
@@ -1325,6 +1469,10 @@
                             },
                             "failureThreshold": {
                                 "type": "integer"
+                            },
+                            "startup": {
+                                "type": "object",
+                                "description": "Startup probe. Same keys as probes.liveness; type, path and port fall back to the shared healthcheck."
                             }
                         }
                     },
@@ -1339,6 +1487,13 @@
                             },
                             "maxUnavailable": {
                                 "type": "integer"
+                            },
+                            "unhealthyPodEvictionPolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "IfHealthyBudget",
+                                    "AlwaysAllow"
+                                ]
                             }
                         },
                         "required": [
@@ -1499,6 +1654,39 @@
                                     }
                                 },
                                 "additionalProperties": false
+                            },
+                            "appArmorProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "RuntimeDefault",
+                                            "Unconfined",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            "seLinuxChangePolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "MountOption",
+                                    "Recursive"
+                                ]
+                            },
+                            "supplementalGroupsPolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "Merge",
+                                    "Strict"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -1604,6 +1792,25 @@
                                     }
                                 },
                                 "additionalProperties": false
+                            },
+                            "appArmorProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "RuntimeDefault",
+                                            "Unconfined",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -1971,6 +2178,39 @@
                     "maxReplicaCount": {
                         "type": "integer"
                     },
+                    "strategy": {
+                        "type": "object",
+                        "description": "Deployment update strategy. Empty keeps the default (RollingUpdate, maxUnavailable 50%, maxSurge 100%). Replaces the template-level value as a whole, it is not merged.",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "RollingUpdate",
+                                    "Recreate"
+                                ]
+                            },
+                            "rollingUpdate": {
+                                "type": [
+                                    "object",
+                                    "null"
+                                ],
+                                "properties": {
+                                    "maxSurge": {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ]
+                                    },
+                                    "maxUnavailable": {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "minReplicaCount": {
                         "type": "integer"
                     },
@@ -2013,6 +2253,46 @@
                                             "type": "string"
                                         }
                                     }
+                                }
+                            }
+                        }
+                    },
+                    "extraPodSpec": {
+                        "type": "object",
+                        "description": "Extra pod spec fields rendered as-is (e.g. hostUsers, serviceAccountName, priorityClassName, runtimeClassName, pod-level resources). Template map first, item map deep-merged on top. Keys the chart renders itself are rejected at render time."
+                    },
+                    "extraContainerSpec": {
+                        "type": "object",
+                        "description": "Extra fields for the main container rendered as-is (e.g. resizePolicy, restartPolicyRules, workingDir). Keys the chart renders itself are rejected at render time."
+                    },
+                    "hpa": {
+                        "type": "object",
+                        "description": "HorizontalPodAutoscaler tuning, used when autoscaling is true.",
+                        "properties": {
+                            "metrics": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                },
+                                "description": "Replaces the default CPU utilization metric."
+                            },
+                            "behavior": {
+                                "type": "object",
+                                "description": "HPA spec.behavior, rendered as-is."
+                            }
+                        }
+                    },
+                    "topologySpread": {
+                        "type": "array",
+                        "description": "Topology spread constraints. Each entry defaults maxSkew: 1, whenUnsatisfiable: ScheduleAnyway, matchLabelKeys: [pod-template-hash] and a labelSelector for this service's pods; set any of them to override.",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "topologyKey"
+                            ],
+                            "properties": {
+                                "topologyKey": {
+                                    "type": "string"
                                 }
                             }
                         }
@@ -2163,6 +2443,39 @@
                 "maxReplicaCount": {
                     "type": "integer"
                 },
+                "strategy": {
+                    "type": "object",
+                    "description": "Deployment update strategy. Empty keeps the default (RollingUpdate, maxUnavailable 50%, maxSurge 100%). Replaces the template-level value as a whole, it is not merged.",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "RollingUpdate",
+                                "Recreate"
+                            ]
+                        },
+                        "rollingUpdate": {
+                            "type": [
+                                "object",
+                                "null"
+                            ],
+                            "properties": {
+                                "maxSurge": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                },
+                                "maxUnavailable": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
                 "minReplicaCount": {
                     "type": "integer"
                 },
@@ -2301,6 +2614,39 @@
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "appArmorProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "RuntimeDefault",
+                                        "Unconfined",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ]
+                        },
+                        "seLinuxChangePolicy": {
+                            "type": "string",
+                            "enum": [
+                                "MountOption",
+                                "Recursive"
+                            ]
+                        },
+                        "supplementalGroupsPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "Merge",
+                                "Strict"
+                            ]
                         }
                     },
                     "additionalProperties": false
@@ -2406,6 +2752,25 @@
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "appArmorProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "RuntimeDefault",
+                                        "Unconfined",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ]
                         }
                     },
                     "additionalProperties": false
@@ -2525,6 +2890,45 @@
                                 "type": "string"
                             }
                         }
+                    }
+                },
+                "extraPodSpec": {
+                    "type": "object",
+                    "description": "Extra pod spec fields rendered as-is (e.g. hostUsers, serviceAccountName, priorityClassName, runtimeClassName, pod-level resources). Template map first, item map deep-merged on top. Keys the chart renders itself are rejected at render time."
+                },
+                "extraContainerSpec": {
+                    "type": "object",
+                    "description": "Extra fields for the main container rendered as-is (e.g. resizePolicy, restartPolicyRules, workingDir). Keys the chart renders itself are rejected at render time."
+                },
+                "hpa": {
+                    "type": "object",
+                    "description": "HorizontalPodAutoscaler tuning, used when autoscaling is true.",
+                    "properties": {
+                        "metrics": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            },
+                            "description": "Replaces the default CPU utilization metric."
+                        },
+                        "behavior": {
+                            "type": "object",
+                            "description": "HPA spec.behavior, rendered as-is."
+                        }
+                    }
+                },
+                "podAnnotations": {
+                    "type": "object",
+                    "description": "Annotations on the pod template.",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "initContainers": {
+                    "type": "array",
+                    "description": "Init containers, rendered as-is. An init container with restartPolicy: Always is a native sidecar.",
+                    "items": {
+                        "type": "object"
                     }
                 }
             }
@@ -2677,6 +3081,39 @@
                     "maxReplicaCount": {
                         "type": "integer"
                     },
+                    "strategy": {
+                        "type": "object",
+                        "description": "Deployment update strategy. Empty keeps the default (RollingUpdate, maxUnavailable 50%, maxSurge 100%). Replaces the template-level value as a whole, it is not merged.",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "RollingUpdate",
+                                    "Recreate"
+                                ]
+                            },
+                            "rollingUpdate": {
+                                "type": [
+                                    "object",
+                                    "null"
+                                ],
+                                "properties": {
+                                    "maxSurge": {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ]
+                                    },
+                                    "maxUnavailable": {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "minReplicaCount": {
                         "type": "integer"
                     },
@@ -2815,6 +3252,39 @@
                                     }
                                 },
                                 "additionalProperties": false
+                            },
+                            "appArmorProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "RuntimeDefault",
+                                            "Unconfined",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            "seLinuxChangePolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "MountOption",
+                                    "Recursive"
+                                ]
+                            },
+                            "supplementalGroupsPolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "Merge",
+                                    "Strict"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -2920,6 +3390,25 @@
                                     }
                                 },
                                 "additionalProperties": false
+                            },
+                            "appArmorProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "RuntimeDefault",
+                                            "Unconfined",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3039,6 +3528,45 @@
                                     "type": "string"
                                 }
                             }
+                        }
+                    },
+                    "extraPodSpec": {
+                        "type": "object",
+                        "description": "Extra pod spec fields rendered as-is (e.g. hostUsers, serviceAccountName, priorityClassName, runtimeClassName, pod-level resources). Template map first, item map deep-merged on top. Keys the chart renders itself are rejected at render time."
+                    },
+                    "extraContainerSpec": {
+                        "type": "object",
+                        "description": "Extra fields for the main container rendered as-is (e.g. resizePolicy, restartPolicyRules, workingDir). Keys the chart renders itself are rejected at render time."
+                    },
+                    "hpa": {
+                        "type": "object",
+                        "description": "HorizontalPodAutoscaler tuning, used when autoscaling is true.",
+                        "properties": {
+                            "metrics": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                },
+                                "description": "Replaces the default CPU utilization metric."
+                            },
+                            "behavior": {
+                                "type": "object",
+                                "description": "HPA spec.behavior, rendered as-is."
+                            }
+                        }
+                    },
+                    "podAnnotations": {
+                        "type": "object",
+                        "description": "Annotations on the pod template.",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "initContainers": {
+                        "type": "array",
+                        "description": "Init containers, rendered as-is. An init container with restartPolicy: Always is a native sidecar.",
+                        "items": {
+                            "type": "object"
                         }
                     }
                 }
@@ -3315,6 +3843,39 @@
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "appArmorProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "RuntimeDefault",
+                                        "Unconfined",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ]
+                        },
+                        "seLinuxChangePolicy": {
+                            "type": "string",
+                            "enum": [
+                                "MountOption",
+                                "Recursive"
+                            ]
+                        },
+                        "supplementalGroupsPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "Merge",
+                                "Strict"
+                            ]
                         }
                     },
                     "additionalProperties": false
@@ -3420,6 +3981,25 @@
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "appArmorProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "RuntimeDefault",
+                                        "Unconfined",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ]
                         }
                     },
                     "additionalProperties": false
@@ -3436,8 +4016,76 @@
                         "type": "string"
                     }
                 },
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "limits": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "requests": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "lifecycleHooks": {
+                    "type": "object"
+                },
                 "tolerations": {
                     "type": "array"
+                },
+                "extraPodSpec": {
+                    "type": "object",
+                    "description": "Extra pod spec fields rendered as-is (e.g. hostUsers, serviceAccountName, priorityClassName, runtimeClassName, pod-level resources). Template map first, item map deep-merged on top. Keys the chart renders itself are rejected at render time."
+                },
+                "extraContainerSpec": {
+                    "type": "object",
+                    "description": "Extra fields for the main container rendered as-is (e.g. resizePolicy, restartPolicyRules, workingDir). Keys the chart renders itself are rejected at render time."
+                },
+                "extraJobSpec": {
+                    "type": "object",
+                    "description": "Extra Job spec fields rendered as-is (e.g. backoffLimit, ttlSecondsAfterFinished, activeDeadlineSeconds, podFailurePolicy, successPolicy, podReplacementPolicy)."
+                },
+                "podAnnotations": {
+                    "type": "object",
+                    "description": "Annotations on the pod template.",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "initContainers": {
+                    "type": "array",
+                    "description": "Init containers, rendered as-is. An init container with restartPolicy: Always is a native sidecar.",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "timeZone": {
+                    "type": "string",
+                    "description": "IANA time zone for the schedule, e.g. Asia/Kolkata."
+                },
+                "concurrencyPolicy": {
+                    "type": "string",
+                    "enum": [
+                        "Allow",
+                        "Forbid",
+                        "Replace"
+                    ]
                 }
             }
         },
@@ -3726,6 +4374,39 @@
                                     }
                                 },
                                 "additionalProperties": false
+                            },
+                            "appArmorProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "RuntimeDefault",
+                                            "Unconfined",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            "seLinuxChangePolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "MountOption",
+                                    "Recursive"
+                                ]
+                            },
+                            "supplementalGroupsPolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "Merge",
+                                    "Strict"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3831,6 +4512,25 @@
                                     }
                                 },
                                 "additionalProperties": false
+                            },
+                            "appArmorProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "RuntimeDefault",
+                                            "Unconfined",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3840,6 +4540,74 @@
                     },
                     "successfulJobsHistoryLimit": {
                         "type": "integer"
+                    },
+                    "resources": {
+                        "type": "object",
+                        "properties": {
+                            "limits": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "requests": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "lifecycleHooks": {
+                        "type": "object"
+                    },
+                    "extraPodSpec": {
+                        "type": "object",
+                        "description": "Extra pod spec fields rendered as-is (e.g. hostUsers, serviceAccountName, priorityClassName, runtimeClassName, pod-level resources). Template map first, item map deep-merged on top. Keys the chart renders itself are rejected at render time."
+                    },
+                    "extraContainerSpec": {
+                        "type": "object",
+                        "description": "Extra fields for the main container rendered as-is (e.g. resizePolicy, restartPolicyRules, workingDir). Keys the chart renders itself are rejected at render time."
+                    },
+                    "extraJobSpec": {
+                        "type": "object",
+                        "description": "Extra Job spec fields rendered as-is (e.g. backoffLimit, ttlSecondsAfterFinished, activeDeadlineSeconds, podFailurePolicy, successPolicy, podReplacementPolicy)."
+                    },
+                    "podAnnotations": {
+                        "type": "object",
+                        "description": "Annotations on the pod template.",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "initContainers": {
+                        "type": "array",
+                        "description": "Init containers, rendered as-is. An init container with restartPolicy: Always is a native sidecar.",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "timeZone": {
+                        "type": "string",
+                        "description": "IANA time zone for the schedule, e.g. Asia/Kolkata."
+                    },
+                    "concurrencyPolicy": {
+                        "type": "string",
+                        "enum": [
+                            "Allow",
+                            "Forbid",
+                            "Replace"
+                        ]
                     }
                 }
             }
@@ -3851,7 +4619,7 @@
                     "type": "object"
                 },
                 "annotations": {
-                    "type": "array"
+                    "type": "object"
                 },
                 "args": {
                     "type": "array",
@@ -4133,6 +4901,39 @@
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "appArmorProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "RuntimeDefault",
+                                        "Unconfined",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ]
+                        },
+                        "seLinuxChangePolicy": {
+                            "type": "string",
+                            "enum": [
+                                "MountOption",
+                                "Recursive"
+                            ]
+                        },
+                        "supplementalGroupsPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "Merge",
+                                "Strict"
+                            ]
                         }
                     },
                     "additionalProperties": false
@@ -4238,9 +5039,109 @@
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "appArmorProfile": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "RuntimeDefault",
+                                        "Unconfined",
+                                        "Localhost"
+                                    ]
+                                },
+                                "localhostProfile": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ]
                         }
                     },
                     "additionalProperties": false
+                },
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "limits": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "requests": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "lifecycleHooks": {
+                    "type": "object"
+                },
+                "extraPodSpec": {
+                    "type": "object",
+                    "description": "Extra pod spec fields rendered as-is (e.g. hostUsers, serviceAccountName, priorityClassName, runtimeClassName, pod-level resources). Template map first, item map deep-merged on top. Keys the chart renders itself are rejected at render time."
+                },
+                "extraContainerSpec": {
+                    "type": "object",
+                    "description": "Extra fields for the main container rendered as-is (e.g. resizePolicy, restartPolicyRules, workingDir). Keys the chart renders itself are rejected at render time."
+                },
+                "extraJobSpec": {
+                    "type": "object",
+                    "description": "Extra Job spec fields rendered as-is (e.g. backoffLimit, ttlSecondsAfterFinished, activeDeadlineSeconds, podFailurePolicy, successPolicy, podReplacementPolicy)."
+                },
+                "hook": {
+                    "type": "object",
+                    "description": "Run the Job as a Helm hook.",
+                    "properties": {
+                        "events": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Hook events. Default [pre-install, pre-upgrade]."
+                        },
+                        "weight": {
+                            "type": "integer",
+                            "description": "helm.sh/hook-weight. Default 0."
+                        },
+                        "deletePolicy": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Default [before-hook-creation]."
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "podAnnotations": {
+                    "type": "object",
+                    "description": "Annotations on the pod template.",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "initContainers": {
+                    "type": "array",
+                    "description": "Init containers, rendered as-is. An init container with restartPolicy: Always is a native sidecar.",
+                    "items": {
+                        "type": "object"
+                    }
                 }
             }
         },
@@ -4509,6 +5410,39 @@
                                     }
                                 },
                                 "additionalProperties": false
+                            },
+                            "appArmorProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "RuntimeDefault",
+                                            "Unconfined",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
+                            },
+                            "seLinuxChangePolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "MountOption",
+                                    "Recursive"
+                                ]
+                            },
+                            "supplementalGroupsPolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "Merge",
+                                    "Strict"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -4614,12 +5548,112 @@
                                     }
                                 },
                                 "additionalProperties": false
+                            },
+                            "appArmorProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "RuntimeDefault",
+                                            "Unconfined",
+                                            "Localhost"
+                                        ]
+                                    },
+                                    "localhostProfile": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
                             }
                         },
                         "additionalProperties": false
                     },
                     "tolerations": {
                         "type": "array"
+                    },
+                    "resources": {
+                        "type": "object",
+                        "properties": {
+                            "limits": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "requests": {
+                                "type": "object",
+                                "properties": {
+                                    "cpu": {
+                                        "type": "string"
+                                    },
+                                    "memory": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "lifecycleHooks": {
+                        "type": "object"
+                    },
+                    "extraPodSpec": {
+                        "type": "object",
+                        "description": "Extra pod spec fields rendered as-is (e.g. hostUsers, serviceAccountName, priorityClassName, runtimeClassName, pod-level resources). Template map first, item map deep-merged on top. Keys the chart renders itself are rejected at render time."
+                    },
+                    "extraContainerSpec": {
+                        "type": "object",
+                        "description": "Extra fields for the main container rendered as-is (e.g. resizePolicy, restartPolicyRules, workingDir). Keys the chart renders itself are rejected at render time."
+                    },
+                    "extraJobSpec": {
+                        "type": "object",
+                        "description": "Extra Job spec fields rendered as-is (e.g. backoffLimit, ttlSecondsAfterFinished, activeDeadlineSeconds, podFailurePolicy, successPolicy, podReplacementPolicy)."
+                    },
+                    "hook": {
+                        "type": "object",
+                        "description": "Run the Job as a Helm hook.",
+                        "properties": {
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Hook events. Default [pre-install, pre-upgrade]."
+                            },
+                            "weight": {
+                                "type": "integer",
+                                "description": "helm.sh/hook-weight. Default 0."
+                            },
+                            "deletePolicy": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Default [before-hook-creation]."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "podAnnotations": {
+                        "type": "object",
+                        "description": "Annotations on the pod template.",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "initContainers": {
+                        "type": "array",
+                        "description": "Init containers, rendered as-is. An init container with restartPolicy: Always is a native sidecar.",
+                        "items": {
+                            "type": "object"
+                        }
                     }
                 }
             }

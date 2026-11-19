@@ -1,0 +1,29 @@
+# Metrics-only profile: no access agent, one agent relaying Prometheus scrapes to
+# a plain-HTTP Thanos receive endpoint over its own WireGuard tunnel.
+#
+#   helm upgrade --install apexkube-agent improwised/apexkube-agent \
+#     -n apexkube-metrics -f values-metrics.yaml
+#
+# To keep an access agent and add the metrics one beside it, leave
+# access.enabled true and drop it from this file.
+access:
+  enabled: false
+
+metrics:
+  enabled: true
+  # This agent needs its own WireGuard peer: a key pair and tunnel address that
+  # no other agent uses. Scope the peer's AllowedIPs to the Thanos endpoint so
+  # this agent cannot reach the Kubernetes API.
+  wireguard:
+    # Prefer existingSecret / existingConfigMap in production, for example
+    #   --set metrics.wireguard.existingSecret=metrics-wireguard-privatekey
+    existingConfigMap: ""
+    existingSecret: ""
+    config:
+      address: ""
+      peer:
+        publicKey: "<metrics-peer-public-key>"
+        endpoint: ""
+        allowedIPs: ""
+        persistentKeepalive: 5
+      privateKey: "<metrics-wireguard-private-key>"

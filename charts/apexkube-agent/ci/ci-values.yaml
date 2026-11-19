@@ -1,3 +1,6 @@
+readinessProbe:
+  enabled: false
+
 envoy:
   config:
     jwt:
@@ -8,7 +11,7 @@ wireguard:
     address: "10.0.0.2/24"
     peer:
       publicKey: "11ks650uhzB2KlUPCoMDhtC2mkKfYym8U4WQjMeNjhU="
-      endpoint: "wireguard.example.com:51820"
+      endpoint: "127.0.0.1:51820"
       allowedIPs: "10.0.0.1/32"
     privateKey: "uui586n4pFIq00r4+djMoM7mtA6zYjZXo2Euurmu0Xw="
 

@@ -1,0 +1,22 @@
+# CI values for the metrics-only profile: access agent disabled, one metrics pod
+# with a plain-HTTP listener and a plain-HTTP upstream. `ct install` boots envoy
+# with this config, so a broken config or a leftover TLS/RBAC resource shows up
+# as a failed install.
+
+readinessProbe:
+  enabled: false
+
+access:
+  enabled: false
+
+metrics:
+  enabled: true
+  wireguard:
+    config:
+      address: "10.0.0.2/24"
+      peer:
+        publicKey: "11ks650uhzB2KlUPCoMDhtC2mkKfYym8U4WQjMeNjhU="  # pragma: allowlist secret
+        endpoint: "127.0.0.1:51820"
+        allowedIPs: "10.0.0.1/32"
+      # Throwaway key: no peer answers on 127.0.0.1:51820, so the tunnel stays down.
+      privateKey: "uui586n4pFIq00r4+djMoM7mtA6zYjZXo2Euurmu0Xw="  # pragma: allowlist secret

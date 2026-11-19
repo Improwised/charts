@@ -104,3 +104,50 @@ ClusterRoleBinding name
 {{- include "apexkube-agent.fullname" . -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+Metrics agent: the second Deployment and its resources are suffixed "-metrics"
+so they can live beside the access agent in the same namespace.
+*/}}
+{{- define "apexkube-agent.metrics.fullname" -}}
+{{- printf "%s-metrics" (include "apexkube-agent.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
+{{/*
+Metrics selector labels. The component label keeps the two Deployments from
+selecting each other's pods.
+*/}}
+{{- define "apexkube-agent.metrics.selectorLabels" -}}
+{{ include "apexkube-agent.selectorLabels" . }}
+app.kubernetes.io/component: metrics
+{{- end }}
+
+{{/*
+Metrics common labels
+*/}}
+{{- define "apexkube-agent.metrics.labels" -}}
+{{ include "apexkube-agent.labels" . }}
+app.kubernetes.io/component: metrics
+{{- end }}
+
+{{/*
+Metrics WireGuard ConfigMap name
+*/}}
+{{- define "apexkube-agent.metrics.wireguard.configMapName" -}}
+{{- if .Values.metrics.wireguard.existingConfigMap -}}
+{{- .Values.metrics.wireguard.existingConfigMap -}}
+{{- else -}}
+{{- printf "%s-wireguard-config" (include "apexkube-agent.metrics.fullname" .) -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Metrics WireGuard Secret name
+*/}}
+{{- define "apexkube-agent.metrics.wireguard.secretName" -}}
+{{- if .Values.metrics.wireguard.existingSecret -}}
+{{- .Values.metrics.wireguard.existingSecret -}}
+{{- else -}}
+{{- printf "%s-wireguard-privatekey" (include "apexkube-agent.metrics.fullname" .) -}}
+{{- end -}}
+{{- end }}
