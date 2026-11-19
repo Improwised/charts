@@ -1,0 +1,12 @@
+{{- if .Values.postgres.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "jovvix.fullname" . }}-db-initdb
+  labels:
+    {{- include "jovvix.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+data:
+  create-kratos-schema.sql: |
+    CREATE SCHEMA IF NOT EXISTS kratos;
+{{- end }}

@@ -1,0 +1,37 @@
+{{- if .Values.postgres.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jovvix.fullname" . }}-db
+  labels:
+    {{- include "jovvix.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  clusterIP: None
+  ports:
+    - name: postgres
+      port: {{ .Values.postgres.port }}
+      targetPort: postgres
+      protocol: TCP
+  selector:
+    {{- include "jovvix.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jovvix.fullname" . }}-db-rw
+  labels:
+    {{- include "jovvix.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgres
+      port: {{ .Values.database.port }}
+      targetPort: postgres
+      protocol: TCP
+  selector:
+    {{- include "jovvix.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+{{- end }}

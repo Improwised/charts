@@ -1,0 +1,22 @@
+{{- if .Values.ui.enabled }}
+{{- $scheme := .Values.global.scheme | default "http" }}
+{{- $wsScheme := ternary "wss" "ws" (eq $scheme "https") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "jovvix.ui.fullname" . }}
+  labels:
+    {{- include "jovvix.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ui
+data:
+  APP_ENV: {{ .Values.ui.config.appEnv | quote }}
+  HOST: {{ .Values.ui.config.host | quote }}
+  MODE: {{ .Values.ui.config.mode | quote }}
+  PORT: {{ .Values.ui.config.port | quote }}
+  NUXT_PUBLIC_BASE_URL: {{ .Values.ui.config.nuxtPublicBaseUrl | default (printf "%s://%s" $scheme .Values.global.domain) | quote }}
+  NUXT_PUBLIC_API_URL: {{ .Values.ui.config.nuxtPublicApiUrl | default "/api/v1" | quote }}
+  NUXT_PUBLIC_API_SOCKET_URL: {{ .Values.ui.config.nuxtPublicApiSocketUrl | default (printf "%s://%s/api/v1/socket" $wsScheme .Values.global.domain) | quote }}
+  NUXT_PUBLIC_KRATOS_URL: {{ .Values.ui.config.nuxtPublicKratosUrl | default (printf "%s://%s" $scheme .Values.global.domain) | quote }}
+  NUXT_PUBLIC_PRIVILEGED_SESSION_MAX_AGE: {{ .Values.ui.config.nuxtPublicPrivilegedSessionMaxAge | quote }}
+  S3_BUCKET_URL: {{ .Values.ui.config.s3BucketUrl | quote }}
+{{- end }}

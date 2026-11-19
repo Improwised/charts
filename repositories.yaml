@@ -17,3 +17,19 @@ repositories:
     password: ""
     url: https://charts.helm.sh/stable
     username: ""
+  - caFile: ""
+    certFile: ""
+    insecure_skip_tls_verify: false
+    keyFile: ""
+    name: valkey
+    password: ""
+    url: https://valkey.io/valkey-helm/
+    username: ""
+  - caFile: ""
+    certFile: ""
+    insecure_skip_tls_verify: false
+    keyFile: ""
+    name: ory
+    password: ""
+    url: https://k8s.ory.sh/helm/charts
+    username: ""
