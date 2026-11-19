@@ -317,7 +317,10 @@ kratos:
             enabled: true
       serve:
         admin:
-          base_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}"
+          #  In-cluster admin Service, never the public host: Kratos's public
+          #  port redirects /admin/* here, which is how the API deletes
+          #  accounts. A public base_url would need the admin API exposed.
+          base_url: 'http://{{ include "kratos.fullname" . }}-admin:{{ .Values.service.admin.port }}/'
           port: 4434
         public:
           base_url: "{{ .Values.global.scheme }}://{{ .Values.global.domain }}"
