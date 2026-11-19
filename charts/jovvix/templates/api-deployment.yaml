@@ -37,17 +37,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       affinity:
-        {{- with .Values.affinity }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    {{- include "jovvix.api.selectorLabels" . | nindent 20 }}
-                topologyKey: kubernetes.io/hostname
-              weight: 1
+        {{- include "jovvix.affinity" (list . (include "jovvix.api.selectorLabels" .)) | nindent 8 }}
       {{- if or .Values.api.initContainers.enabled .Values.api.migration.enabled }}
       initContainers:
         {{- if .Values.api.initContainers.enabled }}

@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/component: postgres
 spec:
   serviceName: {{ include "jovvix.fullname" . }}-db
-  replicas: {{ .Values.postgres.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "jovvix.selectorLabels" . | nindent 6 }}

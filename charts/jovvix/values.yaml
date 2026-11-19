@@ -44,7 +44,7 @@ redis:
   host: ""
   port: 6379
   #  Password for an external Redis/Valkey instance. When using the internal
-  #  Valkey sub-chart, valkey.secret.password is used instead.
+  #  Valkey sub-chart, valkey.auth.aclUsers.default.password is used instead.
   password: ""
 
 #  Override the name of the chart
@@ -69,12 +69,16 @@ nodeSelector: {}
 
 tolerations: []
 
+#  Applied to the API and UI pods. When empty, each gets a soft pod
+#  anti-affinity that spreads its replicas across nodes; when set, it
+#  replaces that default entirely.
 affinity: {}
 
 #  Alternative to HTTPRoute. Enable this if using a traditional Ingress
 #  controller (e.g. nginx-ingress) instead of a Gateway API controller.
-#  Routes API (/api), UI (/), and Kratos (/admin/identities, /self-service,
-#  /sessions) endpoints. Uses global.domain as the hostname.
+#  Routes API (/api), UI (/), and Kratos public (/self-service, /sessions)
+#  endpoints. Uses global.domain as the hostname. The Kratos admin API is
+#  never exposed.
 ingress:
   enabled: false
   className: ""
@@ -97,9 +101,10 @@ autoscaling:
 #  PostgreSQL StatefulSet (internal database)
 #  Disable this and set database.host to use an external PostgreSQL instance.
 #  An initdb ConfigMap is created to bootstrap the kratos schema.
+#  Always a single replica: this is a plain PostgreSQL with no replication, so
+#  more replicas would be separate databases behind one Service.
 postgres:
   enabled: true
-  replicaCount: 1
   terminationGracePeriodSeconds: 120
   image:
     repository: postgres
@@ -138,15 +143,19 @@ valkey:
   image:
     repository: valkey/valkey
     tag: "9.0.2"
+  #  The Valkey password. Either set it inline (the sub-chart stores it in its
+  #  own release-scoped Secret):
+  #    --set valkey.auth.aclUsers.default.password=<password>
+  #  or bring your own Secret holding the password under the key "default":
+  #    --set valkey.auth.usersExistingSecret=<secret-name>
+  #  (then also use api.secret.existingSecret, which carries REDIS_PASSWORD).
   auth:
     enabled: true
     aclUsers:
       default:
-        passwordKey: password
         permissions: "~* &* +@all"
-    #  Name of the secret that stores the Valkey password. Set to
-    #  valkey.secret.name so the sub-chart references our secret.
-    usersExistingSecret: jovvix-valkey
+        password: ""
+    usersExistingSecret: ""
   dataStorage:
     className: ""
     enabled: true
@@ -168,16 +177,6 @@ valkey:
   securityContext:
     capabilities:
       drop: ["ALL", "NET_RAW"]
-  #  Valkey password. Empty by default; provide at install time via --set,
-  #  or reference an existing Kubernetes Secret.
-  secret:
-    enabled: true
-    #  Name of the secret created by valkey-secret.yaml. Also referenced by
-    #  the Valkey sub-chart via valkey.auth.usersExistingSecret.
-    name: jovvix-valkey
-    #  Name of an existing Kubernetes Secret containing a "password" key.
-    existingSecret: ""
-    password: ""        # Valkey password
 
 #  Kratos sub-chart values (Ory Kratos identity and authentication server).
 #  Handles user registration, login, password recovery, and session management.
@@ -207,35 +206,21 @@ kratos:
       - name: envoy-gateway
         namespace: envoy-gateway-system
   #  Disables the Kratos sub-chart's own secret creation. Our custom
-  #  kratos-secret.yaml template creates the secret instead.
+  #  kratos-secret.yaml template creates the secret instead, named
+  #  "<release>-kratos" so several releases can share a namespace.
+  #  To bring your own Secret (keys: dsn, secretsDefault, secretsCookie,
+  #  secretsCipher, smtpConnectionURI), set kratos.secrets.enabled=false and
+  #  kratos.secret.nameOverride=<secret-name>.
   secret:
     enabled: false
-    #  Name of the secret created by kratos-secret.yaml.
-    nameOverride: jovvix-kratos
-  #  Kratos secrets. Empty by default; provide at install time via --set,
-  #  or reference an existing Kubernetes Secret.
+    nameOverride: ""
+  #  Kratos secrets. Empty by default; provide at install time via --set.
   secrets:
     enabled: true
-    #  Name of an existing Kubernetes Secret containing all Kratos keys.
-    existingSecret: ""
     secretsDefault: ""      # Kratos default secret (>= 32 characters)
     secretsCookie: ""       # Kratos cookie secret (>= 32 characters)
     secretsCipher: ""       # Kratos cipher secret (exactly 32 characters)
     smtpConnectionURI: ""   # Kratos SMTP connection URI (e.g. "smtp://user:pass@host:587/")
-  deployment:
-    extraEnv:
-      - name: COURIER_SMTP_CONNECTION_URI
-        valueFrom:
-          secretKeyRef:
-            name: jovvix-kratos
-            key: smtpConnectionURI
-  courier:
-    extraEnv:
-      - name: COURIER_SMTP_CONNECTION_URI
-        valueFrom:
-          secretKeyRef:
-            name: jovvix-kratos
-            key: smtpConnectionURI
   # WARNING: see kratos.development above.
   kratos:
     development: false
@@ -250,6 +235,11 @@ kratos:
       courier:
         smtp:
           from_address: no-reply@example.com
+          #  Placeholder only. A non-empty value makes the Kratos sub-chart
+          #  inject COURIER_SMTP_CONNECTION_URI from its Secret (key
+          #  smtpConnectionURI), and that env var overrides this value.
+          #  Set the real URI with kratos.secrets.smtpConnectionURI.
+          connection_uri: "smtp://from-secret/"
       hashers:
         algorithm: bcrypt
         bcrypt:

@@ -11,7 +11,7 @@ helm install jovvix . \
   --set global.domain=quiz.example.com \
   --set global.scheme=https \
   --set postgres.secret.password=<password> \
-  --set valkey.secret.password=<password> \
+  --set valkey.auth.aclUsers.default.password=<password> \
   --set api.secret.jwtSecret=<32-char-secret> \
   --set api.secret.smtpUsername=<smtp-user> \
   --set api.secret.smtpPassword=<smtp-pass> \
@@ -39,7 +39,7 @@ helm install jovvix . \
   --set global.domain=quiz.example.com \
   --set global.scheme=https \
   --set postgres.secret.password=<password> \
-  --set valkey.secret.password=<password> \
+  --set valkey.auth.aclUsers.default.password=<password> \
   --set api.secret.jwtSecret=<32-char-jwt-secret> \
   --set api.secret.smtpUsername=<smtp-username> \
   --set api.secret.smtpPassword=<smtp-password> \
@@ -59,7 +59,7 @@ All secrets and image tags are required and must be provided via `--set`. The ch
 | Secret | Description |
 |--------|-------------|
 | `postgres.secret.password` | Internal PostgreSQL password |
-| `valkey.secret.password` | Internal Valkey password |
+| `valkey.auth.aclUsers.default.password` | Internal Valkey password |
 | `api.secret.jwtSecret` | JWT signing secret (>= 32 characters) |
 | `api.secret.smtpUsername` | SMTP username |
 | `api.secret.smtpPassword` | SMTP password |
@@ -67,6 +67,23 @@ All secrets and image tags are required and must be provided via `--set`. The ch
 | `kratos.secrets.secretsCookie` | Kratos cookie secret (>= 32 characters) |
 | `kratos.secrets.secretsCipher` | Kratos cipher secret (exactly 32 characters) |
 | `kratos.secrets.smtpConnectionURI` | SMTP connection URI for the Kratos courier |
+
+## Using existing Secrets
+
+To keep secrets out of Helm values, create the Secrets yourself and point the chart at them:
+
+| Component | Setting | Keys the Secret must hold |
+|-----------|---------|---------------------------|
+| PostgreSQL | `postgres.secret.existingSecret=<name>` | `password` |
+| Valkey | `valkey.auth.usersExistingSecret=<name>` | `default` |
+| Kratos | `kratos.secrets.enabled=false`, `kratos.secret.nameOverride=<name>` | `dsn`, `secretsDefault`, `secretsCookie`, `secretsCipher`, `smtpConnectionURI` |
+| API | `api.secret.existingSecret=<name>` | `DB_PASSWORD`, `JWT_SECRET`, `REDIS_PASSWORD`, `SMTP_USERNAME`, `SMTP_PASSWORD` |
+
+Use all four together: the chart-generated API and Kratos Secrets need the plaintext database and Valkey passwords.
+
+## Security
+
+Only the Kratos public API (`/self-service`, `/sessions`) is routed. The Kratos admin API has no authentication, so it stays cluster-internal; the Jovvix API reaches it through `SERVE_ADMIN_BASE_URL`.
 
 ## Required Images
 

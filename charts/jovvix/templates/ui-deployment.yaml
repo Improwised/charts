@@ -37,17 +37,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       affinity:
-        {{- with .Values.affinity }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    {{- include "jovvix.ui.selectorLabels" . | nindent 20 }}
-                topologyKey: kubernetes.io/hostname
-              weight: 1
+        {{- include "jovvix.affinity" (list . (include "jovvix.ui.selectorLabels" .)) | nindent 8 }}
       containers:
         - name: jovvix-ui
           image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | required "ui.image.tag must be set" }}"

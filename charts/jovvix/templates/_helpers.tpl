@@ -28,7 +28,7 @@ at install time via --set.
 {{- if .Values.redis.host -}}
   {{- .Values.redis.password | required "redis.password is required when using an external Redis (helm install --set redis.password=...)" -}}
 {{- else -}}
-  {{- .Values.valkey.secret.password | required "valkey.secret.password is required (helm install --set valkey.secret.password=...)" -}}
+  {{- .Values.valkey.auth.aclUsers.default.password | required "valkey.auth.aclUsers.default.password is required (helm install --set valkey.auth.aclUsers.default.password=...), or set api.secret.existingSecret" -}}
 {{- end -}}
 {{- end }}
 
@@ -154,6 +154,26 @@ Return the appropriate apiVersion for ingress
 {{- print "networking.k8s.io/v1beta1" -}}
 {{- else -}}
 {{- print "extensions/v1beta1" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Affinity for the API and UI pods: .Values.affinity when set, otherwise a soft
+anti-affinity on the given selector labels. Call with (list $ "<labels>").
+*/}}
+{{- define "jovvix.affinity" -}}
+{{- $root := index . 0 -}}
+{{- if $root.Values.affinity -}}
+{{- toYaml $root.Values.affinity }}
+{{- else -}}
+podAntiAffinity:
+  preferredDuringSchedulingIgnoredDuringExecution:
+    - podAffinityTerm:
+        labelSelector:
+          matchLabels:
+            {{- index . 1 | nindent 12 }}
+        topologyKey: kubernetes.io/hostname
+      weight: 1
 {{- end -}}
 {{- end }}
 

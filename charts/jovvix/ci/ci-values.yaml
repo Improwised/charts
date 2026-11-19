@@ -3,8 +3,10 @@ postgres:
     password: ci-postgres-password
 
 valkey:
-  secret:
-    password: ci-valkey-password
+  auth:
+    aclUsers:
+      default:
+        password: ci-valkey-password
 
 global:
   domain: ci.example.com

@@ -37,13 +37,7 @@ spec:
                   number: {{ $.Values.api.service.port }}
           {{- end }}
           {{- if $.Values.kratos.enabled }}
-          - path: /admin/identities
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "jovvix.kratosServicePrefix" $ }}-admin
-                port:
-                  number: {{ $.Values.kratos.httpRoute.port }}
+          {{- /* Kratos admin API is unauthenticated: never expose it. */}}
           - path: /self-service
             pathType: Prefix
             backend:

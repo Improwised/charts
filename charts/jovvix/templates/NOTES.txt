@@ -23,12 +23,12 @@ PostgreSQL (external):
 
 {{- if .Values.valkey.enabled }}
 Valkey:
-  {{ include "jovvix.fullname" . }}-valkey:6379
+  {{ include "jovvix.redisHost" . }}:{{ .Values.redis.port }}
 {{- end }}
 
 {{- if .Values.kratos.enabled }}
 Kratos Admin:
-  http://{{ include "jovvix.fullname" . }}-kratos-admin
+  http://{{ include "jovvix.kratosServicePrefix" . }}-admin (cluster-internal only)
 Kratos Public:
-  http://{{ include "jovvix.fullname" . }}-kratos-public
+  http://{{ include "jovvix.kratosServicePrefix" . }}-public
 {{- end }}
