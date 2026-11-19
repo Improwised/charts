@@ -229,6 +229,10 @@ kratos:
       type: initContainer
     config:
       version: "v1.1.0"
+      #  Placeholder only. A non-empty value makes the Kratos sub-chart inject
+      #  DSN from its Secret (key dsn); the sub-chart keeps it out of the
+      #  ConfigMap. The real DSN is built by kratos-secret.yaml.
+      dsn: "from-secret"
       cookies:
         path: /
         same_site: Lax
