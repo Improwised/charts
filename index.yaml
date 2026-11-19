@@ -504,6 +504,34 @@ entries:
     urls:
     - https://improwised.github.io/charts/charts/healthchecks-1.0.5.tgz
     version: 1.0.5
+  jovvix:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-11-19T11:07:39.907407228Z"
+    dependencies:
+    - alias: valkey
+      condition: valkey.enabled
+      name: valkey
+      repository: https://valkey.io/valkey-helm/
+      version: 0.9.4
+    - alias: kratos
+      condition: kratos.enabled
+      name: kratos
+      repository: https://k8s.ory.sh/helm/charts
+      version: 0.45.0
+    description: A Helm chart for Jovvix quiz application with API and UI services
+    digest: 59feaf57bac189086c2286ad1a504a8e029262f8a343c182cfe1d734dac0319d
+    home: https://github.com/Improwised/charts
+    icon: https://raw.githubusercontent.com/Improwised/jovVix/main/app/assets/images/readme-logo1.png
+    maintainers:
+    - name: improwised
+    name: jovvix
+    sources:
+    - https://github.com/Improwised/charts
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/jovvix-0.1.0/jovvix-0.1.0.tgz
+    version: 0.1.0
   kore-board:
   - apiVersion: v2
     appVersion: v0.5.5
@@ -676,6 +704,19 @@ entries:
     - https://github.com/Improwised/charts/releases/download/pgpool-1.0.0/pgpool-1.0.0.tgz
     version: 1.0.0
   polymorphic-app:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-11-19T11:07:40.057628989Z"
+    description: A Helm chart for deploying any custom applications, specifically
+      polymorphic applications.
+    digest: 1e3022343fb9da4829a3e08b8ae75fb60d67fb448b045f38a7326cd5d069bdf5
+    maintainers:
+    - name: improwised
+    name: polymorphic-app
+    type: application
+    urls:
+    - https://github.com/Improwised/charts/releases/download/polymorphic-app-2.10.0/polymorphic-app-2.10.0.tgz
+    version: 2.10.0
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2026-11-03T17:31:26.859223693Z"
@@ -1205,4 +1246,4 @@ entries:
     urls:
     - https://github.com/Improwised/charts/releases/download/thunderdome-planning-poker-1.0.0/thunderdome-planning-poker-1.0.0.tgz
     version: 1.0.0
-generated: "2026-11-03T17:31:26.859439181Z"
+generated: "2026-11-19T11:07:40.058022559Z"
